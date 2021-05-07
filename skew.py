@@ -6,26 +6,36 @@ Straightforward implementation of the skew/DC3 algorithm
 """
 
 
-from collections import Counter
-
 TRIPLET = tuple[int,int,int]
 TRIPLET_DICT = dict[TRIPLET,int]
 
-def safe_idx(x : list[int], i : int):
+def safe_idx(x : list[int], i : int) -> int:
     "Hack to get zero if we index beyond the end."
     return 0 if i >= len(x) else x[i]
 
-def cumsum(counts : Counter) -> dict[int, int]:
-    "Compute the cumulative sum from a the sorted keys of a Counter."
-    res, acc = {}, 0
-    for k in sorted(counts):
-        res[k] = acc
-        acc += counts[k]
+def symbcount(x : list[int], asize : int) -> list[int]:
+    "Count how often we see each character in the alphabet."
+    # This is what collections.Counter does, but we need the
+    # alphabet to be sorted integers, so we do it manually.
+    counts = [0] * asize
+    for c in x:
+        counts[c] += 1
+    return counts
+
+def cumsum(counts : list[int]) -> list[int]:
+    "Compute the cumulative sum from the character count."
+    res, acc = [0] * len(counts), 0
+    for i, k in enumerate(counts):
+        res[i] = acc
+        acc += k
     return res
 
-def bucket_sort(x : list[int], idx : list[int], offset : int = 0) -> list[int]:
+def bucket_sort(x : list[int], asize : int,
+                idx : list[int], offset : int = 0) -> list[int]:
     "Sort indices in idx according to x[i + offset]."
-    buckets = cumsum(Counter(safe_idx(x, i + offset) for i in idx))
+    sort_symbs = [safe_idx(x, i + offset) for i in idx]
+    counts = symbcount(sort_symbs, asize)
+    buckets = cumsum(counts)
     out = [None] * len(idx)
     for i in idx:
         bucket = safe_idx(x, i + offset)
@@ -33,11 +43,11 @@ def bucket_sort(x : list[int], idx : list[int], offset : int = 0) -> list[int]:
         buckets[bucket] += 1
     return out
 
-def radix3(x : list[int], idx : list[int]) -> list[int]:
+def radix3(x : list[int], asize : int, idx : list[int]) -> list[int]:
     "Sort indices in idx according to their first three letters in x."
-    idx = bucket_sort(x, idx, 2)
-    idx = bucket_sort(x, idx, 1)
-    return bucket_sort(x, idx)
+    idx = bucket_sort(x, asize, idx, 2)
+    idx = bucket_sort(x, asize, idx, 1)
+    return bucket_sort(x, asize, idx)
 
 def triplet(x : list[int], i : int) -> TRIPLET:
     "Extract the triplet (x[i],x[i+1],x[i+2])."
@@ -46,7 +56,11 @@ def triplet(x : list[int], i : int) -> TRIPLET:
 def collect_alphabet(x : list[int], idx : list[int]) -> TRIPLET_DICT:
     "Map the triplets starting at idx to a new alphabet."
     # I use 0 for the terminal sentinel and 1 for the 
-    # separator, so I start the alphabet at 2, thus the + 2 later
+    # separator, so I start the alphabet at 2, thus the + 2 later.
+    # I'm using a dictionary for the alphabet, but you can build
+    # it more efficiently by looking at the previous triplet in the
+    # sorted SA12. It won't affect the asymptotic running time,
+    # though.
     alpha = {}
     for i in idx:
         trip = triplet(x, i)
@@ -93,23 +107,25 @@ def u_idx(i : int, m : int) -> int:
     k = (2 * i) if (i < m) else (2 * (i - m) - 1)
     return k + k // 2 + 1
 
-def skew_rec(x : list[int]) -> list[int]:
+def skew_rec(x : list[int], asize : int) -> list[int]:
     "Recursive skew SA construction algorithm."
 
     SA12 = [i for i in range(len(x)) if i % 3 != 0]
-    SA12 = radix3(x, SA12)
+    SA12 = radix3(x, asize, SA12)
     new_alpha = collect_alphabet(x, SA12)
 
-    if len(new_alpha) != len(SA12):
+    if len(new_alpha) < len(SA12):
         # Recursively sort SA12.
         # Construct the u string and compute its suffix array
         u = build_u(x, new_alpha)
-        sa_u = skew_rec(u)
+        # For the recursion, remember that the real alphabet has
+        # two sentinels, so + 2
+        sa_u = skew_rec(u, len(new_alpha) + 2)
         # Then map u's suffix array back to a sorted SA12
         m = len(sa_u) // 2
         SA12 = [u_idx(i, m) for i in sa_u if i != m]
 
-    SA3 = bucket_sort(x, [i - 1 for i in SA12 if i % 3 == 1])
+    SA3 = bucket_sort(x, asize, [i - 1 for i in SA12 if i % 3 == 1])
     return merge(x, SA12, SA3)
 
 def skew(x : str) -> list[int]:
@@ -121,7 +137,10 @@ def skew(x : str) -> list[int]:
     # with both str and list[int], but the sentinel we generate
     # is int, and we have to compare letters, so all letters must
     # then be int.
-    return skew_rec([ord(y) for y in x])
+    # I am assuming that the alphabet size is 256 here, although
+    # of course it might not be. It is a simplification instead of
+    # remapping the string.
+    return skew_rec([ord(y) for y in x], 256)
 
 if __name__ == '__main__':
     x = 'mississippi'
