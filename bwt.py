@@ -1,5 +1,4 @@
 from collections import Counter
-from collections.abc import Iterable
 
 CTAB = dict[str,int]
 OTAB = dict[str,list[int]]
