@@ -125,7 +125,12 @@ def skew_rec(x : list[int], asize : int) -> list[int]:
         m = len(sa_u) // 2
         SA12 = [u_idx(i, m) for i in sa_u if i != m]
 
-    SA3 = bucket_sort(x, asize, [i - 1 for i in SA12 if i % 3 == 1])
+    # Special case if the last index is class 0. Then the
+    # following class 1 isn't there, but we should treat it
+    # as the smallest string in the class.
+    SA3 = ([len(x) - 1] if len(x) % 3 == 1 else []) + \
+          [i - 1 for i in SA12 if i % 3 == 1]
+    SA3 = bucket_sort(x, asize, SA3)
     return merge(x, SA12, SA3)
 
 def skew(x : str) -> list[int]:
