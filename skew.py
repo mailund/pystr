@@ -104,8 +104,8 @@ def build_u(x : list[int], alpha : TRIPLET_DICT) -> list[int]:
 
 def u_idx(i : int, m : int) -> int:
     "Map indices in u back to indices in the original string."
-    k = (2 * i) if (i < m) else (2 * (i - m) - 1)
-    return k + k // 2 + 1
+    if i < m: return 1 + 3 * i
+    else: 2 + 3 * (i - m - 1)
 
 def skew_rec(x : list[int], asize : int) -> list[int]:
     "Recursive skew SA construction algorithm."
