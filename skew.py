@@ -98,9 +98,9 @@ def build_u(x : list[int], alpha : TRIPLET_DICT) -> list[int]:
     "Construct u string, using 1 as central sentinel."
     # By putting the i % 3 == 1 indices first, we know that the central
     # sentinel will always be at len(u) // 2.
-    return [alpha[triplet(x, i)] for i in range(len(x)) if i % 3 == 1] + \
-           [1] + \
-           [alpha[triplet(x, i)] for i in range(len(x)) if i % 3 == 2]
+    return [ *(alpha[triplet(x, i)] for i in range(1, len(x), 3)),
+           1,
+             *(alpha[triplet(x, i)] for i in range(2, len(x), 3)) ]
 
 def u_idx(i : int, m : int) -> int:
     "Map indices in u back to indices in the original string."
