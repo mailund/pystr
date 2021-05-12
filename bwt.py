@@ -45,7 +45,7 @@ def bwt_search(x: str, p: str, ctab: CTAB, otab: OTAB) -> tuple[int, int]:
 
 
 if __name__ == '__main__':
-    from skew import skew
+    from .skew import skew
     x = 'mississippi'
     sa = skew(x)
     for i, j in enumerate(sa):
