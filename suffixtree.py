@@ -1,19 +1,14 @@
 from __future__ import annotations
-from typing import Union
 from collections.abc import Iterator
 from dataclasses import dataclass, field
-
-
-# Using string slices is a bit wasteful of memory, because
-# they hold a reference to the string, but they make the code
-# easier to follow while still giving us constant time slicing.
-#
-# You can remove the x reference and pass the string to the
-# methods instead if you want to avoid the memory waste.
+from typing import overload
 
 
 @dataclass(frozen=True)
 class StringSlice:
+    """This is a wrapper around strings that lets me slice in constant time.
+It is helpful in places to be able to write code as if we are manipulating
+strings rather than pairs of indices."""
     x: str
     i: int = 0
     j: int = -1
@@ -35,6 +30,13 @@ class StringSlice:
             "Slices must be within the string's range."
         assert 0 <= self.j <= len(self.x), \
             "Slices must be within the string's range."
+
+    # These are needed to inform the type checker about the
+    # two different return types for indexing/slicing.
+    @overload
+    def __getitem__(self, _: int) -> str: ...
+    @overload
+    def __getitem__(self, _: slice) -> StringSlice: ...
 
     def __getitem__(self, i) -> str | StringSlice:
         if isinstance(i, slice):
@@ -68,31 +70,60 @@ Return index of first mismatch."""
     return i + 1  # matched all the way through
 
 
-# You don't need separate leaf/inner classes to make a tree. I only
-# do it so I can use pattern matching on nodes.
+# You don't need separate leaf/inner classes, but you get a little
+# type checking if you have them. You also save a little space by
+# not having all the attributes in a combined class.
 
 
 @dataclass
-class Inner:
-    edge_label: StringSlice
+class Node:  # Should be abc ABC, but doesn't work with dataclass
+    i: int
+    j: int
     parent: Inner | None = \
-        field(default=None, repr=False)
+        field(default=None, repr=False, init=False)
+
+    def edge_label(self, x: str) -> StringSlice:
+        return StringSlice(x, self.i, self.j)
+
+    def __iter__(self) -> Iterator[int]:
+        pass
+
+    def to_dot(self, x: str, res: list[str]) -> list[str]:
+        return []
+
+
+@dataclass
+class Inner(Node):
     suffix_link: Inner | None = \
-        field(default=None, repr=False)
+        field(default=None, init=False, repr=False)
     children: dict[str, Node] = \
         field(default_factory=dict, init=False, repr=False)
 
-    def __post_init__(self):
-        # Make the initial label a copy of the input, to prevent
-        # modifying it in the construction algorithms.
-        self.edge_label = self.edge_label[:]
-
-    def add_children(self, *children: Iterator[Node]) -> None:
+    def add_children(self, x: str, *children: Node) -> None:
         for child in children:
-            self.children[child.edge_label[0]] = child
+            self.children[x[child.i]] = child
             child.parent = self
 
-    def __iter__(self):
+    def out_child(self, edge: str | StringSlice) -> Node:
+        return self.children[edge[0]]
+
+    def to_dot(self, x: str, res: list[str]) -> list[str]:
+        if self.parent is None:  # Root node
+            res.append(
+                f'{id(self)}[label="", shape=circle, style=filled, fillcolor=grey]'  # noqa: E501
+            )
+        else:
+            el = self.edge_label(x)
+            res.append(f'{id(self)}[label="", shape=point]')
+            res.append(f'{id(self.parent)} -> {id(self)}[label="{el}"]')
+        if self.suffix_link:
+            res.append(f"{id(self)} -> {id(self.suffix_link)}[style=dashed]")
+        for child in self.children.values():
+            child.to_dot(x, res)
+
+        return res  # Just for convinience
+
+    def __iter__(self) -> Iterator[int]:
         # You could make it more efficient by sorting once
         # and keeping the table sorted, but for experimenting
         # this if fine...
@@ -101,189 +132,141 @@ class Inner:
 
 
 @dataclass
-class Leaf:
+class Leaf(Node):
     label: int
-    edge_label: StringSlice
-    parent: Inner | None = field(default=None, repr=False, init=False)
 
-    def __post_init__(self):
-        # Make the initial label a copy of the input, to prevent
-        # modifying it in the construction algorithms.
-        self.edge_label = self.edge_label[:]
+    def to_dot(self, x: str, res: list[str]) -> list[str]:
+        # Give the sentinel a symbol that Graphviz can display
+        edge_label = str(self.edge_label(x)).replace('\x00', '†')
+        res.append(f'{id(self)}[label={self.label}, shape=circle]')
+        res.append(f'{id(self.parent)} -> {id(self)}[label="{edge_label}"]')
+        return res
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[int]:
         yield self.label
 
 
-Node = Union[Inner, Leaf]
+SearchResult = tuple[Node, int, StringSlice]
+# This is the node we last searched on, how far down
+# the edge we got (or zero if we couldn't leave the
+# node), and the last string we searched.
 
 
-# It is a bit of overkill to use three classes to make search
-# results, but it enables pattern matching, which is nice. It would
-# be more efficient to simply wrap the information in the same class
-# or a tuple, and you can determine the kind of result from that.
-# But this makes nicer code later, because of the pattern matching
-# syntax.
+def tree_search(n: Inner, x: str, p: StringSlice) -> SearchResult:
+    # In the special case that p is empty (which we guarantee
+    # that it isn't after this point), we match the entire
+    # local tree, so we have to report that.
+    if not p:
+        return n, 0, p
+
+    while True:
+        if p[0] not in n.children:
+            return n, 0, p
+
+        child = n.out_child(p)
+        i = match(child.edge_label(x), p)
+        if i == len(p) or i < len(child.edge_label(x)):
+            return child, i, p
+
+        assert isinstance(child, Inner), \
+            "We can only continue searching from an inner node"
+        n, p = child, p[i:]
 
 
-@dataclass
-class Mismatch:
-    # The destination node for the edge we mismatched on.
-    n: Node
-    # How far down the edge we managed to match.
-    # If this is zero, it is because we couldn't get out of
-    # the node
-    i: int
-    # The remaining search string when we started matching the edge.
-    y: StringSlice
-
-
-@dataclass
-class Match:
-    # The root of the subtree we match.
-    n: Node
-    # How far down the edge do we match (which of course is the
-    # length of the remaining string, but still...)
-    i: int
-    # The remaining search string when we started matching the edge.
-    y: StringSlice
-
-
-SearchResult = Union[Mismatch, Match]
-
-
-def tree_search(n: Node, x: StringSlice) -> SearchResult:
+def tree_fastsearch(n: Inner, x: str, p: StringSlice) -> SearchResult:
     # In the special case that x is empty (which we guarantee
     # that it isn't after this point), we match the entire
     # local tree, so we have to report that.
-    if not x:
-        return Match(n, 0, x)
-
+    if not p:
+        return n, 0, p
     while True:
-        if x[0] not in n.children:
-            return Mismatch(n, 0, x)
-
-        n = n.children[x[0]]
-        i = match(n.edge_label, x)
-        if i == len(x):
-            return Match(n, i, x)
-        if i < len(n.edge_label):
-            return Mismatch(n, i, x)
-        x = x[i:]  # Search for the remaining string
-
-    assert False, "We should never get here"
-
-
-def tree_fastsearch(n: Node, x: StringSlice) -> SearchResult:
-    # In the special case that x is empty (which we guarantee
-    # that it isn't after this point), we match the entire
-    # local tree, so we have to report that.
-    if not x:
-        return Match(n, 0, x)
-
-    while True:
-        assert x[0] in n.children, \
+        assert p[0] in n.children, \
             "With fast scan, there should always be an out-edge"
-        n = n.children[x[0]]
+        child = n.out_child(p)
         # This is the fast scan jump (instead of scanning)
-        i = min(len(n.edge_label), len(x))
-        if i == len(x):
-            return Match(n, i, x)
-        x = x[i:]  # Search for the remaining string
+        i = min(len(child.edge_label(x)), len(p))
+        if i == len(p):
+            return child, i, p
+
+        assert isinstance(child, Inner), \
+            "We can only continue searching from an inner node"
+        n, p = child, p[i:]
 
     assert False, "We should never get here"
-
-
-def node_to_dot(n: Node, res: list[str]) -> list[str]:
-    match n:
-        case Leaf(label, edge_label):
-            # Give the sentinel a symbol that Graphviz can display
-            edge_label = str(edge_label).replace('\x00', '†')
-            res.append(f'{id(n)}[label={label}, shape=circle]')
-            res.append(f'{id(n.parent)} -> {id(n)}[label="{edge_label}"]')
-
-        case Inner(edge_label, parent, suffix_link):
-            if parent is None:  # Root node
-                res.append(
-                    f'{id(n)}[label="", shape=circle, style=filled, fillcolor=grey]'  # noqa: E501
-                )
-            else:
-                res.append(f'{id(n)}[label="", shape=point]')
-                res.append(f'{id(parent)} -> {id(n)}[label="{edge_label}"]')
-            if suffix_link:
-                res.append(f"{id(n)} -> {id(suffix_link)}[style=dashed]")
-            for child in n.children.values():
-                node_to_dot(child, res)
-
-    return res  # Just for convinience
 
 
 @dataclass
 class SuffixTree:
-    root: Node
+    x: str
+    root: Inner
 
-    def search(self, x: str) -> Iterator[int]:
-        match tree_search(self.root, StringSlice(x)):
-            case Match(n):
-                return iter(n)
-            case _:
-                return ()
+    def search(self, p: str) -> Iterator[int]:
+        n, j, y = tree_search(self.root, self.x, StringSlice(p))
+        if j == len(y):
+            # We search all the way through the last string,
+            # so we have a match
+            return iter(n)
+        else:
+            return iter(())
 
-    def __contains__(self, x: str):
-        match tree_search(self.root, StringSlice(x)):
-            case Match(_):
-                return True
-            case _:
-                return False
+    def __contains__(self, p: str):
+        n, j, y = tree_search(self.root, self.x, StringSlice(p))
+        return j == len(y)
 
     def to_dot(self) -> str:
-        return "digraph {" + '\n'.join(node_to_dot(self.root, [])) + "}"
+        return "digraph {" + \
+            '\n'.join(self.root.to_dot(self.x, [])) + \
+            "}"
 
 
-def break_edge(label: int, n: Node, j: int, y: StringSlice) -> Leaf:
-    """Break the edge to node `n`, `j` characters down, adding a new leaf
-with label `label` with edge `y`. Returns the new leaf."""
+def break_edge(label: int, n: Node, k: int, z: StringSlice) -> Leaf:
+    """Break the edge to node `n`, `k` characters down, adding a new leaf
+with label `label` with edge [`i`,`j`]. Returns the new leaf."""
 
-    new_n = Inner(n.edge_label[:j])  # Create the new node that splits the edge
-    new_leaf = Leaf(label, y)        # Remaining bit of other path
-    n.edge_label = n.edge_label[j:]  # Move start of n forward to remaining bit
+    new_n = Inner(n.i, n.i+k)             # The node that splits the edge
+    new_leaf = Leaf(z.i, z.j, label)      # Remaining bit of other path
+    n.i += k                              # Move start of n forward
 
-    assert n.parent is not None      # n must have a parent here (n != root)
-    n.parent.add_children(new_n)     # New node replaces n in n's parent
-    new_n.add_children(n, new_leaf)  # Make n and new leaf children of of new_n
+    assert n.parent is not None           # n must have a parent (n != root)
+    n.parent.add_children(z.x, new_n)     # New node replaces n in n's parent
+    new_n.add_children(z.x, n, new_leaf)  # Make n and new leaf children of new
 
     return new_leaf
 
 
-def naive_construction(s: str):
+def naive_construction(x: str):
     """Construct a suffix tree by searching from the root
 down to the insertion point for each suffix in `s`."""
 
-    x = StringSlice(s + '\x00')  # Adding sentinel to the string.
-    root = Inner(x[0:0])
+    x += '\x00'  # Adding sentinel to the string.
+    root = Inner(0, 0)
 
     # Insert suffixes one at a time...
     for i in range(len(x)):
-        match tree_search(root, x[i:]):
-            case Mismatch(n, 0, y):
-                n.add_children(Leaf(i, y))
-            case Mismatch(n, j, y):
-                break_edge(i, n, j, y[j:])
-            case Match(_):
-                # With the sentinel, we should never match completely
-                assert False, "We can't match completely here"
+        n, j, y = tree_search(root, x, StringSlice(x, i))
+        if j == 0:
+            # We couldn't get out of the node
+            assert isinstance(n, Inner), \
+                "If we can't get out of a node, it is an inner node."
+            n.add_children(x, Leaf(y.i, y.j, i))
+        elif j < len(y):
+            # We had a mismatch on the edge
+            break_edge(i, n, j, y[j:])
+        else:
+            # With the sentinel, we should never match completely
+            assert False, "We can't match completely here"
 
-    return SuffixTree(root)
+    return SuffixTree(x, root)
 
 
-def mccreight_construction(s: str):
+def mccreight_construction(x: str):
     """Construct a suffix tree by searching from the root
 down to the insertion point for each suffix in `s`."""
 
-    x = StringSlice(s + '\x00')  # Adding sentinel to the string.
-    root = Inner(x[0:0])
-    v = Leaf(0, x)
-    root.add_children(v)
+    x += '\x00'  # Adding sentinel to the string.
+    root = Inner(0, 0)
+    v = Leaf(0, len(x), 0)
+    root.add_children(x, v)
     root.suffix_link = root
 
     # Insert suffixes one at a time...
@@ -297,67 +280,88 @@ down to the insertion point for each suffix in `s`."""
         # just some special cases to deal with it...
 
         p = v.parent
+        assert p is not None, "A leaf should always have a parent"
 
         # If we already have a suffix link, then that is
         # the node we should slow scan from.
-        if p.suffix_link:
+        if p.suffix_link is not None:
             # y_node is the node we would get from scanning
             # through a + y, so from here we need to scan
             # for z (later in the function)
             y_node = p.suffix_link
-            z = v.edge_label if p != root else x[i:]
+            z = v.edge_label(x) if p != root else StringSlice(x, i)
 
         else:
             # Otherwise, we need to fast scan to find y_node.
             # p can't be the root here, because the root has a
             # suffix link
+            assert p.parent is not None, "p can't be the root."
             pp_sl = p.parent.suffix_link
             assert pp_sl, "Parent's parent must have a suffix link"
 
             # Jumping to pp_sl gets us past a, so now we get y and z
             # (with the special case if p is the root) and then we are
             # ready to scan for y_node
-            y = p.edge_label if p.parent is not root else p.edge_label[1:]
-            z = v.edge_label
+            pel = p.edge_label(x)
+            y = pel if p.parent is not root else pel[1:]
+            z = v.edge_label(x)
 
             # Fast scan to new starting point
-            match tree_fastsearch(pp_sl, y):
-                case Match(y_node, j, _):
-                    pass
-                case _:
-                    assert False, "Fast scan should always find a match"
+            y_res, j, w = tree_fastsearch(pp_sl, x, y)
+            assert j == len(w), "Fast scan should always find a match"
 
-            if len(y_node.edge_label) != j:
+            if len(y_res.edge_label(x)) != j:
                 # We ended the search on an edge, so we can directly
                 # insert the new leaf
-                v = break_edge(i, y_node, j, z)
+                v = break_edge(i, y_res, j, z)
                 p.suffix_link = v.parent
                 continue  # Process next suffix...
+            else:
+                # The result was on a node, and we continue from there
+                # (using two variables make the type checker happier).
+                assert isinstance(y_res, Inner), \
+                    "A mismatch on a node means that it is an inner node."
+                y_node = y_res
 
             # If we landed on a node, then that is p's suffix link
             p.suffix_link = y_node
 
         # If we are here, we need to slow-scan, and we do that by
         # searching from y_node after the remainder of the suffix, z.
-        match tree_search(y_node, z):
-            case Mismatch(n, 0, w):
-                v = Leaf(i, w)
-                n.add_children(v)
-            case Mismatch(n, j, w):
-                v = break_edge(i, n, j, w[j:])
-            case Match(_):
-                # With the sentinel, we should never match completely
-                assert False, "We can't match completely here"
+        n, j, w = tree_search(y_node, x, z)
+        assert j != len(w), "We can't match completely here."
+        if j == 0:
+            # Mismatch on a node...
+            assert isinstance(n, Inner), \
+                "Mismatch on a node must be on an inner node."
+            v = Leaf(w.i, w.j, i)
+            n.add_children(x, v)
+        elif j < len(w):
+            # Mismatch on an edge
+            v = break_edge(i, n, j, w[j:])
 
-    return SuffixTree(root)
+    return SuffixTree(x, root)
 
 
 if __name__ == '__main__':
     x = "missippississippi"
-    st = mccreight_construction(x)
+
+    print("Naive:")
+    st = naive_construction(x)
     for i in st.search("ssi"):
         print(f"ssi found at {x[i:]}")
-    with open("dot.dot", "w") as f:
+    with open("naive-dot.dot", "w") as f:
         print(st.to_dot(), file=f)
     for i in st.root:
         print(x[i:])
+    print()
+
+    print("McCreight:")
+    st = mccreight_construction(x)
+    for i in st.search("ssi"):
+        print(f"ssi found at {x[i:]}")
+    with open("mccreight-dot.dot", "w") as f:
+        print(st.to_dot(), file=f)
+    for i in st.root:
+        print(x[i:])
+    print()
