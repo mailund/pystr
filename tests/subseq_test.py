@@ -38,7 +38,6 @@ def test_int_subseq():
 
     y = underlying[1:6]
     assert x == y
-    assert str(x) == str(y)
     for i in range(len(x)):
         assert x[i] == y[i]
         assert x[i:] == y[i:]

@@ -12,19 +12,12 @@ R = TypeVar('R', contravariant=True)
 
 class Sliceable(Protocol[S]):
     def __len__(self) -> int: ...
-
-    @overload
     def __getitem__(self, i: int) -> S: ...
-    @overload
-    def __getitem__(self, i: slice) -> Sliceable[S]: ...
 
 
 class MutSlicable(Sliceable, Protocol[R]):
     # FIXME: handle when val is not a single value
-    @overload
     def __setitem__(self, i: int, val: R): ...
-    @overload
-    def __setitem__(self, i: slice, val: R): ...
 
 
 # Then the functional stuff...
@@ -77,9 +70,6 @@ class subseq_mixin(Generic[T]):
         assert False, \
             f"Index {idx} wasn't a valid type."  # pragma: no coverage
 
-    def __str__(self) -> str:
-        return str(self.x[self.i:self.j])
-
     def __iter__(self) -> Iterator[T]:
         return (self.x[i] for i in range(self.i, self.j))
 
@@ -127,8 +117,10 @@ class mutsubseq(subseq_mixin[T]):
     @overload
     def __getitem__(self, _: slice) -> mutsubseq[T]: ...
 
+    # The type checker demands an implementation...
     def __getitem__(self, idx):
         return super().__getitem__(idx)
+    del __getitem__  # ...but I just want the inherited one
 
     # FIXME: type overloading
     # FIXME: I haven't handled if the right-hand-side isn't a scalar
@@ -148,5 +140,17 @@ class mutsubseq(subseq_mixin[T]):
                 self.x[self.i + i] = val
 
 
-# Special name for subseq[str]
-substr = subseq[str]
+# Special case for subseq[str]
+class substr(subseq[str]):
+    def __str__(self):
+        return str(self.x[self.i:self.j])
+
+    @overload
+    def __getitem__(self, _: int) -> T: ...
+    @overload
+    def __getitem__(self, _: slice) -> substr: ...
+
+    # The type checker demands an implementation...
+    def __getitem__(self, idx):
+        return super().__getitem__(idx)
+    del __getitem__  # ...but I just want the inherited one
