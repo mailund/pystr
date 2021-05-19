@@ -42,18 +42,3 @@ def bwt_search(x: str, p: str, ctab: CTAB, otab: OTAB) -> tuple[int, int]:
         if L >= R:
             return 0, 0
     return L, R
-
-
-if __name__ == '__main__':
-    from .skew import skew
-    x = 'mississippi'
-    sa = skew(x)
-    for i, j in enumerate(sa):
-        print("{:2d}".format(i), x[j:] + x[:j])
-    print()
-
-    ctab = c_table(x)
-    otab = o_table(x, sa, ctab.keys())
-    L, R = bwt_search(x, "is", ctab, otab)
-    for i in range(L, R):
-        print(sa[i], x[sa[i]:])

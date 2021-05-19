@@ -1,6 +1,7 @@
 from __future__ import annotations
 from collections.abc import Iterator
 from dataclasses import dataclass, field
+import pytest
 from typing import overload, Optional
 
 
@@ -86,11 +87,10 @@ class Node:  # Should be abc ABC, but doesn't work with type checker
     parent: Optional[Inner] = \
         field(default=None, init=False, repr=False)
 
-    def __iter__(self) -> Iterator[int]:
-        pass
-
-    def to_dot(self, res: list[str]) -> list[str]:
-        return []
+    # These methods are only here for the type checker.
+    # They will never be used because we never have Node objects.
+    def __iter__(self) -> Iterator[int]: ...
+    def to_dot(self, res: list[str]) -> list[str]: ...
 
 
 @dataclass
@@ -216,7 +216,7 @@ class SuffixTree:
             return iter(())
 
     def __contains__(self, p: str):
-        n, j, y = tree_search(self.root, substr(p))
+        _, j, y = tree_search(self.root, substr(p))
         return j == len(y)
 
     def to_dot(self) -> str:
@@ -259,7 +259,7 @@ down to the insertion point for each suffix in `s`."""
         elif j < len(y):
             # We had a mismatch on the edge
             break_edge(i, n, j, y[j:])
-        else:
+        else:  # pragma: no cover
             # With the sentinel, we should never match completely
             assert False, "We can't match completely here"
 
@@ -350,27 +350,3 @@ down to the insertion point for each suffix in `s`."""
             v = break_edge(i, n, j, w[j:])
 
     return SuffixTree(root)
-
-
-if __name__ == '__main__':
-    x = "missippississippi"
-
-    print("Naive:")
-    st = naive_st_construction(x)
-    for i in st.search("ssi"):
-        print(f"ssi found at {x[i:]}")
-    with open("naive-dot.dot", "w") as f:
-        print(st.to_dot(), file=f)
-    for i in st.root:
-        print(x[i:])
-    print()
-
-    print("McCreight:")
-    st = mccreight_st_construction(x)
-    for i in st.search("ssi"):
-        print(f"ssi found at {x[i:]}")
-    with open("mccreight-dot.dot", "w") as f:
-        print(st.to_dot(), file=f)
-    for i in st.root:
-        print(x[i:])
-    print()

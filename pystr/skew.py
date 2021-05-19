@@ -163,11 +163,3 @@ def skew(x: str) -> list[int]:
     # of course it might not be. It is a simplification instead of
     # remapping the string.
     return skew_rec([ord(y) for y in x], 256)
-
-
-if __name__ == '__main__':
-    x = "mississippi"
-    sa = skew(x)
-    for j in sa:
-        print(x[j:])
-    print()
