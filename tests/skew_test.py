@@ -1,6 +1,6 @@
 import testsetup
 from helpers import random_string, check_sorted
-from skew import skew
+from pystr import skew
 
 
 def test_skew_sorted():

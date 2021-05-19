@@ -1,8 +1,11 @@
 import testsetup
+
 from helpers import random_string, check_sorted, check_matches
-from suffixtree import SuffixTree
-from suffixtree import naive_st_construction
-from suffixtree import mccreight_st_construction
+
+from pystr.suffixtree import SuffixTree
+from pystr import naive_st_construction
+from pystr import mccreight_st_construction
+
 from typing import Callable
 
 

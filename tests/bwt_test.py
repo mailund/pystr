@@ -1,8 +1,8 @@
-import testsetup
+__import__("testsetup")
 from helpers import check_matches
-from skew import skew
-from bwt import CTAB, OTAB, c_table, o_table, bwt_search
 from collections.abc import Iterator
+from pystr import skew
+from pystr import CTAB, OTAB, c_table, o_table, bwt_search
 
 BWTPreproc = tuple[list[int], CTAB, OTAB]
 

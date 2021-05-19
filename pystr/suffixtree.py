@@ -1,79 +1,8 @@
 from __future__ import annotations
-from collections.abc import Iterator
+from collections.abc import Iterator, Iterable
 from dataclasses import dataclass, field
-import pytest
-from typing import overload, Optional
-
-
-@dataclass(frozen=True)
-class substr:
-    """This is a wrapper around strings that lets me slice in constant time.
-It is helpful in places to be able to write code as if we are manipulating
-strings rather than pairs of indices.
-
-We use substr as edge labels. They are constant space, but we waste a little
-memory by storing a reference to the string in each node. Compared to the
-overhead in representing Python objects, though, it isn't worth the extra
-complexity to remove the string reference.
-"""
-    x: str
-    i: int = 0
-    j: int = -1
-
-    def __post_init__(self) -> None:
-        if self.j == -1:
-            # Hack around frozen to get a default j that depends
-            # on the length of x.
-            object.__setattr__(self, "j", len(self.x))
-
-        assert self.i <= self.j, "Start must come before end."
-        # The legal range for indices is zero to
-        # the length of the string. Notice that this
-        # allows indices one beyond the last character.
-        # That is usually how an end-index matches the
-        # end of the string, but to handle empty strings
-        # we allow it for the start index as well.
-        assert 0 <= self.i <= len(self.x), \
-            "Slices must be within the string's range."
-        assert 0 <= self.j <= len(self.x), \
-            "Slices must be within the string's range."
-
-    # These are needed to inform the type checker about the
-    # two different return types for indexing/slicing.
-    @overload
-    def __getitem__(self, _: int) -> str: ...
-    @overload
-    def __getitem__(self, _: slice) -> substr: ...
-
-    def __getitem__(self, i) -> str | substr:
-        if isinstance(i, slice):
-            start = i.start if i.start is not None else 0
-            stop = i.stop if i.stop is not None else len(self)
-            return substr(self.x, self.i + start, self.i + stop)
-        else:
-            return self.x[self.i + i]
-
-    def __str__(self) -> str:
-        return self.x[self.i:self.j]
-
-    def __iter__(self) -> Iterator[str]:
-        return (self.x[i] for i in range(self.i, self.j))
-
-    def __len__(self) -> int:
-        return self.j - self.i
-
-    def __bool__(self) -> bool:
-        return self.i < self.j
-
-
-def match(x: substr | str, y: substr | str) -> int:
-    """Returns how far along x and y we can match.
-Return index of first mismatch."""
-    i = -1  # Handle special case with empty string
-    for i in range(min(len(x), len(y))):
-        if x[i] != y[i]:
-            return i
-    return i + 1  # matched all the way through
+from typing import Optional
+from .subseq import substr
 
 
 # You don't need separate leaf/inner classes, but you get a little
@@ -83,7 +12,7 @@ Return index of first mismatch."""
 
 @dataclass
 class Node:  # Should be abc ABC, but doesn't work with type checker
-    edge_label: substr
+    edge_label: substr  # Gives me constant time slicing
     parent: Optional[Inner] = \
         field(default=None, init=False, repr=False)
 
@@ -153,6 +82,16 @@ class Leaf(Node):
         yield self.leaf_label
 
 
+def first_mismatch(x: Iterable[str], y: Iterable[str]) -> int:
+    """Returns how far along x and y we can match.
+Return index of first mismatch."""
+    i = -1  # Handle special case with empty string
+    for i, (a, b) in enumerate(zip(x, y)):
+        if a != b:
+            return i
+    return i + 1  # matched all the way through
+
+
 SearchResult = tuple[Node, int, substr]
 # This is the node we last searched on, how far down
 # the edge we got (or zero if we couldn't leave the
@@ -171,7 +110,7 @@ def tree_search(n: Inner, p: substr) -> SearchResult:
             return n, 0, p
 
         child = n.out_child(p)
-        i = match(child.edge_label, p)
+        i = first_mismatch(child.edge_label, p)
         if i == len(p) or i < len(child.edge_label):
             return child, i, p
 
