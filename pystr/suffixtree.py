@@ -1,7 +1,7 @@
 from __future__ import annotations
 from collections.abc import Iterator
 from dataclasses import dataclass, field
-from typing import overload
+from typing import overload, Optional
 
 
 @dataclass(frozen=True)
@@ -83,7 +83,8 @@ Return index of first mismatch."""
 @dataclass
 class Node:  # Should be abc ABC, but doesn't work with type checker
     edge_label: substr
-    parent: Inner | None = field(default=None, init=False, repr=False)
+    parent: Optional[Inner] = \
+        field(default=None, init=False, repr=False)
 
     def __iter__(self) -> Iterator[int]:
         pass
@@ -94,7 +95,7 @@ class Node:  # Should be abc ABC, but doesn't work with type checker
 
 @dataclass
 class Inner(Node):
-    suffix_link: Inner | None = \
+    suffix_link: Optional[Inner] = \
         field(default=None, init=False, repr=False)
     children: dict[str, Node] = \
         field(default_factory=dict, init=False, repr=False)
@@ -237,7 +238,7 @@ with label `label` with edge `z`. Returns the new leaf."""
     return new_leaf
 
 
-def naive_construction(s: str):
+def naive_st_construction(s: str):
     """Construct a suffix tree by searching from the root
 down to the insertion point for each suffix in `s`."""
 
@@ -245,7 +246,10 @@ down to the insertion point for each suffix in `s`."""
     root = Inner(x[0:0])
 
     # Insert suffixes one at a time...
-    for i in range(len(x)):
+    # I leave out the last suffix, the sentinel, since it is
+    # just an artefact of the algorithm and we practically
+    # never want it...
+    for i in range(len(x) - 1):
         n, j, y = tree_search(root, x[i:])
         if j == 0:
             # We couldn't get out of the node
@@ -262,7 +266,7 @@ down to the insertion point for each suffix in `s`."""
     return SuffixTree(root)
 
 
-def mccreight_construction(s: str):
+def mccreight_st_construction(s: str):
     """Construct a suffix tree by searching from the root
 down to the insertion point for each suffix in `s`."""
 
@@ -273,7 +277,10 @@ down to the insertion point for each suffix in `s`."""
     root.suffix_link = root
 
     # Insert suffixes one at a time...
-    for i in range(1, len(x)):
+    # I leave out the last suffix, the sentinel, since it is
+    # just an artefact of the algorithm and we practically
+    # never want it...
+    for i in range(1, len(x) - 1):
         # Idea: split x[i:] into a+y+z where we jump
         # past a, then fast-scan through y, and then
         # slow-scan through z.
@@ -349,7 +356,7 @@ if __name__ == '__main__':
     x = "missippississippi"
 
     print("Naive:")
-    st = naive_construction(x)
+    st = naive_st_construction(x)
     for i in st.search("ssi"):
         print(f"ssi found at {x[i:]}")
     with open("naive-dot.dot", "w") as f:
@@ -359,7 +366,7 @@ if __name__ == '__main__':
     print()
 
     print("McCreight:")
-    st = mccreight_construction(x)
+    st = mccreight_st_construction(x)
     for i in st.search("ssi"):
         print(f"ssi found at {x[i:]}")
     with open("mccreight-dot.dot", "w") as f:

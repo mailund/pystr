@@ -5,8 +5,8 @@ Straightforward implementation of the skew/DC3 algorithm
 
 """
 
-TRIPLET = tuple[int, int, int]
-TRIPLET_DICT = dict[TRIPLET, int]
+SkewTriplet = tuple[int, int, int]
+SkewTripletDict = dict[SkewTriplet, int]
 
 
 def safe_idx(x: list[int], i: int) -> int:
@@ -54,12 +54,12 @@ def radix3(x: list[int], asize: int, idx: list[int]) -> list[int]:
     return bucket_sort(x, asize, idx)
 
 
-def triplet(x: list[int], i: int) -> TRIPLET:
+def triplet(x: list[int], i: int) -> SkewTriplet:
     "Extract the triplet (x[i],x[i+1],x[i+2])."
     return (safe_idx(x, i), safe_idx(x, i + 1), safe_idx(x, i + 2))
 
 
-def collect_alphabet(x: list[int], idx: list[int]) -> TRIPLET_DICT:
+def collect_alphabet(x: list[int], idx: list[int]) -> SkewTripletDict:
     "Map the triplets starting at idx to a new alphabet."
     # I use 0 for the terminal sentinel and 1 for the
     # separator, so I start the alphabet at 2, thus the + 2 later.
@@ -67,7 +67,7 @@ def collect_alphabet(x: list[int], idx: list[int]) -> TRIPLET_DICT:
     # it more efficiently by looking at the previous triplet in the
     # sorted SA12. It won't affect the asymptotic running time,
     # though.
-    alpha: TRIPLET_DICT = {}
+    alpha: SkewTripletDict = {}
     for i in idx:
         trip = triplet(x, i)
         if trip not in alpha:
@@ -106,7 +106,7 @@ def merge(x: list[int], SA12: list[int], SA3: list[int]) -> list[int]:
     return SA
 
 
-def build_u(x: list[int], alpha: TRIPLET_DICT) -> list[int]:
+def build_u(x: list[int], alpha: SkewTripletDict) -> list[int]:
     "Construct u string, using 1 as central sentinel."
     # By putting the i % 3 == 1 indices first, we know that the central
     # sentinel will always be at len(u) // 2.
@@ -166,7 +166,8 @@ def skew(x: str) -> list[int]:
 
 
 if __name__ == '__main__':
-    x = 'mississippi'
+    x = "mississippi"
     sa = skew(x)
-    for i in sa:
-        print(i, x[i:])
+    for j in sa:
+        print(x[j:])
+    print()
