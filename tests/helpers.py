@@ -1,6 +1,7 @@
 import random
 import string
 from collections.abc import Iterator
+from subseq import substr
 
 
 def random_string(n: int) -> str:
@@ -9,10 +10,10 @@ def random_string(n: int) -> str:
 
 def check_sorted(x: str, sa: list[int]):
     assert len(x) > 0 and len(x) == len(sa)
-    # FIXME: Use smarter slices here...
+    y = substr(x)  # For faster comparison (faster than slicing)
     for i in range(len(sa) - 1):
         j, k = sa[i], sa[i+1]
-        assert x[j:] < x[k:], \
+        assert y[j:] < y[k:], \
             f"String {x}, suffix x[{j}:] = {x[j:]} >= x[{k}:] = {x[k:]}"
 
 

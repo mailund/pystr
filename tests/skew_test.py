@@ -1,4 +1,3 @@
-import testsetup
 from helpers import random_string, check_sorted
 from pystr import skew
 

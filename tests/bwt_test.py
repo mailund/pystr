@@ -1,4 +1,3 @@
-__import__("testsetup")
 from helpers import check_matches
 from collections.abc import Iterator
 from pystr import skew

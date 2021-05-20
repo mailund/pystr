@@ -1,5 +1,3 @@
-import testsetup
-
 from helpers import random_string, check_sorted, check_matches
 
 from pystr.suffixtree import SuffixTree

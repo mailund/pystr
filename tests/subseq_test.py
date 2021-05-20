@@ -1,5 +1,4 @@
-__import__("testsetup")
-from pystr.subseq import subseq, mutsubseq, substr
+from pystr.subseq import subseq, mutsubseq, substr, isseq, imseq
 
 
 def test_substr():
@@ -8,19 +7,19 @@ def test_substr():
     assert substr(underlying, 1) == underlying[1:]
     assert substr(underlying, 1, 5) == underlying[1:5]
 
-    x = substr(underlying, 1, 6)
+    x: substr = substr(underlying, 1, 6)
     assert x == underlying[1:6]
     for i, a in enumerate(x):
         assert underlying[1 + i] == a
 
-    y = underlying[1:6]
+    y: str = underlying[1:6]
     assert x == y
     assert str(x) == str(y)
     for i in range(len(x)):
         assert x[i] == y[i]
         assert x[i:] == y[i:]
 
-    z = substr(underlying)
+    z: substr = substr(underlying)
     assert z[:] == underlying
     assert z[:] == z
 
@@ -31,25 +30,25 @@ def test_int_subseq():
     assert subseq(underlying, 1) == underlying[1:]
     assert subseq(underlying, 1, 5) == underlying[1:5]
 
-    x = subseq(underlying, 1, 6)
+    x: subseq[int] = subseq(underlying, 1, 6)
     assert x == underlying[1:6]
     for i, a in enumerate(x):
         assert underlying[1 + i] == a
 
-    y = underlying[1:6]
+    y: subseq[int] = underlying[1:6]
     assert x == y
     for i in range(len(x)):
         assert x[i] == y[i]
         assert x[i:] == y[i:]
 
-    z = subseq(underlying)
+    z: subseq[int] = subseq(underlying)
     assert z[:] == underlying
     assert z[:] == z
 
 
 def test_mutable():
     underlying = [2, 1, 4, 4, 1, 4, 4, 1, 3, 3, 1, 0]
-    x = mutsubseq(underlying, 1)
+    x: mutsubseq[int] = mutsubseq(underlying, 1)
     x[1] = 42
     assert x[1] == 42
     y = x[2:]
@@ -57,6 +56,22 @@ def test_mutable():
     assert y[2] == x[4] == underlying[5]
     x[1:5] = 17
     assert x[1:5] == [17, 17, 17, 17]
+
+
+def test_compare():
+    x, y, z = isseq([1, 2, 3]), isseq([1, 2, 3, 4]), isseq([1, 3])
+    assert x < y and y > x and not y < x
+    assert x < z and z > x and not z < x
+    assert y < z and z > y and not z < y
+
+
+def test_assigments():
+    x = [1, 2, 3, 4]
+    ss: imseq = imseq(x)
+    assert x == ss
+    ss[:] = -1
+    assert ss == [-1, -1, -1, -1]
+    assert x == [-1, -1, -1, -1]
 
 
 if __name__ == '__main__':

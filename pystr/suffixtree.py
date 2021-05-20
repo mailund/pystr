@@ -2,6 +2,7 @@ from __future__ import annotations
 from collections.abc import Iterator, Iterable
 from dataclasses import dataclass, field
 from typing import Optional
+
 from .subseq import substr
 
 
