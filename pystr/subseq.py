@@ -24,24 +24,32 @@ class SizedIterable(Sized, Iterable[T]):
 
 
 # Then the functional stuff...
-class comp_mixin(SizedIterable, Generic[T]):
-    # Technically, T must be comparable, but I'm not sure
-    # how I constrain int to be that...
-    def __lt__(self, other: SizedIterable[T]):
-        for a, b in zip(self, other):
-            if a < b:
-                return True
-            if a > b:
-                return False
-        return len(self) < len(other)
-
-
-class subseq_mixin(Generic[T]):
-
-    # These will be set in the subclass.
+class base_ops_mixin(Generic[T]):
     x: Subable[T]
-    i: int = 0
-    j: int = -1
+    i: int
+    j: int
+
+    def __iter__(self) -> Iterator[T]:
+        return (self.x[i] for i in range(self.i, self.j))
+
+    def __len__(self) -> int:
+        return self.j - self.i
+
+    def __bool__(self) -> bool:
+        return self.i < self.j
+
+    def __str__(self):
+        return str(self.x[self.i:self.j])
+
+    def __eq__(self, other) -> bool:
+        return len(self) == len(other) and \
+            all(a == b for a, b in zip(self, other))
+
+
+class init_check_mixin(Generic[T]):
+    x: Subable[T]
+    i: int
+    j: int
 
     def __post_init__(self) -> None:
         if self.j == -1:
@@ -60,6 +68,12 @@ class subseq_mixin(Generic[T]):
             "Slices must be within the sequence's range."
         assert 0 <= self.j <= len(self.x), \
             "Slices must be within the sequence's range."
+
+
+class get_mixin(Generic[T]):
+    x: Subable[T]
+    i: int
+    j: int
 
     # Pattern matching would be the way to implement this, but
     # mypy still crashes with them. I'll rewrite this when it catches
@@ -85,25 +99,50 @@ class subseq_mixin(Generic[T]):
         assert False, \
             f"Index {idx} wasn't a valid type."  # pragma: no coverage
 
-    def __iter__(self) -> Iterator[T]:
-        return (self.x[i] for i in range(self.i, self.j))
 
-    def __len__(self) -> int:
-        return self.j - self.i
+class set_mixin(Generic[T]):
+    x: Subable[T]  # Is a MutSubable, but we need this for type checker
+    i: int
+    j: int
 
-    def __bool__(self) -> bool:
-        return self.i < self.j
+    # This is just for the type system... it wants a len() method.
+    # If you put base_ops_mixin before set_mixin in the classes,
+    # you will never see this one
+    def __len__(self):
+        return super().__len__()
 
-    def __str__(self):
-        return str(self.x[self.i:self.j])
+    # FIXME: I haven't handled if the right-hand-side isn't a scalar
+    def __setitem__(self, idx: int | slice, val: T):
+        # FIXME: The casts are only here because the type-checker is
+        # incredibly stupid. There are ways around it, when I get the time
+        if type(idx) == int:
+            cast(MutSubable[T], self.x)[self.i + cast(int, idx)] = val
+        else:
+            # I don't handle steps
+            assert type(idx) == slice and cast(slice, idx).step is None
+            start = cast(slice, idx).start \
+                if cast(slice, idx).start is not None else 0
+            stop = cast(slice, idx).stop \
+                if cast(slice, idx).stop is not None else len(self)
+            for i in range(start, stop):
+                cast(MutSubable[T], self.x)[self.i + i] = val
 
-    def __eq__(self, other) -> bool:
-        return len(self) == len(other) and \
-            all(a == b for a, b in zip(self, other))
+
+class comp_mixin(SizedIterable, Generic[T]):
+    # Technically, T must be comparable, but I'm not sure
+    # how I constrain int to be that...
+    def __lt__(self, other: SizedIterable[T]):
+        for a, b in zip(self, other):
+            if a < b:
+                return True
+            if a > b:
+                return False
+        return len(self) < len(other)
 
 
+# Making the classes concrete...
 @dataclass(frozen=True, eq=False)
-class subseq(subseq_mixin[T]):
+class subseq(init_check_mixin[T], base_ops_mixin[T], get_mixin[T]):
     """This is a wrapper around lists and strings that lets us slice them
 without copying them.
 """
@@ -123,7 +162,8 @@ without copying them.
 
 
 @dataclass(frozen=True, eq=False)
-class mutsubseq(subseq_mixin[T]):
+class mutsubseq(init_check_mixin[T], base_ops_mixin[T],
+                get_mixin[T], set_mixin[T]):
     x: MutSubable[T]
     i: int = 0
     j: int = -1
@@ -138,23 +178,6 @@ class mutsubseq(subseq_mixin[T]):
     # The type checker demands an implementation...
     def __getitem__(self, idx): ...
     del __getitem__  # ...but I just want the inherited one
-
-    # FIXME: type overloading
-    # FIXME: I haven't handled if the right-hand-side isn't a scalar
-    def __setitem__(self, idx: int | slice, val: T):
-        # FIXME: The casts are only here because the type-checker is
-        # incredibly stupid. There are ways around it, when I get the time
-        if type(idx) == int:
-            self.x[self.i + cast(int, idx)] = val
-        else:
-            # I don't handle steps
-            assert type(idx) == slice and cast(slice, idx).step is None
-            start = cast(slice, idx).start \
-                if cast(slice, idx).start is not None else 0
-            stop = cast(slice, idx).stop \
-                if cast(slice, idx).stop is not None else len(self)
-            for i in range(start, stop):
-                self.x[self.i + i] = val
 
 
 # Frequently used subsequences... Unfortunately, I need the overloading
