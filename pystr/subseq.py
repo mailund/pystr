@@ -12,15 +12,11 @@ R = TypeVar('R', contravariant=True)
 
 class Subable(Protocol[S]):
     def __len__(self) -> int: ...
-    def __getitem__(self, i: int) -> S: ...
+    def __getitem__(self, i: int | slice) -> S: ...
 
 
 class MutSubable(Subable, Protocol[R]):
     def __setitem__(self, i: int | slice, val: R): ...
-
-
-class LT(Protocol[R]):
-    def __lt__(self, other: R) -> bool: ...
 
 
 class SizedIterable(Sized, Iterable[T]):
@@ -29,7 +25,7 @@ class SizedIterable(Sized, Iterable[T]):
 
 # Then the functional stuff...
 class comp_mixin(SizedIterable, Generic[T]):
-    # FIXME: Technically, T must be comparable, but I'm not sure
+    # Technically, T must be comparable, but I'm not sure
     # how I constrain int to be that...
     def __lt__(self, other: SizedIterable[T]):
         for a, b in zip(self, other):
@@ -38,15 +34,6 @@ class comp_mixin(SizedIterable, Generic[T]):
             if a > b:
                 return False
         return len(self) < len(other)
-
-
-# FIXME: I would like to require that I can slice x, but I don't
-# know how... I don't know of the checker checks it, and I don't know
-# how to handle giving it a type that will clash with other
-# mixins.
-class str_mixin(Generic[T]):
-    def __str__(self):
-        return str(self.x[self.i:self.j])
 
 
 class subseq_mixin(Generic[T]):
@@ -107,6 +94,9 @@ class subseq_mixin(Generic[T]):
     def __bool__(self) -> bool:
         return self.i < self.j
 
+    def __str__(self):
+        return str(self.x[self.i:self.j])
+
     def __eq__(self, other) -> bool:
         return len(self) == len(other) and \
             all(a == b for a, b in zip(self, other))
@@ -152,13 +142,17 @@ class mutsubseq(subseq_mixin[T]):
     # FIXME: type overloading
     # FIXME: I haven't handled if the right-hand-side isn't a scalar
     def __setitem__(self, idx: int | slice, val: T):
+        # FIXME: The casts are only here because the type-checker is
+        # incredibly stupid. There are ways around it, when I get the time
         if type(idx) == int:
-            self.x[self.i + idx] = val
+            self.x[self.i + cast(int, idx)] = val
         else:
             # I don't handle steps
-            assert type(idx) == slice and idx.step is None
-            start = idx.start if idx.start is not None else 0
-            stop = idx.stop if idx.stop is not None else len(self)
+            assert type(idx) == slice and cast(slice, idx).step is None
+            start = cast(slice, idx).start \
+                if cast(slice, idx).start is not None else 0
+            stop = cast(slice, idx).stop \
+                if cast(slice, idx).stop is not None else len(self)
             for i in range(start, stop):
                 self.x[self.i + i] = val
 
@@ -168,7 +162,7 @@ class mutsubseq(subseq_mixin[T]):
 # back when we index on a slice, and I cannot automatically generate them
 # since the type checker is static... so I have to repeat the same
 # code for that.
-class substr(subseq[str], comp_mixin[str], str_mixin[str]):
+class substr(subseq[str], comp_mixin[str]):
     @overload
     def __getitem__(self, _: int) -> str: ...
     @overload
@@ -178,7 +172,7 @@ class substr(subseq[str], comp_mixin[str], str_mixin[str]):
     del __getitem__  # ...but I just want the inherited one
 
 
-class isseq(subseq[int], comp_mixin[int], str_mixin[int]):
+class isseq(subseq[int], comp_mixin[int]):
     @overload
     def __getitem__(self, _: int) -> int: ...
     @overload
@@ -188,7 +182,7 @@ class isseq(subseq[int], comp_mixin[int], str_mixin[int]):
     del __getitem__  # ...but I just want the inherited one
 
 
-class imseq(mutsubseq[int], comp_mixin[int], str_mixin[int]):
+class imseq(mutsubseq[int], comp_mixin[int]):
     @overload
     def __getitem__(self, _: int) -> int: ...
     @overload
