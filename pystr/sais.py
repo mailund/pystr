@@ -1,5 +1,6 @@
 from pystr.subseq import isseq, imseq
 import BitVector as bv
+from typing import cast
 
 
 UNDEFINED = -1  # Undefined val in SA
@@ -21,7 +22,7 @@ def classify_SL(is_S: bv.BitVector, x: isseq) -> None:
     is_S[last] = True
     for i in reversed(range(last)):
         is_S[i] = x[i] < x[i+1] or (x[i] == x[i+1] and is_S[i+1])
-        
+
 
 def is_LMS(is_S: bv.BitVector, i: int) -> bool:
     return False if i == 0 else is_S[i] and not is_S[i - 1]
@@ -107,7 +108,8 @@ def equal_LMS(x: isseq, is_S: bv.BitVector, i: int, j: int) -> bool:
         k += 1
 
 
-def reduce_LMS(x: isseq, sa: imseq, is_S: bv.BitVector) -> tuple[imseq, imseq, int]:
+def reduce_LMS(x: isseq, sa: imseq, is_S: bv.BitVector) \
+        -> tuple[imseq, imseq, int]:
     # Compact all the LMS indices in the first
     # part of the suffix array...
     k = 0
@@ -184,7 +186,7 @@ def sais_rec(x: isseq, sa: imseq, asize: int, is_S: bv.BitVector):
 
         # Save memory in the recursive call
         del buckets
-        sais_rec(red, red_sa, red_asize, is_S)
+        sais_rec(cast(isseq, red), red_sa, red_asize, is_S)
         # restore state...
         classify_SL(is_S, x)
         buckets = Buckets(x, asize)
@@ -200,11 +202,3 @@ def sais(x: str) -> list[int]:
     is_S = bv.BitVector(size=len(s))
     sais_rec(s, imseq(sa), asize, is_S)
     return sa[1:]
-
-
-if __name__ == '__main__':
-    x = "mississippi"
-    y = map_string(x)
-    is_S = bv.BitVector(size = len(y))
-    classify_SL(is_S, y)
-    print(is_S)

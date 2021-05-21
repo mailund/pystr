@@ -42,7 +42,7 @@ def test_is_LMS():
     assert len(x) == len("mississippi") + 1
     is_S = [False] * len(x)
     assert len(is_S) == len(x)
-    classify_SL(is_S, x) # FIXME: don't .x
+    classify_SL(is_S, x)
     # mississippi$
     # LSLLSLLSLLLS
     # -*--*--*---*
@@ -90,7 +90,7 @@ def test_adccacacbbccdccdbccb():
 
 def test_sais_sorted():
     for _ in range(10):
-        x = random_string(20, "abcd")  #random_string(1000)
+        x = random_string(1000)
         print(x)
         sa = sais(x)
         check_sorted(x, sa)
