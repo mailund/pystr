@@ -1,7 +1,7 @@
 from sais import map_string, classify_SL, is_LMS
 from sais import sais
-import BitVector as bv
 from helpers import random_string, check_sorted
+import BitVector as bv
 
 
 def test_remap():
@@ -40,9 +40,9 @@ def test_classify():
 def test_is_LMS():
     x, _ = map_string("mississippi")
     assert len(x) == len("mississippi") + 1
-    is_S = bv.BitVector(size=len(x))
+    is_S = [False] * len(x)
     assert len(is_S) == len(x)
-    classify_SL(is_S, x)
+    classify_SL(is_S, x) # FIXME: don't .x
     # mississippi$
     # LSLLSLLSLLLS
     # -*--*--*---*
@@ -58,6 +58,15 @@ def test_is_LMS():
     for i, _ in enumerate(expected):
         assert is_LMS(is_S, i) == expected[i]
 
+    for _ in range(10):
+        x = random_string(20, "abcd")
+        y, _ = map_string(x)
+        is_S = [False] * len(y)
+        classify_SL(is_S, y)
+
+        assert is_S[len(y) - 1]
+        assert is_LMS(is_S, len(y) - 1)
+
 
 def test_base_case():
     assert sais("abc") == [0, 1, 2]
@@ -72,9 +81,17 @@ def test_mississippi():
     check_sorted(x, sa)
 
 
+def test_adccacacbbccdccdbccb():
+    x = "adccacacbbccdccdbccb"
+    sa = sais(x)
+    assert len(x) == len(sa)
+    check_sorted(x, sa)
+
+
 def test_sais_sorted():
     for _ in range(10):
         x = random_string(20, "abcd")  #random_string(1000)
+        print(x)
         sa = sais(x)
         check_sorted(x, sa)
 
