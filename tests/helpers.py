@@ -4,8 +4,8 @@ from collections.abc import Iterator
 from subseq import substr
 
 
-def random_string(n: int) -> str:
-    return ''.join(random.choices(string.ascii_uppercase, k=n))
+def random_string(n: int, alpha=string.ascii_uppercase) -> str:
+    return ''.join(random.choices(alpha, k=n))
 
 
 def check_sorted(x: str, sa: list[int]):
