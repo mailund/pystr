@@ -1,7 +1,7 @@
-from sais import map_string, classify_SL, is_LMS
-from sais import sais
+from pystr.sais import map_string, classify_SL, is_LMS
+from pystr.sais import sais
+from pystr.bv import BitVector
 from helpers import random_string, check_sorted
-from bv import BitVector
 
 
 def test_remap():

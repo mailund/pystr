@@ -1,6 +1,7 @@
-from pystr.subseq import isseq, imseq, mutsubseq
-from bv import BitVector
 from typing import cast, Optional, Iterable, Callable, TypeVar
+from itertools import count
+from .subseq import isseq, imseq, mutsubseq
+from .bv import BitVector
 
 
 T = TypeVar('T')
@@ -73,18 +74,18 @@ def bucket_LMS(x: isseq, sa: imseq, buckets: Buckets, is_S: BitVector):
 def induce_L(x: isseq, sa: imseq, buckets: Buckets, is_S: BitVector):
     buckets.calc_fronts()
     for i in range(len(x)):
-        if sa[i] == 0 or sa[i] == UNDEFINED or is_S[sa[i]-1]:
-            continue
         j = sa[i] - 1
+        if sa[i] == 0 or sa[i] == UNDEFINED: continue # noqa: 701
+        if is_S[j]:                          continue # noqa: 701
         buckets.insert_front(sa, x[j], j)
 
 
 def induce_S(x: isseq, sa: imseq, buckets: Buckets, is_S: BitVector):
     buckets.calc_ends()
     for i in reversed(range(len(x))):
-        if sa[i] == 0 or not is_S[sa[i]-1]:
-            continue
         j = sa[i] - 1
+        if sa[i] == 0:  continue # noqa: 701
+        if not is_S[j]: continue # noqa: 701
         buckets.insert_end(sa, x[j], j)
 
 
@@ -92,15 +93,17 @@ def equal_LMS(x: isseq, is_S: BitVector, i: int, j: int) -> bool:
     if i == j:                      return True   # noqa: 701
     if i == len(x) or j == len(x):  return False  # noqa: 701
 
-    k = 0
-    while True:
+    for k in count():
         iLMS = is_LMS(is_S, i + k)
         jLMS = is_LMS(is_S, j + k)
         if k > 0 and iLMS and jLMS:
             return True
         if iLMS != jLMS or x[i+k] != x[j+k]:
             return False
-        k += 1
+
+    # This assert is only hear to help the linter...
+    # It doesn't understand that count() never terminates
+    assert False, "We only leave the loop with a return."
 
 
 # FIXME: this probably should go to a helper file...
@@ -108,7 +111,7 @@ def compact_seq(x: mutsubseq[T], p: Callable[[T], bool],
                 y: Optional[Iterable[T]] = None) -> int:
     """Compacts elements in y satisfying p into x.
 If y is None, do it from x to x."""
-    y = y if y is not None else iter(x)
+    y = y if y is not None else x
     k = 0
     for i in y:
         if p(i):

@@ -1,7 +1,7 @@
 import random
 import string
 from collections.abc import Iterator
-from subseq import substr
+from pystr.subseq import substr
 
 
 def random_string(n: int, alpha=string.ascii_uppercase) -> str:

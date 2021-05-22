@@ -1,4 +1,4 @@
-from bv import BitVector
+from pystr.bv import BitVector
 
 
 def test_v():
