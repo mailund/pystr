@@ -1,7 +1,7 @@
 from sais import map_string, classify_SL, is_LMS
 from sais import sais
 from helpers import random_string, check_sorted
-import BitVector as bv
+from bv import BitVector
 
 
 def test_remap():
@@ -22,7 +22,7 @@ def test_classify():
     x, _ = map_string("mississippi")
     assert len(x) == len("mississippi") + 1
 
-    is_S = bv.BitVector(size=len(x))
+    is_S = BitVector(size=len(x))
     assert len(is_S) == len(x)
 
     classify_SL(is_S, x)
