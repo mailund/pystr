@@ -38,9 +38,9 @@ without copying them.
         # end of the string, but to handle empty strings
         # we allow it for the start index as well.
         assert 0 <= self.i <= len(self.x), \
-            "Slices must be within the sequence's range."
+            "Indices must be within the sequence's range."
         assert 0 <= self.j <= len(self.x), \
-            "Slices must be within the sequence's range."
+            "Indices must be within the sequence's range."
 
     def __iter__(self) -> Iterator[T]:
         return (self.x[i] for i in range(self.i, self.j))
@@ -59,9 +59,9 @@ without copying them.
             all(a == b for a, b in zip(self, other))
 
     @overload
-    def __getitem__(self: S, _: int) -> T: ...
+    def __getitem__(self: S, idx: int) -> T: ...
     @overload
-    def __getitem__(self: S, _: slice) -> S: ...
+    def __getitem__(self: S, idx: slice) -> S: ...
 
     def __getitem__(self: S, idx: int | slice) -> T | S:
         if isinstance(idx, int):
@@ -77,13 +77,12 @@ without copying them.
             if i is None and j is not None:
                 return self.__class__(self.x, self.i, self.i + j)
             else:
-                return self.__class__(self.x,
-                                      self.i + cast(int, i),
-                                      self.i + cast(int, j))
+                assert i is not None and j is not None  # for the type checker
+                return self.__class__(self.x, self.i + i, self.i + j)
 
 
 @dataclass(frozen=True, eq=False)
-class mutsubseq(subseq[T]):
+class msubseq(subseq[T]):
     x: MutableSequence[T]
     i: int = 0
     j: int = -1
@@ -117,4 +116,4 @@ class comp_mixin(SizedIterable, Generic[T]):
 # to an immutable.
 class substr(subseq[str],   comp_mixin[str]): ... # noqal
 class isseq(subseq[int],    comp_mixin[int]): ... # noqal
-class imseq(mutsubseq[int], isseq):           ... # noqal
+class misseq(msubseq[int],  isseq):           ... # noqal

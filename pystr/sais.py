@@ -1,6 +1,6 @@
 from typing import Optional, Iterable, Callable, TypeVar
 from itertools import count
-from .subseq import isseq, imseq, mutsubseq
+from .subseq import isseq, misseq, msubseq
 from .bv import BitVector
 
 
@@ -34,59 +34,63 @@ def is_LMS(is_S: BitVector, i: int) -> bool:
 
 class Buckets:
     buckets: list[int]
-    fronts: list[int]
 
     def __init__(self, x: isseq, asize: int):
         self.buckets = [0] * asize
-        self.fronts = [0] * asize
         for a in x:
             self.buckets[a] += 1
 
-    def calc_fronts(self):
+    def calc_fronts(self) -> Callable[[int], int]:
+        fronts = [0] * len(self.buckets)
         s = 0
         for i, b in enumerate(self.buckets):
-            self.fronts[i] = s
+            fronts[i] = s
             s += b
 
-    def calc_ends(self):
+        def next_bucket(bucket: int) -> int:
+            fronts[bucket] += 1
+            return fronts[bucket] - 1
+
+        return next_bucket
+
+    def calc_ends(self) -> Callable[[int], int]:
+        ends = [0] * len(self.buckets)
         s = 0
         for i, b in enumerate(self.buckets):
             s += b
-            self.fronts[i] = s
+            ends[i] = s
 
-    def insert_front(self, out: imseq, bucket: int, val: int):
-        out[self.fronts[bucket]] = val
-        self.fronts[bucket] += 1
+        def next_bucket(bucket: int) -> int:
+            ends[bucket] -= 1
+            return ends[bucket]
 
-    def insert_end(self, out: imseq, bucket: int, val: int):
-        self.fronts[bucket] -= 1
-        out[self.fronts[bucket]] = val
+        return next_bucket
 
 
-def bucket_LMS(x: isseq, sa: imseq, buckets: Buckets, is_S: BitVector):
-    buckets.calc_ends()
+def bucket_LMS(x: isseq, sa: misseq, buckets: Buckets, is_S: BitVector):
+    next_end = buckets.calc_ends()
     sa[:] = UNDEFINED
     for i in range(len(x)):
         if is_LMS(is_S, i):
-            buckets.insert_end(sa, x[i], i)
+            sa[next_end(x[i])] = i
 
 
-def induce_L(x: isseq, sa: imseq, buckets: Buckets, is_S: BitVector):
-    buckets.calc_fronts()
+def induce_L(x: isseq, sa: misseq, buckets: Buckets, is_S: BitVector):
+    next_front = buckets.calc_fronts()
     for i in range(len(x)):
         j = sa[i] - 1
         if sa[i] == 0 or sa[i] == UNDEFINED: continue # noqa: 701
         if is_S[j]:                          continue # noqa: 701
-        buckets.insert_front(sa, x[j], j)
+        sa[next_front(x[j])] = j
 
 
-def induce_S(x: isseq, sa: imseq, buckets: Buckets, is_S: BitVector):
-    buckets.calc_ends()
+def induce_S(x: isseq, sa: misseq, buckets: Buckets, is_S: BitVector):
+    next_end = buckets.calc_ends()
     for i in reversed(range(len(x))):
         j = sa[i] - 1
         if sa[i] == 0:  continue # noqa: 701
         if not is_S[j]: continue # noqa: 701
-        buckets.insert_end(sa, x[j], j)
+        sa[next_end(x[j])] = j
 
 
 def equal_LMS(x: isseq, is_S: BitVector, i: int, j: int) -> bool:
@@ -107,7 +111,7 @@ def equal_LMS(x: isseq, is_S: BitVector, i: int, j: int) -> bool:
 
 
 # FIXME: this probably should go to a helper file...
-def compact_seq(x: mutsubseq[T],
+def compact_seq(x: msubseq[T],
                 p: Callable[[T], bool],
                 y: Optional[Iterable[T]] = None) -> int:
     """Compacts elements in y satisfying p into x.
@@ -121,8 +125,8 @@ If y is None, do it from x to x."""
     return k
 
 
-def reduce_LMS(x: isseq, sa: imseq, is_S: BitVector) \
-        -> tuple[imseq, imseq, int]:
+def reduce_LMS(x: isseq, sa: misseq, is_S: BitVector) \
+        -> tuple[misseq, misseq, int]:
     # Compact all the LMS indices in the first
     # part of the suffix array...
     k = compact_seq(sa, lambda j: is_LMS(is_S, j))
@@ -144,8 +148,8 @@ def reduce_LMS(x: isseq, sa: imseq, is_S: BitVector) \
     return buffer[:k], compact, letter + 1
 
 
-def reverse_reduction(x: isseq, sa: imseq,
-                      offsets: imseq, red_sa: imseq,
+def reverse_reduction(x: isseq, sa: misseq,
+                      offsets: misseq, red_sa: misseq,
                       buckets: Buckets,
                       is_S: BitVector):
 
@@ -161,13 +165,13 @@ def reverse_reduction(x: isseq, sa: imseq,
     # Mark the sa after the LMS indices as undefined
     sa[len(red_sa):] = UNDEFINED
 
-    buckets.calc_ends()
+    next_end = buckets.calc_ends()
     for i in reversed(range(len(red_sa))):
         j, red_sa[i] = red_sa[i], UNDEFINED
-        buckets.insert_end(sa, x[j], j)
+        sa[next_end(x[j])] = j
 
 
-def sais_rec(x: isseq, sa: imseq, asize: int, is_S: BitVector):
+def sais_rec(x: isseq, sa: misseq, asize: int, is_S: BitVector):
     if len(x) == asize:
         # base case...
         for i, a in enumerate(x):
@@ -198,5 +202,5 @@ def sais(x: str) -> list[int]:
     s, asize = map_string(x)
     sa = [0] * len(s)
     is_S = BitVector(size=len(s))
-    sais_rec(s, imseq(sa), asize, is_S)
+    sais_rec(s, misseq(sa), asize, is_S)
     return sa[1:]

@@ -1,4 +1,4 @@
-from pystr.subseq import subseq, mutsubseq, substr, isseq, imseq
+from pystr.subseq import subseq, msubseq, substr, isseq, misseq
 
 
 def test_substr():
@@ -48,7 +48,7 @@ def test_int_subseq():
 
 def test_mutable():
     underlying = [2, 1, 4, 4, 1, 4, 4, 1, 3, 3, 1, 0]
-    x: mutsubseq[int] = mutsubseq(underlying, 1)
+    x: msubseq[int] = msubseq(underlying, 1)
     x[1] = 42
     assert x[1] == 42
     y = x[2:]
@@ -67,7 +67,7 @@ def test_compare():
 
 def test_assigments():
     x = [1, 2, 3, 4]
-    ss: imseq = imseq(x)
+    ss: misseq = misseq(x)
     assert x == ss
     ss[:] = -1
     assert ss == [-1, -1, -1, -1]
