@@ -100,7 +100,7 @@ def equal_LMS(x: subseq[int], is_S: BitVector, i: int, j: int) -> bool:
     if i == j:                      return True   # noqa: 701
     if i == len(x) or j == len(x):  return False  # noqa: 701
 
-    for k in count():
+    for k in count():  # k goes from 0 to infinity
         iLMS = is_LMS(is_S, i + k)
         jLMS = is_LMS(is_S, j + k)
         if k > 0 and iLMS and jLMS:
@@ -109,11 +109,10 @@ def equal_LMS(x: subseq[int], is_S: BitVector, i: int, j: int) -> bool:
             return False
 
     # This assert is only hear to help the linter...
-    # It doesn't understand that count() never terminates
+    # (checker doesn't understand infinite generators yet)
     assert False, "We only leave the loop with a return."
 
 
-# FIXME: this probably should go to a helper file...
 def compact_seq(x: msubseq[T],
                 p: Callable[[T], bool],
                 y: Optional[Iterable[T]] = None) -> int:
