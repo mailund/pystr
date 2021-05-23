@@ -1,4 +1,4 @@
-from typing import cast, Optional, Iterable, Callable, TypeVar
+from typing import Optional, Iterable, Callable, TypeVar
 from itertools import count
 from .subseq import isseq, imseq, mutsubseq
 from .bv import BitVector
@@ -107,7 +107,8 @@ def equal_LMS(x: isseq, is_S: BitVector, i: int, j: int) -> bool:
 
 
 # FIXME: this probably should go to a helper file...
-def compact_seq(x: mutsubseq[T], p: Callable[[T], bool],
+def compact_seq(x: mutsubseq[T],
+                p: Callable[[T], bool],
                 y: Optional[Iterable[T]] = None) -> int:
     """Compacts elements in y satisfying p into x.
 If y is None, do it from x to x."""
@@ -124,7 +125,7 @@ def reduce_LMS(x: isseq, sa: imseq, is_S: BitVector) \
         -> tuple[imseq, imseq, int]:
     # Compact all the LMS indices in the first
     # part of the suffix array...
-    k = compact_seq(sa, lambda i: is_LMS(is_S, i))
+    k = compact_seq(sa, lambda j: is_LMS(is_S, j))
 
     # Create the alphabet and write the translation
     # into the buffer in the right order
@@ -183,7 +184,7 @@ def sais_rec(x: isseq, sa: imseq, asize: int, is_S: BitVector):
         red, red_sa, red_asize = reduce_LMS(x, sa, is_S)
 
         del buckets  # Save memory in the recursive call
-        sais_rec(cast(isseq, red), red_sa, red_asize, is_S)
+        sais_rec(red, red_sa, red_asize, is_S)
         # restore state...
         classify_SL(is_S, x)
         buckets = Buckets(x, asize)
