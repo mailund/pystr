@@ -1,62 +1,63 @@
 from __future__ import annotations
-from dataclasses import dataclass
-from collections.abc import Iterable, Iterator
+from collections.abc import Iterator
 from typing import Generic, TypeVar, Optional
-from typing import Sized, Sequence, MutableSequence
-from typing import overload, cast
+from typing import Sequence, MutableSequence
+from typing import overload
 
 # Type specifications...
 T = TypeVar('T')
 S = TypeVar('S', bound="subseq")
 
 
-class SizedIterable(Sized, Iterable[T]):
-    ...
-
-
 # Then the functional stuff...
-@dataclass(frozen=True, eq=False)
 class subseq(Generic[T]):
     """This is a wrapper around lists and strings that lets us slice them
 without copying them.
 """
-    x: Sequence[T]  # Maybe separate mutable/immutable ?
-    i: int = 0
-    j: int = -1
+    _x: Sequence[T]
+    _i: int
+    _j: int
 
-    def __post_init__(self) -> None:
-        if self.j == -1:
-            # Hack around frozen to get a default j that depends
-            # on the length of x.
-            object.__setattr__(self, "j", len(self.x))
+    def __init__(self, x: Sequence[T],
+                 start: Optional[int] = None,
+                 stop: Optional[int] = None):
+        self._x = x
+        self._i = start if start is not None else 0
+        self._j = stop if stop is not None else len(x)
 
-        assert self.i <= self.j, "Start must come before end."
-        # The legal range for indices is zero to
-        # the length of the string. Notice that this
-        # allows indices one beyond the last character.
-        # That is usually how an end-index matches the
-        # end of the string, but to handle empty strings
-        # we allow it for the start index as well.
-        assert 0 <= self.i <= len(self.x), \
+        assert self._i <= self._j, "Start must come before end."
+        assert 0 <= self._i <= len(self._x), \
             "Indices must be within the sequence's range."
-        assert 0 <= self.j <= len(self.x), \
+        assert 0 <= self._j <= len(self._x), \
             "Indices must be within the sequence's range."
+
+    def __repr__(self):
+        cls_name = self.__class__.__name__
+        return f"{cls_name}(x={repr(self._x)}, start={self._i}, stop={self._j})" # noqal
 
     def __iter__(self) -> Iterator[T]:
-        return (self.x[i] for i in range(self.i, self.j))
+        return (self._x[i] for i in range(self._i, self._j))
 
     def __len__(self) -> int:
-        return self.j - self.i
+        return self._j - self._i
 
     def __bool__(self) -> bool:
-        return self.i < self.j
+        return self._i < self._j
 
-    def __str__(self):
-        return str(self.x[self.i:self.j])
+    def __str__(self) -> str:
+        return str(self._x[self._i:self._j])
 
     def __eq__(self, other) -> bool:
         return len(self) == len(other) and \
             all(a == b for a, b in zip(self, other))
+
+    # You can move this to a mixin if you need to deal with
+    # types that do not have an ordering.
+    def __lt__(self, other):
+        for a, b in zip(self, other):
+            if a < b: return True    # noqal
+            if a > b: return False   # noqal
+        return len(self) < len(other)
 
     @overload
     def __getitem__(self: S, idx: int) -> T: ...
@@ -65,55 +66,38 @@ without copying them.
 
     def __getitem__(self: S, idx: int | slice) -> T | S:
         if isinstance(idx, int):
-            return self.x[self.i + idx]
+            return self._x[self._i + idx]
 
         if isinstance(idx, slice):
-            i: Optional[int] = idx.start
-            j: Optional[int] = idx.stop
-            if i is None and j is None:
-                return self
-            if i is not None and j is None:
-                return self.__class__(self.x, self.i + i, self.j)
-            if i is None and j is not None:
-                return self.__class__(self.x, self.i, self.i + j)
-            else:
-                assert i is not None and j is not None  # for the type checker
-                return self.__class__(self.x, self.i + i, self.i + j)
+            i: int = idx.start if idx.start is not None else 0
+            j: int = idx.stop if idx.stop is not None else len(self)
+            return self.__class__(self._x, self._i + i, self._i + j)
 
 
-@dataclass(frozen=True, eq=False)
 class msubseq(subseq[T]):
-    x: MutableSequence[T]
-    i: int = 0
-    j: int = -1
+    _x: MutableSequence[T]  # Make x mutable now...
+
+    # Override init for the type checker...
+    def __init__(self, x: MutableSequence[T],
+                 start: Optional[int] = None,
+                 stop: Optional[int] = None):
+        super().__init__(x, start, stop)
 
     def __setitem__(self, idx: int | slice, val: T):
         if isinstance(idx, int):
-            self.x[self.i + idx] = val
+            self._x[self._i + idx] = val
         else:
             # I don't handle steps
-            assert isinstance(idx, slice) and cast(slice, idx).step is None
+            assert isinstance(idx, slice) and idx.step is None
             start = idx.start if idx.start is not None else 0
             stop = idx.stop if idx.stop is not None else len(self)
             for i in range(start, stop):
-                self.x[self.i + i] = val
-
-
-class comp_mixin(SizedIterable, Generic[T]):
-    # Technically, T must be comparable, but I'm not sure
-    # how I constrain int to be that...
-    def __lt__(self, other: SizedIterable[T]):
-        for a, b in zip(self, other):
-            if a < b:
-                return True
-            if a > b:
-                return False
-        return len(self) < len(other)
+                self._x[self._i + i] = val
 
 
 # Frequently used subsequences... The inheritance pattern here
 # reflects that a mutable version over a type should be castable
 # to an immutable.
-class substr(subseq[str],   comp_mixin[str]): ... # noqal
-class isseq(subseq[int],    comp_mixin[int]): ... # noqal
-class misseq(msubseq[int],  isseq):           ... # noqal
+substr = subseq[str]
+isseq = subseq[int]
+misseq = msubseq[int]

@@ -1,6 +1,6 @@
 from typing import Optional, Iterable, Callable, TypeVar
 from itertools import count
-from .subseq import isseq, misseq, msubseq
+from .subseq import subseq, msubseq
 from .bv import BitVector
 
 
@@ -8,7 +8,7 @@ T = TypeVar('T')
 UNDEFINED = -1  # Undefined val in SA
 
 
-def map_string(x: str) -> tuple[isseq, int]:
+def map_string(x: str) -> tuple[subseq[int], int]:
     # Get a set of the letters in x and number them (+1 for sentinel)
     alphabet = {
         a: i + 1 for i, a in enumerate(sorted(set(x)))
@@ -18,10 +18,10 @@ def map_string(x: str) -> tuple[isseq, int]:
     new_string = list(alphabet[a] for a in x)
     new_string.append(0)  # add sentinel
 
-    return isseq(new_string), len(alphabet) + 1
+    return subseq[int](new_string), len(alphabet) + 1
 
 
-def classify_SL(is_S: BitVector, x: isseq) -> None:
+def classify_SL(is_S: BitVector, x: subseq[int]) -> None:
     last = len(x) - 1
     is_S[last] = True
     for i in reversed(range(last)):
@@ -35,7 +35,7 @@ def is_LMS(is_S: BitVector, i: int) -> bool:
 class Buckets:
     buckets: list[int]
 
-    def __init__(self, x: isseq, asize: int):
+    def __init__(self, x: subseq[int], asize: int):
         self.buckets = [0] * asize
         for a in x:
             self.buckets[a] += 1
@@ -67,7 +67,8 @@ class Buckets:
         return next_bucket
 
 
-def bucket_LMS(x: isseq, sa: misseq, buckets: Buckets, is_S: BitVector):
+def bucket_LMS(x: subseq[int], sa: msubseq[int],
+               buckets: Buckets, is_S: BitVector):
     next_end = buckets.calc_ends()
     sa[:] = UNDEFINED
     for i in range(len(x)):
@@ -75,7 +76,8 @@ def bucket_LMS(x: isseq, sa: misseq, buckets: Buckets, is_S: BitVector):
             sa[next_end(x[i])] = i
 
 
-def induce_L(x: isseq, sa: misseq, buckets: Buckets, is_S: BitVector):
+def induce_L(x: subseq[int], sa: msubseq[int],
+             buckets: Buckets, is_S: BitVector):
     next_front = buckets.calc_fronts()
     for i in range(len(x)):
         j = sa[i] - 1
@@ -84,7 +86,8 @@ def induce_L(x: isseq, sa: misseq, buckets: Buckets, is_S: BitVector):
         sa[next_front(x[j])] = j
 
 
-def induce_S(x: isseq, sa: misseq, buckets: Buckets, is_S: BitVector):
+def induce_S(x: subseq[int], sa: msubseq[int],
+             buckets: Buckets, is_S: BitVector):
     next_end = buckets.calc_ends()
     for i in reversed(range(len(x))):
         j = sa[i] - 1
@@ -93,7 +96,7 @@ def induce_S(x: isseq, sa: misseq, buckets: Buckets, is_S: BitVector):
         sa[next_end(x[j])] = j
 
 
-def equal_LMS(x: isseq, is_S: BitVector, i: int, j: int) -> bool:
+def equal_LMS(x: subseq[int], is_S: BitVector, i: int, j: int) -> bool:
     if i == j:                      return True   # noqa: 701
     if i == len(x) or j == len(x):  return False  # noqa: 701
 
@@ -125,8 +128,8 @@ If y is None, do it from x to x."""
     return k
 
 
-def reduce_LMS(x: isseq, sa: misseq, is_S: BitVector) \
-        -> tuple[misseq, misseq, int]:
+def reduce_LMS(x: subseq[int], sa: msubseq[int], is_S: BitVector) \
+        -> tuple[msubseq[int], msubseq[int], int]:
     # Compact all the LMS indices in the first
     # part of the suffix array...
     k = compact_seq(sa, lambda j: is_LMS(is_S, j))
@@ -148,8 +151,8 @@ def reduce_LMS(x: isseq, sa: misseq, is_S: BitVector) \
     return buffer[:k], compact, letter + 1
 
 
-def reverse_reduction(x: isseq, sa: misseq,
-                      offsets: misseq, red_sa: misseq,
+def reverse_reduction(x: subseq[int], sa: msubseq[int],
+                      offsets: msubseq[int], red_sa: msubseq[int],
                       buckets: Buckets,
                       is_S: BitVector):
 
@@ -171,7 +174,7 @@ def reverse_reduction(x: isseq, sa: misseq,
         sa[next_end(x[j])] = j
 
 
-def sais_rec(x: isseq, sa: misseq, asize: int, is_S: BitVector):
+def sais_rec(x: subseq[int], sa: msubseq[int], asize: int, is_S: BitVector):
     if len(x) == asize:
         # base case...
         for i, a in enumerate(x):
@@ -202,5 +205,5 @@ def sais(x: str) -> list[int]:
     s, asize = map_string(x)
     sa = [0] * len(s)
     is_S = BitVector(size=len(s))
-    sais_rec(s, misseq(sa), asize, is_S)
+    sais_rec(s, msubseq[int](sa), asize, is_S)
     return sa[1:]

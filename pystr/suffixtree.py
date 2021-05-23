@@ -3,7 +3,7 @@ from collections.abc import Iterator, Iterable
 from dataclasses import dataclass, field
 from typing import Optional
 
-from .subseq import substr
+from .subseq import subseq
 
 
 # You don't need separate leaf/inner classes, but you get a little
@@ -13,7 +13,7 @@ from .subseq import substr
 
 @dataclass
 class Node:  # Should be abc ABC, but doesn't work with type checker
-    edge_label: substr  # Gives me constant time slicing
+    edge_label: subseq[str]  # Gives me constant time slicing
     parent: Optional[Inner] = \
         field(default=None, init=False, repr=False)
 
@@ -35,7 +35,7 @@ class Inner(Node):
             self.children[child.edge_label[0]] = child
             child.parent = self
 
-    def out_child(self, edge: str | substr) -> Node:
+    def out_child(self, edge: str | subseq[str]) -> Node:
         return self.children[edge[0]]
 
     def to_dot(self, res: list[str]) -> list[str]:
@@ -68,7 +68,7 @@ class Leaf(Node):
 
     # Explicit __init__ because I prefer to have the
     # leaf_label before the edge_label
-    def __init__(self, leaf_label: int, edge_label: substr):
+    def __init__(self, leaf_label: int, edge_label: subseq[str]):
         super().__init__(edge_label)
         self.leaf_label = leaf_label
 
@@ -93,13 +93,13 @@ Return index of first mismatch."""
     return i + 1  # matched all the way through
 
 
-SearchResult = tuple[Node, int, substr]
+SearchResult = tuple[Node, int, subseq[str]]
 # This is the node we last searched on, how far down
 # the edge we got (or zero if we couldn't leave the
 # node), and the last string we searched.
 
 
-def tree_search(n: Inner, p: substr) -> SearchResult:
+def tree_search(n: Inner, p: subseq[str]) -> SearchResult:
     # In the special case that p is empty (which we guarantee
     # that it isn't after this point), we match the entire
     # local tree, so we have to report that.
@@ -120,7 +120,7 @@ def tree_search(n: Inner, p: substr) -> SearchResult:
         n, p = child, p[i:]
 
 
-def tree_fastsearch(n: Inner, p: substr) -> SearchResult:
+def tree_fastsearch(n: Inner, p: subseq[str]) -> SearchResult:
     # In the special case that x is empty (which we guarantee
     # that it isn't after this point), we match the entire
     # local tree, so we have to report that.
@@ -147,7 +147,7 @@ class SuffixTree:
     root: Inner
 
     def search(self, p: str) -> Iterator[int]:
-        n, j, y = tree_search(self.root, substr(p))
+        n, j, y = tree_search(self.root, subseq[str](p))
         if j == len(y):
             # We search all the way through the last string,
             # so we have a match
@@ -156,14 +156,14 @@ class SuffixTree:
             return iter(())
 
     def __contains__(self, p: str):
-        _, j, y = tree_search(self.root, substr(p))
+        _, j, y = tree_search(self.root, subseq[str](p))
         return j == len(y)
 
     def to_dot(self) -> str:
         return "digraph {" + '\n'.join(self.root.to_dot([])) + "}"
 
 
-def break_edge(leaf_label: int, n: Node, k: int, z: substr) -> Leaf:
+def break_edge(leaf_label: int, n: Node, k: int, z: subseq[str]) -> Leaf:
     """Break the edge to node `n`, `k` characters down, adding a new leaf
 with label `label` with edge `z`. Returns the new leaf."""
 
@@ -182,7 +182,7 @@ def naive_st_construction(s: str):
     """Construct a suffix tree by searching from the root
 down to the insertion point for each suffix in `s`."""
 
-    x = substr(s + '\x00')  # Adding sentinel to the string.
+    x = subseq[str](s + '\x00')  # Adding sentinel to the string.
     root = Inner(x[0:0])
 
     # Insert suffixes one at a time...
@@ -210,7 +210,7 @@ def mccreight_st_construction(s: str):
     """Construct a suffix tree by searching from the root
 down to the insertion point for each suffix in `s`."""
 
-    x = substr(s + '\x00')  # Adding sentinel to the string
+    x = subseq[str](s + '\x00')  # Adding sentinel to the string
     root = Inner(x[0:0])
     v = Leaf(0, x)
     root.add_children(v)
