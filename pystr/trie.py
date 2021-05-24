@@ -77,6 +77,8 @@ def breadth_first_trie(*strings: str) -> Trie:
         non_empty = [ls for ls in labelled if len(ls.x) != 0]
         out_groups: dict[str, list[LS]] = defaultdict(list)
         for label, x in non_empty:
+            # In the groups, slice off the first character for
+            # the next level... (subseq makes this O(1)).
             out_groups[x[0]].append(LS(label, x[1:]))
 
         # Take the groups, make a node for each (and insert the

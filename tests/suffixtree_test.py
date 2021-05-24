@@ -1,3 +1,5 @@
+import sys
+
 from helpers import random_string, check_sorted, check_matches
 
 from pystr.suffixtree import SuffixTree
@@ -7,18 +9,17 @@ from pystr import mccreight_st_construction
 from typing import Callable
 
 
-def mississippi_to_dot(name: str, constr: Callable[[str], SuffixTree]) -> None:
+def mississippi_to_dot(constr: Callable[[str], SuffixTree]) -> None:
     st = constr("mississippi")
-    with open(f"{name}.dot", "w") as f:
-        print(st.to_dot(), file=f)
+    print(st.to_dot(), file=sys.stdout)
 
 
 def test_naive_to_dot():
-    mississippi_to_dot("naive", naive_st_construction)
+    mississippi_to_dot(naive_st_construction)
 
 
 def test_mccreight_to_dot():
-    mississippi_to_dot("mccreight", mccreight_st_construction)
+    mississippi_to_dot(mccreight_st_construction)
 
 
 def test_naive_sorted():
