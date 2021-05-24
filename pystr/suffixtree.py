@@ -48,7 +48,7 @@ class Inner(Node):
             res.append(f'{id(self)}[label="", shape=point]')
             res.append(f'{id(self.parent)} -> {id(self)}[label="{el}"]')
         if self.suffix_link:
-            res.append(f"{id(self)} -> {id(self.suffix_link)}[style=dashed]")
+            res.append(f"{id(self)} -> {id(self.suffix_link)}[style=dashed, color=red]") # noqa
         for child in self.children.values():
             child.to_dot(res)
 
@@ -160,7 +160,7 @@ class SuffixTree:
         return j == len(y)
 
     def to_dot(self) -> str:
-        return "digraph {" + '\n'.join(self.root.to_dot([])) + "}"
+        return "digraph { rankdir=\"LR\" " + '\n'.join(self.root.to_dot([])) + "}" # noqa
 
 
 def break_edge(leaf_label: int, n: Node, k: int, z: subseq[str]) -> Leaf:

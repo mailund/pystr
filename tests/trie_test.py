@@ -36,6 +36,11 @@ def test_breadth_first_trie():
     assert trie == breadth_first_trie("foo", "bar", "foobar")
 
 
+def test_simple_to_dot():
+    trie = breadth_first_trie("foo", "bar", "foobar", "baz", "barfoo")
+    print(trie.to_dot())
+
+
 if __name__ == '__main__':
     globs = list(globals().items())
     for name, f in globs:
