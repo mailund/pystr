@@ -16,6 +16,8 @@ class TrieNode:
     label: Optional[int] = None
     out: dict[str, TrieNode] = field(default_factory=dict)
 
+    # These are only needed for the Aho-Corasick algorithm, not for
+    # basic use of a trie.
     parent: Optional[TrieNode] = field(default=None, repr=False)
     suffix_link: Optional[TrieNode] = field(default=None, repr=False)
     out_list: Optional[TrieNode] = field(default=None, repr=False)
@@ -81,65 +83,88 @@ class Trie:
 
 def depth_first_trie(*strings: str) -> Trie:
     """The simplest construction just insert one string at a time."""
+    # This is all it takes to build the trie.
     trie = Trie()
     for i, x in enumerate(strings):
         trie.insert(x, i)
+
+    # If we want the suffix link and out list as well,
+    # we need a breadth first traversal for that.
+    queue = deque[TrieNode]([trie.root])
+    while queue:
+        n = queue.popleft()
+        for out_edge, child in n.out.items():
+            set_suffix_link(child, out_edge)
+            queue.append(child)
+
     return trie
+
+
+def set_suffix_link(node: TrieNode, in_edge: str):
+    # We get the suffix link by running up the links from the
+    # parent and trying to extend them. Casts are for the type
+    # checker, telling them that nodes are not None
+    parent = cast(TrieNode, node.parent)
+    if parent.is_root:
+        node.suffix_link = parent
+    else:
+        suffix = cast(TrieNode, parent.suffix_link)
+        while in_edge not in suffix.out and not suffix.is_root:
+            suffix = cast(TrieNode, suffix.suffix_link)
+
+        # Now we can either extend or we are in the root.
+        if in_edge in suffix.out:
+            node.suffix_link = suffix.out[in_edge]
+        else:
+            # If we can't extend, we want the root (== suffix)
+            node.suffix_link = suffix
+
+    # The out list either skips suffix_link or not, depending on
+    # whether there is a label there or not.
+    if node.suffix_link.label is not None:
+        node.out_list = node.suffix_link
+    else:
+        node.suffix_link.out_list
 
 
 def breadth_first_trie(*strings: str) -> Trie:
     labelled = list(LS(i, subseq[str](x)) for i, x in enumerate(strings))
-    root = TrieNode()
-    root.out_list = root.suffix_link = root
 
-    queue = deque[tuple[TrieNode, list[LS]]]()
-    if labelled:  # Only do something if the input wasn't empty...
-        queue.append((root, labelled))
+    root_lab, root_groups = group_strings(labelled)
+    root = TrieNode(label=root_lab)
+
+    queue = deque[tuple[TrieNode, dict[str, list[LS]]]]()
+    queue.append((root, root_groups))
 
     while queue:
-        node, labelled = queue.popleft()
-
-        # If there is an empty string (and only one is allowed)
-        # then it ends in `node` and gives us its label.
-        empty = [label for label, x in labelled if len(x) == 0]
-        assert len(empty) <= 1
-        if len(empty) == 1:
-            node.label = empty[0]
-
-        # If there are non-empty strings we gropy them by the
-        # first character. Each group will be a sub-mode.
-        non_empty = [ls for ls in labelled if len(ls.x) != 0]
-        out_groups: dict[str, list[LS]] = defaultdict(list)
-        for label, x in non_empty:
-            # In the groups, slice off the first character for
-            # the next level... (subseq makes this O(1)).
-            out_groups[x[0]].append(LS(label, x[1:]))
-
-        # Take the groups, make a node for each (and insert the
-        # nodes as children of `node`), and put the new node and
-        # strings in the queue for further processing. Update suffix
-        # link and out list before we insert the new node in the parent
-        # or we would have to handle special cases in the root
-        for k, labelled in out_groups.items():
-            child = TrieNode(parent=node)
-
-            # We get the suffix link by running up the links from the
-            # parent and trying to extend them.
-            p_suffix = cast(TrieNode, node.suffix_link)
-            while not p_suffix.is_root and k not in p_suffix.out:
-                p_suffix = cast(TrieNode, p_suffix.suffix_link)
-            # Now we can either extend or we are in the root.
-            child.suffix_link = \
-                p_suffix.out[k] \
-                if k in p_suffix.out \
-                else p_suffix
-
-            child.out_list = \
-                child.suffix_link \
-                if child.suffix_link.label is not None \
-                else child.suffix_link.out_list
-
-            node.out[k] = child
-            queue.append((child, labelled))
+        parent, groups = queue.popleft()
+        for edge, group in groups.items():
+            node_lab, node_groups = group_strings(group)
+            parent.out[edge] = TrieNode(label=node_lab, parent=parent)
+            queue.append((parent.out[edge], node_groups))
+            set_suffix_link(parent.out[edge], edge)
 
     return Trie(root)
+
+
+def group_strings(strings: list[LS]) -> \
+        tuple[Optional[int], dict[str, list[LS]]]:
+
+    """Split input into groups according to first character.
+If there is an empty string in the input, get its label.
+Returns the label (or None) and the groups in a dict."""
+
+    empty, non_empty = list[LS](), list[LS]()
+    for ls in strings:
+        (non_empty, empty)[len(ls.x) == 0].append(ls)
+
+    assert(len(empty) <= 1)
+    label = empty[0].label if len(empty) == 1 else None
+
+    out_groups = defaultdict[str, list[LS]](list)
+    for lab, x in non_empty:
+        # In the groups, slice off the first character for
+        # the next level... (subseq makes this O(1)).
+        out_groups[x[0]].append(LS(lab, x[1:]))
+
+    return label, out_groups

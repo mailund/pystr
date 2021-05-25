@@ -15,7 +15,17 @@ display:
 	@echo "McCreight suffix tree construction, mississippi"
 	@python3 -c "from suffixtree_test import *; test_mccreight_to_dot()" | $(idot)
 
-	@echo "Simple trie (foo, bar, foobar, baz, barfoo)"
-	@python3 -c "from trie_test import *; test_simple_to_dot()" | $(idot)
+	@echo "Simple trie (foo, bar, foobar, baz, barfoo) depth first"
+	@python3 -c "from trie_test import *; test_simple_to_dot(depth_first_trie)" | $(idot)
+
+	@echo "Simple trie (foo, bar, foobar, baz, barfoo) breadth first"
+	@python3 -c "from trie_test import *; test_simple_to_dot(breadth_first_trie)" | $(idot)
+
+	@echo "Simple trie (mississippi suffixes) depth first"
+	@python3 -c "from trie_test import *; test_mississippi_suffixes(depth_first_trie)" | $(idot)
+
+	@echo "Simple trie (mississippi suffixes) breadth first"
+	@python3 -c "from trie_test import *; test_mississippi_suffixes(breadth_first_trie)" | $(idot)
+
 
 .PHONY: init test display
