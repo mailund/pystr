@@ -119,23 +119,17 @@ def set_suffix_link(node: TrieNode, in_edge: str):
     if parent.is_root:
         node.suffix_link = parent
     else:
-        suffix = cast(TrieNode, parent.suffix_link)
-        while in_edge not in suffix and not suffix.is_root:
-            suffix = cast(TrieNode, suffix.suffix_link)
-
-        # Now we can either extend or we are in the root.
-        if in_edge in suffix:
-            node.suffix_link = suffix[in_edge]
-        else:
-            # If we can't extend, we want the root (== suffix)
-            node.suffix_link = suffix
+        slink = cast(TrieNode, parent.suffix_link)
+        while in_edge not in slink and not slink.is_root:
+            slink = cast(TrieNode, slink.suffix_link)
+        # If we can extend, we do. Otherwise, we will
+        # be in the root, and then that is what we want.
+        node.suffix_link = slink[in_edge] if in_edge in slink else slink
 
     # The out list either skips suffix_link or not, depending on
     # whether there is a label there or not.
-    if node.suffix_link.label is not None:
-        node.out_list = node.suffix_link
-    else:
-        node.suffix_link.out_list
+    slink = node.suffix_link
+    node.out_list = slink if slink.label else slink.out_list
 
 
 def breadth_first_trie(*strings: str) -> Trie:
