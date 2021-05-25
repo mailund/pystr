@@ -1,11 +1,27 @@
 import random
 import string
-from collections.abc import Iterator
+from collections.abc import Iterable, Iterator, Callable
 from pystr.subseq import substr
 
 
 def random_string(n: int, alpha=string.ascii_uppercase) -> str:
     return ''.join(random.choices(alpha, k=n))
+
+
+def pick_random_patterns(x: str, n: int) -> Iterator[str]:
+    for _ in range(n):
+        i = random.randrange(0, len(x) - 1)
+        j = random.randrange(i + 1, len(x))
+        assert j > i  # Don't give us empty strings
+        yield x[i:j]
+
+
+def pick_random_patterns_len(x: str, n: int, patlen: int) -> Iterator[str]:
+    for _ in range(n):
+        i = random.randrange(0, len(x) - 1)  # -1 because we don't want ""
+        j = min(i + patlen, len(x))
+        assert j > i  # Don't give us empty strings
+        yield x[i:j]
 
 
 def check_sorted(x: str, sa: list[int]):
@@ -21,7 +37,17 @@ def check_substring(x: str, p: str, i: int) -> bool:
     return x[i:i+len(p)] == p
 
 
-def check_matches(x: str, p: str, matches: Iterator[int]):
+def check_matches(x: str, p: str, matches: Iterable[int]):
     for i in matches:
         assert check_substring(x, p, i), \
             f"Substring {x[i:]} should match pattern {p}"
+
+
+def check_equal_matches(x: str, p: str,
+                        *algos: Callable[[str, str], Iterator[int]]):
+    # We sort the search results since some algorithms do not automatically
+    # give us sorted output
+    print("Check equal matches:", x, p)
+    iters: list[list[int]] = [sorted(algo(x, p)) for algo in algos]
+    for res in zip(*iters, strict=True):  # type: ignore
+        assert all(res[i] == res[0] for i in range(1, len(res)))

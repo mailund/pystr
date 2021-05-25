@@ -1,23 +1,19 @@
 from collections import Counter
-from collections.abc import Iterable
+from collections.abc import Iterable, Iterator
+from .sais import sais  # For the search function
 
 CTAB = dict[str, int]
 OTAB = dict[str, list[int]]
-
-# I don't use the terminal sentinel in any of this code (except
-# indirectly when constructing the suffix array. It isn't necessary
-# once I have the suffix array and the prefix-problem is taken
-# care of).
+SENTINEL = '\x00'
 
 
-def bwt(x: str, sa: list[int]) -> str:
-    # This works because index -1 is index n-1.
-    return ''.join(x[i - 1] for i in sa)
+def bw_transform(x: str, sa: list[int]) -> str:
+    return ''.join(SENTINEL if i == 0 else x[i - 1] for i in sa)
 
 
 def c_table(x: str) -> CTAB:
     counts = Counter(x)
-    res, acc = {}, 0
+    res, acc = {}, 1  # Start at one to skip sentinel
     for char in sorted(counts):
         res[char] = acc
         acc += counts[char]
@@ -25,15 +21,28 @@ def c_table(x: str) -> CTAB:
 
 
 def o_table(x: str, sa: list[int], alpha: Iterable[str]) -> OTAB:
-    res = {char: [0] * (len(x) + 1) for char in alpha}
+    bwt = bw_transform(x, sa)
+    res = {char: [0] * (len(bwt) + 1) for char in alpha}
     for z in alpha:
-        for i, y in enumerate(bwt(x, sa)):
+        for i, y in enumerate(bwt):
             res[z][i + 1] = res[z][i] + (y == z)
     return res
 
 
-def bwt_search(x: str, p: str, ctab: CTAB, otab: OTAB) -> tuple[int, int]:
-    L, R = 0, len(x)
+def bwt_preprocess(x: str) -> tuple[list[int], CTAB, OTAB]:
+    # The BWT search needs to include the sentinel
+    # since it will count the character at the end
+    # of x incorrectly otherwise (we need it at
+    # first line, $x, where we need to count x[-1]).
+    sa = sais(x, include_sentinel=True)
+    ctab = c_table(x)
+    otab = o_table(x, sa, ctab.keys())
+    return sa, ctab, otab
+
+
+def bwt_search_tbls(x: str, p: str,
+                    ctab: CTAB, otab: OTAB) -> tuple[int, int]:
+    L, R = 0, len(x) + 1  # start from 1 and +1 because of the sentinel
     for y in p[::-1]:
         if y not in ctab:
             return 0, 0
@@ -41,4 +50,16 @@ def bwt_search(x: str, p: str, ctab: CTAB, otab: OTAB) -> tuple[int, int]:
         R = ctab[y] + otab[y][R]
         if L >= R:
             return 0, 0
+
+    # if we search for the empty string, we will include
+    # the sentinel position in the output. We never sould
+    if L == 0:
+        L += 1
     return L, R
+
+
+def bwt_search(x: str, p: str) -> Iterator[int]:
+    sa, ctab, otab = bwt_preprocess(x)
+    L, R = bwt_search_tbls(x, p, ctab, otab)
+    for i in range(L, R):
+        yield sa[i]

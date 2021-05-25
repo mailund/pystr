@@ -110,7 +110,7 @@ def equal_LMS(x: subseq[int], is_S: BitVector, i: int, j: int) -> bool:
 
     # This assert is only hear to help the linter...
     # (checker doesn't understand infinite generators yet)
-    assert False, "We only leave the loop with a return."
+    assert False, "We only leave the loop with a return."  # pragma: no cover
 
 
 def compact_seq(x: msubseq[T],
@@ -200,9 +200,9 @@ def sais_rec(x: subseq[int], sa: msubseq[int], asize: int, is_S: BitVector):
         induce_S(x, sa, buckets, is_S)
 
 
-def sais(x: str) -> list[int]:
+def sais(x: str, include_sentinel=False) -> list[int]:
     s, asize = map_string(x)
     sa = [0] * len(s)
     is_S = BitVector(size=len(s))
     sais_rec(s, msubseq[int](sa), asize, is_S)
-    return sa[1:]
+    return sa if include_sentinel else sa[1:]

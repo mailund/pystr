@@ -150,7 +150,7 @@ def skew_rec(x: list[int], asize: int) -> list[int]:
     return merge(x, SA12, SA3)
 
 
-def skew(x: str) -> list[int]:
+def skew(x: str, include_sentinel=False) -> list[int]:
     "Skew algorithm for a string."
     # The skew_rec() function wants a list of integers,
     # so we convert the string in the first call.
@@ -162,4 +162,7 @@ def skew(x: str) -> list[int]:
     # I am assuming that the alphabet size is 256 here, although
     # of course it might not be. It is a simplification instead of
     # remapping the string.
-    return skew_rec([ord(y) for y in x], 256)
+    istring = [ord(y) for y in x]
+    if include_sentinel:
+        istring.append(0)
+    return skew_rec(istring, 256)

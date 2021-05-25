@@ -31,7 +31,7 @@ without copying them.
         assert 0 <= self._j <= len(self._x), \
             "Indices must be within the sequence's range."
 
-    def __repr__(self):
+    def __repr__(self):  # pragma: no cover
         cls_name = self.__class__.__name__
         return f"{cls_name}(x={repr(self._x)}, start={self._i}, stop={self._j})" # noqal
 
