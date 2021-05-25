@@ -1,5 +1,6 @@
 from pystr.exact import naive, border
 from pystr.bwt import bwt_search
+from pystr.suffixtree import mccreight_st_construction as mccreight
 from helpers import random_string, check_equal_matches
 from helpers import pick_random_patterns, pick_random_patterns_len
 from typing import Callable, Iterator
@@ -34,8 +35,13 @@ def check_equal_algos(*algos: Callable[[str, str], Iterator[int]]):
         check_equal_matches(x, p, *algos)
 
 
+def suffix_tree_exact(x, p):
+    yield from mccreight(x).search(p)
+
+
 def test_equal_results():
-    check_equal_algos(naive, border, bwt_search)
+    check_equal_algos(naive, border, bwt_search,
+                      suffix_tree_exact)
 
 
 if __name__ == '__main__':
