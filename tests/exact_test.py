@@ -39,6 +39,10 @@ def suffix_tree_exact(x, p):
     yield from mccreight(x).search(p)
 
 
+def test_suffix_tree_occurrences():
+    check_exact_matching(suffix_tree_exact)
+
+
 def test_equal_results():
     check_equal_algos(naive, border, bwt_search,
                       suffix_tree_exact)

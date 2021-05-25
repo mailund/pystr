@@ -26,6 +26,17 @@ class TrieNode:
     def is_root(self) -> bool:
         return self.parent is None
 
+    def __getitem__(self, a: str) -> TrieNode:
+        # This just makes the code a little nicer
+        # to look at, avoiding the .out[].
+        return self.out[a]
+
+    def __setitem__(self, a: str, n: TrieNode):
+        self.out[a] = n
+
+    def __contains__(self, a: str):
+        return a in self.out
+
     def to_dot(self, res: list[str]) -> list[str]:
         if self.label is None:
             res.append(f'{id(self)}[label="", shape=point]')
@@ -49,7 +60,7 @@ class TrieNode:
     def __eq__(self, other) -> bool:
         return type(other) == type(self) and \
             sorted(self.out) == sorted(other.out) and \
-            all(self.out[k] == other.out[k] for k in self.out)
+            all(self[k] == other[k] for k in self.out)
 
 
 @dataclass(eq=False)
@@ -59,17 +70,17 @@ class Trie:
     def insert(self, x: str, label: int):
         n = self.root
         for i in range(len(x)):
-            if x[i] not in n.out:
-                n.out[x[i]] = TrieNode(parent=n)
-            n = n.out[x[i]]
+            if x[i] not in n:
+                n[x[i]] = TrieNode(parent=n)
+            n = n[x[i]]
         n.label = label
 
     def __contains__(self, x: str) -> bool:
         n = self.root
         for i in range(len(x)):
-            if x[i] not in n.out:
+            if x[i] not in n:
                 return False
-            n = n.out[x[i]]
+            n = n[x[i]]
         return n.label is not None
 
     def to_dot(self) -> str:
@@ -109,12 +120,12 @@ def set_suffix_link(node: TrieNode, in_edge: str):
         node.suffix_link = parent
     else:
         suffix = cast(TrieNode, parent.suffix_link)
-        while in_edge not in suffix.out and not suffix.is_root:
+        while in_edge not in suffix and not suffix.is_root:
             suffix = cast(TrieNode, suffix.suffix_link)
 
         # Now we can either extend or we are in the root.
-        if in_edge in suffix.out:
-            node.suffix_link = suffix.out[in_edge]
+        if in_edge in suffix:
+            node.suffix_link = suffix[in_edge]
         else:
             # If we can't extend, we want the root (== suffix)
             node.suffix_link = suffix
@@ -141,8 +152,8 @@ def breadth_first_trie(*strings: str) -> Trie:
         for edge, group in groups.items():
             node_lab, node_groups = group_strings(group)
             parent.out[edge] = TrieNode(label=node_lab, parent=parent)
-            queue.append((parent.out[edge], node_groups))
-            set_suffix_link(parent.out[edge], edge)
+            queue.append((parent[edge], node_groups))
+            set_suffix_link(parent[edge], edge)
 
     return Trie(root)
 

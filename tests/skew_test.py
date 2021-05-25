@@ -7,3 +7,6 @@ def test_skew_sorted():
         x = random_string(1000)
         sa = skew(x)
         check_sorted(x, sa)
+        sa0 = skew(x, include_sentinel=True)
+        assert sa0[0] == len(x)
+        assert sa0[1:] == sa
