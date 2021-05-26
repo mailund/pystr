@@ -45,7 +45,7 @@ class TrieNode:
 
         if self.suffix_link is not None and not self.suffix_link.is_root:
             res.append(f"{id(self)} -> {id(self.suffix_link)}[style=dotted, color=red]") # noqal
-        if self.out_list is not None and not self.out_list.is_root:
+        if self.out_list is not None:
             res.append(f"{id(self)} -> {id(self.out_list)}[style=dotted, color=green]") # noqal
 
         for k, n in self.out.items():
@@ -126,10 +126,14 @@ def set_suffix_link(node: TrieNode, in_edge: str):
         # be in the root, and then that is what we want.
         node.suffix_link = slink[in_edge] if in_edge in slink else slink
 
+    # The suffix link for non-roots should never be None
+    assert node.suffix_link is not None
+
     # The out list either skips suffix_link or not, depending on
-    # whether there is a label there or not.
+    # whether there is a label there or not. The out_list can be None.
+    # We terminate the lists with a None.
     slink = node.suffix_link
-    node.out_list = slink if slink.label else slink.out_list
+    node.out_list = slink if slink.label is not None else slink.out_list
 
 
 def breadth_first_trie(*strings: str) -> Trie:
