@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from typing import Optional
-from .cols import yellow, green, red
 
 
 @dataclass
@@ -26,23 +25,3 @@ class clamp():
         if i >= len(self.x):
             return len(self.x)
         return i
-
-
-def show_prefix_next_comp(x: str, p: str, i: int, j: int):
-    cx = clamp(x)
-    cp = clamp(p)
-    print(f"{' ' * i}i")
-    print(f"{cx[:i-j]}{green(cx[i-j:i])}{yellow(cx[i])}{cx[i+1:]}")
-    print(f"{' ' * (i - j)}{green(cp[:j])}{yellow(cp[j])}{cp[j+1:]}")
-    print(f"{' ' * i}j")
-    print()
-
-
-def show_prefix_mismatch(x: str, p: str, i: int, j: int):
-    cx = clamp(x)
-    cp = clamp(p)
-    print(f"{' ' * i}i")
-    print(f"{cx[:i-j]}{green(cx[i-j:i])}{red(cx[i])}{cx[i+1:]}")
-    print(f"{' ' * (i - j)}{green(cp[:j])}{red(cp[j])}{cp[j+1:]}")
-    print(f"{' ' * i}j")
-    print()
