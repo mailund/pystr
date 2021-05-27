@@ -1,7 +1,7 @@
 # Simple exact matching algorithms
 from typing import Iterator
-from .border_array import border_array, \
-    strict_border_array
+from collections import defaultdict
+from .border_array import strict_border_array
 
 
 def naive(x: str, p: str,
@@ -104,10 +104,47 @@ def kmp(x: str, p: str,
             input("Press ENTER to continue")
 
 
+def bmh(x: str, p: str,
+        progress=False,
+        interactive=False
+        ) -> Iterator[int]:
+
+    jump: dict[str, int] = \
+        defaultdict(lambda: len(p))
+    for j in range(len(p) - 1):  # skip last index!
+        jump[p[j]] = len(p) - j - 1
+
+    i, j = 0, 0
+    while i < len(x) - len(p) + 1:
+
+        if progress:
+            print(bright_blue(f"Attempting at index {i}"))
+            bmh_next_comp(x, p, i)
+
+        for j in reversed(range(len(p))):
+            if x[i + j] != p[j]:
+                break
+        else:
+            yield i
+
+        if progress:
+            print(underline("Matching characters:"))
+            bmh_mismatch(x, p, i, j)
+            if j == 0 and p[0] == x[i]:
+                print(bright_green(f"We matched at index {i}\n"))
+            print(underline("Shifting:"))
+            bmh_shift(x, p, i, j, jump[x[i + len(p) - 1]])
+            if interactive:
+                input("Press ENTER to continue")
+
+        i += jump[x[i + len(p) - 1]]
+
+
 # Code for visualising the algorithms...
 from .output import clamp                    # noqa: E402
 from .cols import yellow, green, red         # noqa: E402
 from .cols import bright_green, bright_blue  # noqa: E402
+from .cols import underline                  # noqa: E402
 
 
 def naive_show_mismatch(x: str, p: str, i: int, j: int):
@@ -156,4 +193,38 @@ def kmp_show_prefix_mismatch(x: str, p: str, i: int, j: int):
     print(f"{cx[:i-j]}{green(cx[i-j:i])}{red(cx[i])}{cx[i+1:]}")
     print(f"{' ' * (i - j)}{green(cp[:j])}{red(cp[j])}{cp[j+1:]}")
     print(f"{' ' * i}j")
+    print()
+
+
+def bmh_next_comp(x: str, p: str, i: int):
+    cx = clamp(x)
+    j = len(p)
+    print(f"{' ' * (i + j - 1)}v")
+    print(f"{cx[:i+j-1]}{yellow(cx[i+j-1])}{cx[i+j:]}")
+    print(f"{' ' * i}{p[:-1]}{yellow(p[-1])}")
+    print(f"{' ' * (i + j - 1)}^")
+    print()
+
+
+def bmh_mismatch(x: str, p: str, i: int, j: int):
+    cx = clamp(x)
+    cp = clamp(p)
+    col = red if x[i+j] != p[j] else green
+    print(f"{' ' * (i + j)}v")
+    print(f"{cx[:i+j]}{col(cx[i+j])}{green(cx[i+j+1:i+len(p)])}{cx[i+len(p):]}")  # noqa: E501
+    print(f"{' ' * i}{cp[:j]}{col(cp[j])}{green(cp[j+1:])}")
+    print(f"{' ' * (i + j)}^")
+    print()
+
+
+def bmh_shift(x: str, p: str, i: int, j: int, shift: int):
+    cx = clamp(x)
+    cp = clamp(p)
+    pos = i + len(p) - 1
+    rmost = len(p) - shift - 1
+    col = green if rmost >= 0 else red
+    print(f"{' ' * (pos)}v")
+    print(f"{cx[:pos]}{col(cx[pos])}{cx[pos+1:]}")  # noqa: E501
+    print(f"{' ' * (i + shift)}{cp[:rmost]}{green(cp[rmost])}{cp[rmost+1:]}")  # noqa: E501
+    print(f"{' ' * (i + shift + rmost)}^")
     print()

@@ -1,6 +1,6 @@
 import _setup  # noqa: F401
 
-from pystr.exact import naive, border, kmp
+from pystr.exact import naive, border, kmp, bmh
 from pystr.bwt import bwt_search
 from pystr.suffixtree import mccreight_st_construction as mccreight
 from helpers import random_string, check_equal_matches
@@ -13,7 +13,7 @@ def suffix_tree_exact(x, p):
 
 
 ALGOS = [
-    naive, border, kmp,
+    naive, border, kmp, bmh,
     bwt_search,
     suffix_tree_exact,
 ]

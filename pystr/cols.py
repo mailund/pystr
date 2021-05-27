@@ -32,5 +32,8 @@ bright_magenta = Colour("\u001b[35;1m")  # noqa: E221
 bright_cyan    = Colour("\u001b[36;1m")  # noqa: E221
 bright_white   = Colour("\u001b[37;1m")  # noqa: E221
 
+bold           = Colour("\u001b[1m")     # noqa: E221
+underline      = Colour("\u001b[4m")     # noqa: E221
+reverse        = Colour("\u001b[7m")     # noqa: E221
 
 RESET = "\u001b[0m"

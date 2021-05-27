@@ -1,6 +1,6 @@
 import _setup  # noqa: F401
 
-from pystr.exact import border, kmp, naive
+from pystr.exact import border, kmp, naive, bmh
 from pystr.cols import bright_white, bright_green
 
 
@@ -21,9 +21,9 @@ def test_border_kmp():
     run_iter(kmp(x, p, progress=True, interactive=INTERACTIVE))
     print(bright_white("BORDER"))
     run_iter(border(x, p, progress=True, interactive=INTERACTIVE))
+    print(bright_white("BMH"))
+    run_iter(bmh(x, p, progress=True, interactive=INTERACTIVE))
 
-
-from pystr.border_array import *
 
 if __name__ == '__main__':
     INTERACTIVE = True  # Run interactive if we use as a script
