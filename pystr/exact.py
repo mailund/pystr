@@ -134,7 +134,7 @@ def bmh(x: str, p: str,
                 print(bright_green(f"We matched at index {i}\n"))
             print(underline("Shifting:"))
             bmh_shift(x, p, i, j, jump[x[i + len(p) - 1]])
-            if interactive:
+            if interactive:  # pragma: no cover
                 input("Press ENTER to continue")
 
         i += jump[x[i + len(p) - 1]]
