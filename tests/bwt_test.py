@@ -1,3 +1,5 @@
+import _setup  # noqa: F401
+
 from helpers import check_equal_matches, check_matches
 from collections.abc import Iterator
 from pystr import sais

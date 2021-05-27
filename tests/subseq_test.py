@@ -1,3 +1,5 @@
+import _setup  # noqa: F401
+
 from pystr.subseq import subseq, msubseq, substr, isseq, misseq
 
 

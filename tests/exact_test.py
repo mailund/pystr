@@ -1,3 +1,5 @@
+import _setup  # noqa: F401
+
 from pystr.exact import naive, border, kmp
 from pystr.bwt import bwt_search
 from pystr.suffixtree import mccreight_st_construction as mccreight

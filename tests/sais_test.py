@@ -1,3 +1,5 @@
+import _setup  # noqa: F401
+
 from pystr.sais import map_string, classify_SL, is_LMS
 from pystr.sais import sais
 from pystr.bv import BitVector

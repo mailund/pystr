@@ -1,3 +1,5 @@
+import _setup  # noqa: F401
+
 import sys
 
 from helpers import random_string, check_sorted, check_matches

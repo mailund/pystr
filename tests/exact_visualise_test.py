@@ -1,3 +1,5 @@
+import _setup  # noqa: F401
+
 from pystr.exact import border, kmp, naive
 from pystr.cols import bright_white, bright_green
 
