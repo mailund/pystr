@@ -1,6 +1,7 @@
 # Simple exact matching algorithms
 from typing import Iterator
-from .border_array import border_array
+from .border_array import border_array, \
+    strict_border_array
 
 
 def naive(x: str, p: str,
@@ -29,7 +30,7 @@ def naive(x: str, p: str,
             else:
                 naive_show_mismatch(x, p, i, j)
 
-        if interactive:
+        if interactive:  # pragma: no cover
             input("Press ENTER to continue")
 
 
@@ -40,7 +41,7 @@ def border(x: str, p: str,
     assert p, "Doesn't handle empty patterns"
 
     # Build the border array
-    ba = border_array(p)
+    ba = strict_border_array(p)
 
     # Now search...
     b = 0
@@ -63,7 +64,7 @@ def border(x: str, p: str,
             yield i - len(p) + 1
             b = ba[b - 1]
 
-        if interactive:
+        if interactive:  # pragma: no cover
             input("Press ENTER to continue")
 
 
@@ -71,11 +72,11 @@ def kmp(x: str, p: str,
         progress=False,
         interactive=False
         ) -> Iterator[int]:
-    
-    ba = border_array(p)
+
+    ba = strict_border_array(p)
     i, j = 0, 0
     while i < len(x):
-        
+
         if progress:
             kmp_show_prefix_next_comp(x, p, i, j)
 
@@ -99,7 +100,7 @@ def kmp(x: str, p: str,
         else:
             j = ba[j - 1]
 
-        if interactive:
+        if interactive:  # pragma: no cover
             input("Press ENTER to continue")
 
 
@@ -131,21 +132,6 @@ def naive_show_match(x: str, p: str, i: int):
 def border_show_prefix_next_comp(x: str, p: str, i: int, b: int):
     cx = clamp(x)
     cp = clamp(p)
-    print(f"{' ' * i}i")
-    print(f"{cx[:i-b]}{green(cx[i-b:i])}{yellow(cx[i])}{cx[i+1:]}")
-    print(f"{' ' * (i - b)}{green(cp[:b])}{yellow(cp[b])}{cp[b+1:]}")
-    print(f"{' ' * i}b")
-    print()
-
-
-def border_show_match(x: str, p: str, i: int, b: int):
-    cx = clamp(x)
-    cp = clamp(p)
-
-    # We don't actually inrease, but this reflects that
-    # we have done one comparison...
-    i += 1
-
     print(f"{' ' * i}i")
     print(f"{cx[:i-b]}{green(cx[i-b:i])}{yellow(cx[i])}{cx[i+1:]}")
     print(f"{' ' * (i - b)}{green(cp[:b])}{yellow(cp[b])}{cp[b+1:]}")

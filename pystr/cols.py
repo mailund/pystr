@@ -8,7 +8,7 @@ class Colour:
         self.ansi_code = ansi_code
 
     def __call__(self, s: Any) -> str:
-        return f"{self.ansi_code}{str(s)}{RESET}"
+        return f"{self}{str(s)}{RESET}"
 
     def __str__(self):
         return self.ansi_code
