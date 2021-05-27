@@ -33,7 +33,7 @@ without copying them.
 
     def __repr__(self):  # pragma: no cover
         cls_name = self.__class__.__name__
-        return f"{cls_name}(x={repr(self._x)}, start={self._i}, stop={self._j})" # noqal
+        return f"{cls_name}(x={repr(self._x)}, start={self._i}, stop={self._j})"  # noqa: E501
 
     def __iter__(self) -> Iterator[T]:
         return (self._x[i] for i in range(self._i, self._j))

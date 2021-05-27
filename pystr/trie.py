@@ -14,7 +14,7 @@ LS = NamedTuple('LS', [('label', int), ('x', subseq[str])])
 @dataclass(eq=False)
 class TrieNode:
     label: Optional[int] = None
-    out: dict[str, TrieNode] = field(default_factory=dict)
+    children: dict[str, TrieNode] = field(default_factory=dict)
 
     # These are only needed for the Aho-Corasick algorithm, not for
     # basic use of a trie.
@@ -28,14 +28,14 @@ class TrieNode:
 
     def __getitem__(self, a: str) -> TrieNode:
         # This just makes the code a little nicer
-        # to look at, avoiding the .out[].
-        return self.out[a]
+        # to look at, avoiding the .children[].
+        return self.children[a]
 
     def __setitem__(self, a: str, n: TrieNode):
-        self.out[a] = n
+        self.children[a] = n
 
     def __contains__(self, a: str):
-        return a in self.out
+        return a in self.children
 
     def to_dot(self, res: list[str]) -> list[str]:
         if self.label is None:
@@ -44,23 +44,23 @@ class TrieNode:
             res.append(f'{id(self)}[label="{self.label}", shape=circle]')
 
         if self.suffix_link is not None and not self.suffix_link.is_root:
-            res.append(f"{id(self)} -> {id(self.suffix_link)}[style=dotted, color=red]") # noqal
+            res.append(f"{id(self)} -> {id(self.suffix_link)}[style=dotted, color=red]")  # noqa: E501
         if self.out_list is not None:
-            res.append(f"{id(self)} -> {id(self.out_list)}[style=dotted, color=green]") # noqal
+            res.append(f"{id(self)} -> {id(self.out_list)}[style=dotted, color=green]")   # noqa: E501
 
-        for k, n in self.out.items():
+        for k, n in self.children.items():
             res.append(f'{id(self)} -> {id(n)}[label="{k}"]')
             n.to_dot(res)
         res.append("{ rank = same;" +
-                   ";".join(str(id(n)) for n in self.out.values()) +
+                   ";".join(str(id(n)) for n in self.children.values()) +
                    "}")
 
         return res
 
     def __eq__(self, other) -> bool:
         return type(other) == type(self) and \
-            sorted(self.out) == sorted(other.out) and \
-            all(self[k] == other[k] for k in self.out)
+            sorted(self.children) == sorted(other.children) and \
+            all(self[k] == other[k] for k in self.children)
 
 
 @dataclass(eq=False)
@@ -104,7 +104,7 @@ def depth_first_trie(*strings: str) -> Trie:
     queue = deque[TrieNode]([trie.root])
     while queue:
         n = queue.popleft()
-        for out_edge, child in n.out.items():
+        for out_edge, child in n.children.items():
             set_suffix_link(child, out_edge)
             queue.append(child)
 
@@ -149,7 +149,7 @@ def breadth_first_trie(*strings: str) -> Trie:
         parent, groups = queue.popleft()
         for edge, group in groups.items():
             node_lab, node_groups = group_strings(group)
-            parent.out[edge] = TrieNode(label=node_lab, parent=parent)
+            parent.children[edge] = TrieNode(label=node_lab, parent=parent)
             queue.append((parent[edge], node_groups))
             set_suffix_link(parent[edge], edge)
 

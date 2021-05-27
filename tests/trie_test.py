@@ -10,7 +10,7 @@ def get_path_label(node: TrieNode) -> str:
     # testing purposes
     res: list[str] = []
     while node.parent:
-        out, = [k for k, n in node.parent.out.items() if n is node]
+        out, = [k for k, n in node.parent.children.items() if n is node]
         res.append(out)
         node = node.parent
     return ''.join(reversed(res))
@@ -67,13 +67,13 @@ def test_mississippi_suffixes(constr=breadth_first_trie):
 
 def check_suffix_links(n: TrieNode):
     if n.parent:
-        assert n in n.parent.out.values()
+        assert n in n.parent.children.values()
 
     if n.suffix_link:
         path = get_path_label(n)
         s_path = get_path_label(n.suffix_link)
         assert path.endswith(s_path)
-    for n in n.out.values():
+    for n in n.children.values():
         check_suffix_links(n)
 
 
