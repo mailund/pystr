@@ -141,90 +141,78 @@ def bmh(x: str, p: str,
 
 
 # Code for visualising the algorithms...
-from .output import clamp                    # noqa: E402
-from .cols import yellow, green, red         # noqa: E402
-from .cols import bright_green, bright_blue  # noqa: E402
-from .cols import underline                  # noqa: E402
+from .output import colour                      # noqa: E402
+from .output import indent, out                 # noqa: E402
+from .cols import plain, yellow, green, red     # noqa: E402
+from .cols import bright_green, bright_blue     # noqa: E402
+from .cols import underline                     # noqa: E402
 
 
 def naive_show_mismatch(x: str, p: str, i: int, j: int):
-    cx = clamp(x)
-    cp = clamp(p)
-    print(f"{' ' * i}i")
-    print(f"{cx[:i]}{green(cx[i:i+j])}{red(cx[i+j])}{cx[i+j+1:]}")
-    print(f"{' ' * i}{green(cp[:j])}{red(cp[j])}{cp[j+1:]}")
-    print(f"{' ' * (i + j)}j")
-    print()
+    out(indent(i), "i")
+    out(colour(x)[i:i+j, green][i+j, red])
+    out(indent(i), colour(p)[:j, green][j, red])
+    out(indent(i+j), "j")
+    out()
 
 
 def naive_show_match(x: str, p: str, i: int):
-    cx = clamp(x)
-    print(f"{' ' * i}i")
-    print(f"{cx[:i]}{green(cx[i:i+len(p)])}{cx[i+len(p):]}")
-    print(f"{' ' * i}{green(p)}")
-    print(f"{' ' * (i + len(p))}j")
-    print()
+    out(indent(i), "i")
+    out(colour(x)[i:i+len(p), green])
+    out(indent(i), green(p))
+    out(indent(i+len(p)), "j")
+    out()
 
 
 def border_show_prefix_next_comp(x: str, p: str, i: int, b: int):
-    cx = clamp(x)
-    cp = clamp(p)
-    print(f"{' ' * i}i")
-    print(f"{cx[:i-b]}{green(cx[i-b:i])}{yellow(cx[i])}{cx[i+1:]}")
-    print(f"{' ' * (i - b)}{green(cp[:b])}{yellow(cp[b])}{cp[b+1:]}")
-    print(f"{' ' * i}b")
-    print()
+    out(indent(i), "i")
+    out(colour(x)[i-b:i, green][i, yellow])
+    out(indent(i - b), colour(p)[:b, green][b, yellow])
+    out(indent(i), "b")
+    out()
 
 
 def kmp_show_prefix_next_comp(x: str, p: str, i: int, j: int):
-    cx = clamp(x)
-    cp = clamp(p)
-    print(f"{' ' * i}i")
-    print(f"{cx[:i-j]}{green(cx[i-j:i])}{yellow(cx[i])}{cx[i+1:]}")
-    print(f"{' ' * (i - j)}{green(cp[:j])}{yellow(cp[j])}{cp[j+1:]}")
-    print(f"{' ' * i}j")
-    print()
+    out(indent(i), "i")
+    out(colour(x)[i-j:i, green][i, yellow])
+    out(indent(i - j), colour(p)[:j, green][j, yellow])
+    out(indent(i), "j")
+    out()
 
 
 def kmp_show_prefix_mismatch(x: str, p: str, i: int, j: int):
-    cx = clamp(x)
-    cp = clamp(p)
-    print(f"{' ' * i}i")
-    print(f"{cx[:i-j]}{green(cx[i-j:i])}{red(cx[i])}{cx[i+1:]}")
-    print(f"{' ' * (i - j)}{green(cp[:j])}{red(cp[j])}{cp[j+1:]}")
-    print(f"{' ' * i}j")
-    print()
+    out(indent(i), "i")
+    out(colour(x)[i-j:i, green][i, red])
+    out(indent(i - j), colour(p)[:j, green][j, red])
+    out(indent(i), "j")
+    out()
 
 
 def bmh_next_comp(x: str, p: str, i: int):
-    cx = clamp(x)
     j = len(p)
-    print(f"{' ' * (i + j - 1)}v")
-    print(f"{cx[:i+j-1]}{yellow(cx[i+j-1])}{cx[i+j:]}")
-    print(f"{' ' * i}{p[:-1]}{yellow(p[-1])}")
-    print(f"{' ' * (i + j - 1)}^")
-    print()
+    out(indent(i + j - 1), "v")
+    out(colour(x)[i+j-1, yellow])
+    out(indent(i), colour(p)[-1, yellow])
+    out(indent(i + j - 1), "^")
+    out()
 
 
 def bmh_mismatch(x: str, p: str, i: int, j: int):
-    cx = clamp(x)
-    cp = clamp(p)
     col = red if x[i+j] != p[j] else green
-    print(f"{' ' * (i + j)}v")
-    print(f"{cx[:i+j]}{col(cx[i+j])}{green(cx[i+j+1:i+len(p)])}{cx[i+len(p):]}")  # noqa: E501
-    print(f"{' ' * i}{cp[:j]}{col(cp[j])}{green(cp[j+1:])}")
-    print(f"{' ' * (i + j)}^")
-    print()
+    out(indent(i + j), "v")
+    out(colour(x)[i+j, col][i+j+1:i+len(p), green])
+    out(indent(i), colour(p)[j, col][j+1:, green])
+    out(indent(i + j), "^")
+    out()
 
 
 def bmh_shift(x: str, p: str, i: int, j: int, shift: int):
-    cx = clamp(x)
-    cp = clamp(p)
     pos = i + len(p) - 1
     rmost = len(p) - shift - 1
     col = green if rmost >= 0 else red
-    print(f"{' ' * (pos)}v")
-    print(f"{cx[:pos]}{col(cx[pos])}{cx[pos+1:]}")  # noqa: E501
-    print(f"{' ' * (i + shift)}{cp[:rmost]}{green(cp[rmost])}{cp[rmost+1:]}")  # noqa: E501
-    print(f"{' ' * (i + shift + rmost)}^")
-    print()
+    rmost_col = green if rmost >= 0 else plain
+    out(indent(pos), "v")
+    out(colour(x)[pos, col])
+    out(indent(i + shift), colour(p)[rmost, rmost_col])
+    out(indent(i + shift + rmost), "^")
+    out()

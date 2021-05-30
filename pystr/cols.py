@@ -1,6 +1,9 @@
 from typing import Any
 
 
+RESET = "\u001b[0m"
+
+
 class Colour:
     ansi_code: str
 
@@ -36,4 +39,5 @@ bold           = Colour("\u001b[1m")     # noqa: E221
 underline      = Colour("\u001b[4m")     # noqa: E221
 reverse        = Colour("\u001b[7m")     # noqa: E221
 
-RESET = "\u001b[0m"
+# This is a bit of a hack to represent no formatting
+plain          = Colour(RESET)           # noqa: E221
