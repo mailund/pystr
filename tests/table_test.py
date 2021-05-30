@@ -1,7 +1,7 @@
 import _setup  # noqa: F401
 
 from pystr.sais import sais
-from pystr.cols import underline, bright_yellow, bold, black, red
+from pystr.cols import underline, bright_yellow, bold, black, red, magenta
 from pystr.cols import bright_red, bright_green, bright_blue, green
 from pystr.output import colour, Table, L, R, ColSpec, Align
 from pystr.bwt import c_table, o_table
@@ -58,8 +58,7 @@ def test_bwt():
     print(tbl)
     print()
 
-    print(bright_blue(
-        f"{underline}Find the bucket:"))
+    print(bright_blue(f"{underline}Find the bucket:"))
     print()
     tbl = rotation_table(x, sa)
     tbl[k]["pointer"] = bold("k ->")
@@ -75,8 +74,28 @@ def test_bwt():
     print(tbl)
     print()
 
-    print(bright_blue(
-        f"{underline}Count offset:"))
+    print(bright_blue(f"{underline}Count offset:"))
+    print()
+    tbl = rotation_table(x, sa)
+    for i in range(k):
+        row = tbl[i]
+        rot = row["rotation"]
+        if rot[-1] == a:
+            row["prefix"] = bright_green(rot[-1])
+            row["rotation"] = colour(
+                rot)[:-1, magenta & underline][-1, black]
+        else:
+            row["prefix"] = red(rot[-1])
+            row["rotation"] = colour(rot)[:-1, red & underline][-1, black]
+
+    tbl[k]["pointer"] = bold("k ->")
+    tbl[k]["prefix"] = bright_green(a)
+    tbl[k]["rotation"] = colour(tbl[k]["rotation"])[
+        0:-1, underline & bright_yellow][-1, black]
+
+    print(tbl)
+
+    print(bright_blue(f"{underline}Done:"))
     print()
     tbl = rotation_table(x, sa)
     # FIXME: handle overlapping pointers
@@ -91,16 +110,17 @@ def test_bwt():
         row = tbl[i]
         if row["rotation"].endswith(a):
             row["rotation"] = \
-                colour(row["rotation"])[:-1, underline & red][-1, bright_green]
+                colour(row["rotation"])[
+                :-1, underline & magenta][-1, bright_green]
 
     for i in range(ctab[a], ctab[a]+otab[a][k]):
         row = tbl[i]
         row["rotation"] = colour(row["rotation"])[
-            0, bright_green][1:, underline & red]
+            0, bright_green][1:, underline & magenta]
 
     row = tbl[ctab[a]+otab[a][k]]
     row["pointer"] = green(f"C[{a}]") + " + " + \
-        red(f"O[{a},{k}]") + " ->"
+        magenta(f"O[{a},{k}]") + " ->"
     row["rotation"] = \
         colour(row["rotation"])[0, bright_green][1:, underline & bright_yellow]
 
