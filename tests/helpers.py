@@ -25,9 +25,11 @@ def pick_random_patterns_len(x: str, n: int, patlen: int) -> Iterator[str]:
 
 
 def check_sorted(x: str, sa: list[int]):
-    assert len(x) > 0 and len(x) == len(sa)
+    assert len(x) > 0
+    assert len(x) == len(sa) or len(x) + 1 == len(sa)
     y = substr(x)  # For faster comparison (faster than slicing)
-    for i in range(len(sa) - 1):
+    start = 0 if len(sa) == len(x) else 1  # skip sentinel if included
+    for i in range(start, len(sa) - 1):
         j, k = sa[i], sa[i+1]
         assert y[j:] < y[k:], \
             f"String {x}, suffix x[{j}:] = {x[j:]} >= x[{k}:] = {x[k:]}"

@@ -71,14 +71,18 @@ def test_is_LMS():
 
 
 def test_base_case():
-    assert sais("abc") == [0, 1, 2]
-    assert sais("cba") == [2, 1, 0]
-    assert sais("acb") == [0, 2, 1]
+    assert sais("abc") == [3, 0, 1, 2]
+    assert sais("cba") == [3, 2, 1, 0]
+    assert sais("acb") == [3, 0, 2, 1]
 
 
 def test_mississippi():
     x = "mississippi"
     sa = sais(x)
+    assert len(x) == len(sa) - 1
+    check_sorted(x, sa)
+
+    sa = sais(x, include_sentinel=False)
     assert len(x) == len(sa)
     check_sorted(x, sa)
 
@@ -86,6 +90,11 @@ def test_mississippi():
 def test_adccacacbbccdccdbccb():
     x = "adccacacbbccdccdbccb"
     sa = sais(x)
+    assert len(x) == len(sa) - 1
+    assert sa[0] == len(x)
+    check_sorted(x, sa)
+
+    sa = sais(x, include_sentinel=False)
     assert len(x) == len(sa)
     check_sorted(x, sa)
 

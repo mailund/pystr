@@ -150,7 +150,7 @@ def skew_rec(x: list[int], asize: int) -> list[int]:
     return merge(x, SA12, SA3)
 
 
-def skew(x: str, include_sentinel=False) -> list[int]:
+def skew(x: str, include_sentinel=True) -> list[int]:
     "Skew algorithm for a string."
     # The skew_rec() function wants a list of integers,
     # so we convert the string in the first call.

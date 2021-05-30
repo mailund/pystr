@@ -81,8 +81,10 @@ def induce_L(x: subseq[int], sa: msubseq[int],
     next_front = buckets.calc_fronts()
     for i in range(len(x)):
         j = sa[i] - 1
-        if sa[i] == 0 or sa[i] == UNDEFINED: continue # noqa: 701
-        if is_S[j]:                          continue # noqa: 701
+        if sa[i] == 0 or sa[i] == UNDEFINED:
+            continue  # noqa: 701
+        if is_S[j]:
+            continue  # noqa: 701
         sa[next_front(x[j])] = j
 
 
@@ -91,14 +93,18 @@ def induce_S(x: subseq[int], sa: msubseq[int],
     next_end = buckets.calc_ends()
     for i in reversed(range(len(x))):
         j = sa[i] - 1
-        if sa[i] == 0:  continue # noqa: 701
-        if not is_S[j]: continue # noqa: 701
+        if sa[i] == 0:
+            continue  # noqa: 701
+        if not is_S[j]:
+            continue  # noqa: 701
         sa[next_end(x[j])] = j
 
 
 def equal_LMS(x: subseq[int], is_S: BitVector, i: int, j: int) -> bool:
-    if i == j:                      return True   # noqa: 701
-    if i == len(x) or j == len(x):  return False  # noqa: 701
+    if i == j:
+        return True   # noqa: 701
+    if i == len(x) or j == len(x):
+        return False  # noqa: 701
 
     for k in count():  # k goes from 0 to infinity
         iLMS = is_LMS(is_S, i + k)
@@ -200,7 +206,7 @@ def sais_rec(x: subseq[int], sa: msubseq[int], asize: int, is_S: BitVector):
         induce_S(x, sa, buckets, is_S)
 
 
-def sais(x: str, include_sentinel=False) -> list[int]:
+def sais(x: str, include_sentinel=True) -> list[int]:
     s, asize = map_string(x)
     sa = [0] * len(s)
     is_S = BitVector(size=len(s))
