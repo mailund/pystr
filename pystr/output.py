@@ -1,4 +1,4 @@
-# from dataclasses import dataclass
+from enum import Enum, auto
 from typing import NamedTuple
 from typing import Protocol
 from .cols import Colour, plain
@@ -86,6 +86,56 @@ class colour:
     def __str__(self):
         self.complete_segments()
         return "".join(
-            col(self.x[start:stop])
+            str(col(self.x[start:stop]))
             for start, stop, col in self.segments
         )
+
+
+class Align(Enum):
+    LEFT = auto()
+    RIGHT = auto()
+    # fuck centre! (I don't need it now)
+
+
+class table:
+    cols: tuple[Align, ...]
+    rows: list[tuple[Formattable, ...]]
+    colsep: str
+
+    def __init__(self, *cols: Align, colsep=' '):
+        self.cols = cols
+        self.rows = []
+        self.colsep = colsep
+
+    def __getitem__(self, row: tuple[Formattable, ...]):
+        assert len(row) == len(self.cols), \
+            "Each row must have a column for each column in the table."
+        self.rows.append(row)
+        return self
+
+    def _get_col_widths(self) -> list[int]:
+        widths = [0] * len(self.cols)
+        for row in self.rows:
+            for i, c in enumerate(row):
+                widths[i] = max(widths[i], len(c))
+        return widths
+
+    def _format_strings(self) -> list[str]:
+        colw = self._get_col_widths()
+        fmt_strings: list[str] = []
+        for i in range(len(colw)):
+            if self.cols[i] is Align.LEFT:
+                fmt_strings.append("{"+f":{colw[i]}"+"}")
+            if self.cols[i] is Align.RIGHT:
+                fmt_strings.append("{"+f":>{colw[i]}"+"}")
+        return fmt_strings
+
+    def __str__(self):
+        fmt_strings = self._format_strings()
+        rows = []
+        for row in self.rows:
+            rows.append(
+                self.colsep.join(fmt.format(str(x))
+                                 for fmt, x in zip(fmt_strings, row))
+            )
+        return "\n".join(rows)
