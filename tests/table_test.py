@@ -3,7 +3,7 @@ import _setup  # noqa: F401
 from pystr.sais import sais
 from pystr.cols import underline, bright_yellow, bold, black, red
 from pystr.cols import bright_red, bright_green, bright_blue, green
-from pystr.output import colour, Table, L, R, ColSpec
+from pystr.output import colour, Table, L, R, ColSpec, Align
 from pystr.bwt import c_table, o_table
 
 
@@ -22,7 +22,7 @@ def test_sa_table():
 
 def rotation_table(x: str, sa: list[int]):
     tbl = Table(
-        ColSpec("pointer"),
+        ColSpec("pointer", align=Align.RIGHT),
         ColSpec("prefix", right_pad=""),
         ColSpec("rotation")
     )
@@ -85,7 +85,7 @@ def test_bwt():
     tbl[k]["rotation"] = colour(tbl[k]["rotation"])[
         0:-1, underline & bright_yellow][-1, black]
 
-    tbl[ctab[a]]["pointer"] = bright_blue(f"C[{a}] ->")
+    tbl[ctab[a]]["pointer"] = green(f"C[{a}] ->")
 
     for i in range(k):
         row = tbl[i]
@@ -99,8 +99,8 @@ def test_bwt():
             0, bright_green][1:, underline & red]
 
     row = tbl[ctab[a]+otab[a][k]]
-    row["pointer"] = bright_blue(f"C[{a}]") + " + " + \
-        bright_green(f"O[{a},{k}]") + " ->"
+    row["pointer"] = green(f"C[{a}]") + " + " + \
+        red(f"O[{a},{k}]") + " ->"
     row["rotation"] = \
         colour(row["rotation"])[0, bright_green][1:, underline & bright_yellow]
 
