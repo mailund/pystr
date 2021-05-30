@@ -1,21 +1,20 @@
-
+from __future__ import annotations
+import re
 RESET = "\u001b[0m"
 
+strip_ANSI_escapes = re.compile(r"""
+    \u001b\[  # The escape code, then
+    [;\d]*    # zero or more digits or semicolons,
+    [A-Za-z]  # followed by a letter (FIXME: don't know if only m?)
+    """, re.VERBOSE).sub
 
-# Remember the original length when we colour a string
-class ColouredString:
-    x: str
-    orig_len: int
 
-    def __init__(self, x: str, orig_len: int):
-        self.x = x
-        self.orig_len = orig_len
+def strip_ansi(s: str):
+    return strip_ANSI_escapes("", s)
 
-    def __str__(self):
-        return self.x
 
-    def __len__(self):
-        return self.orig_len
+def ansifree_len(s: str):
+    return len(strip_ansi(s))
 
 
 class Colour:
@@ -24,9 +23,12 @@ class Colour:
     def __init__(self, ansi_code: str):
         self.ansi_code = ansi_code
 
-    def __call__(self, s: str) -> ColouredString:
+    def __call__(self, s: str) -> str:
         x = str(s)
-        return ColouredString(f"{self}{x}{RESET}", len(x))
+        return f"{self}{x}{RESET}"
+
+    def __and__(self, other: Colour):
+        return Colour(self.ansi_code + other.ansi_code)
 
     def __str__(self):
         return self.ansi_code

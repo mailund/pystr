@@ -1,23 +1,18 @@
 from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum, auto
-from typing import NamedTuple, Protocol
-from .cols import Colour, plain
+from typing import NamedTuple, Callable, Any
+from .cols import Colour, plain, strip_ansi, ansifree_len
 
 
-class Formattable(Protocol):
-    def __len__(self): ...
-    def __str__(self): ...
+def out(*xs: Any):  # FIXME: maybe get rid of this
+    for x in xs:
+        print(str(x), sep="", end="")
+    print()
 
 
 def indent(i: int):
     return ' ' * i
-
-
-def out(*xs: Formattable):
-    for x in xs:
-        print(x, sep="", end="")
-    print()
 
 
 def clamp_index(x: str, i: int) -> int:
@@ -37,7 +32,7 @@ class colour:
     segments: list[ColourSegment]
 
     def __init__(self, x: str):
-        self.x = x
+        self.x = strip_ansi(x)
         self.segments = []
 
     def __getitem__(self, arg: tuple[int | slice, Colour]):
@@ -81,9 +76,6 @@ class colour:
             res.append(ColourSegment(cur, len(self.x), plain))
         self.segments = res
 
-    def __len__(self):
-        return len(self.x)  # len without ansi codes
-
     def __str__(self):
         self.complete_segments()
         return "".join(
@@ -113,22 +105,22 @@ R = ColSpec(align=Align.RIGHT)
 @dataclass
 class Row:
     tbl: Table
-    cells: list[Formattable]
+    cells: list[str]
 
     def __iter__(self):
         return iter(self.cells)
 
-    def __getitem__(self, col: int | str) -> Formattable:
+    def __getitem__(self, col: int | str) -> str:
         if isinstance(col, int):
             return self.cells[col]
         else:
             return self.cells[self.tbl.col_names[col]]
 
-    def __setitem__(self, col: int | str, val: Formattable):
+    def __setitem__(self, col: int | str, val: str):
         if isinstance(col, int):
-            self.cells[col] = val
+            self.cells[col] = str(val)
         else:
-            self.cells[self.tbl.col_names[col]] = val
+            self.cells[self.tbl.col_names[col]] = str(val)
 
 
 class Table:
@@ -144,12 +136,10 @@ class Table:
             col.name: i for i, col in enumerate(self.cols)
         }
 
-    def append_row(self, *row: tuple[Formattable, ...]):
-        assert len(row) == len(self.cols), \
-            "Each row must have a column for each column in the table."
-        self.rows.append(Row(self, list(row)))
+    def __getitem__(self, i: int):
+        return self.rows[i]
 
-    def next_row(self) -> Row:
+    def add_row(self) -> Row:
         row = Row(self, [""] * len(self.cols))
         self.rows.append(row)
         return row
@@ -158,30 +148,32 @@ class Table:
         widths = [0] * len(self.cols)
         for row in self.rows:
             for i, cell in enumerate(row):
-                widths[i] = max(widths[i], len(cell))
+                widths[i] = max(widths[i], ansifree_len(cell))
         return widths
 
-    def _format_strings(self) -> list[str]:
+    def _formatters(self) -> list[Callable[[str], str]]:
         colw = self._get_col_widths()
-        fmt_strings: list[str] = []
+        formatters: list[Callable[[str], str]] = []
+        def left(w): return lambda x: x + ' ' * (w - ansifree_len(x))
+        def right(w): return lambda x: ' ' * (w - ansifree_len(x)) + x
         for i in range(len(colw)):
             # FIXME: pattern match this when mypy can handle it
             if self.cols[i].align is Align.LEFT:
-                fmt_strings.append("{"+f":{colw[i]}"+"}")
+                formatters.append(left(colw[i]))
             elif self.cols[i].align is Align.RIGHT:
-                fmt_strings.append("{"+f":>{colw[i]}"+"}")
+                formatters.append(right(colw[i]))
             else:
                 assert False, "Unknown alignment"
-        return fmt_strings
+        return formatters
 
     def __str__(self):
-        fmt_strings = self._format_strings()
+        formatters = self._formatters()
         rows = []
         for row in self.rows:
             rows.append(
                 "".join(
-                    cspec.left_pad+fmt.format(str(x))+cspec.right_pad
-                    for fmt, cspec, x in zip(fmt_strings, self.cols, row)
+                    cspec.left_pad+fmt(x)+cspec.right_pad
+                    for fmt, cspec, x in zip(formatters, self.cols, row)
                 )
             )
         return "\n".join(rows)
