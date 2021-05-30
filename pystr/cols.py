@@ -11,8 +11,11 @@ class ColouredString:
         self.x = x
         self.orig_len = orig_len
 
-    def __str__(self): return self.x
-    def __len__(self): return self.orig_len
+    def __str__(self):
+        return self.x
+
+    def __len__(self):
+        return self.orig_len
 
 
 class Colour:

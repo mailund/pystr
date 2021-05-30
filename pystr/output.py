@@ -1,6 +1,7 @@
+from __future__ import annotations
+from dataclasses import dataclass
 from enum import Enum, auto
-from typing import NamedTuple
-from typing import Protocol
+from typing import NamedTuple, Protocol
 from .cols import Colour, plain
 
 
@@ -97,37 +98,80 @@ class Align(Enum):
     # fuck centre! (I don't need it now)
 
 
-class table:
-    cols: tuple[Align, ...]
-    rows: list[tuple[Formattable, ...]]
-    colsep: str
+@dataclass(frozen=True)
+class ColSpec:
+    name: str = ""
+    left_pad: str = ""
+    right_pad: str = " "
+    align: Align = Align.LEFT
 
-    def __init__(self, *cols: Align, colsep=' '):
+
+L = ColSpec()
+R = ColSpec(align=Align.RIGHT)
+
+
+@dataclass
+class Row:
+    tbl: Table
+    cells: list[Formattable]
+
+    def __iter__(self):
+        return iter(self.cells)
+
+    def __getitem__(self, col: int | str) -> Formattable:
+        if isinstance(col, int):
+            return self.cells[col]
+        else:
+            return self.cells[self.tbl.col_names[col]]
+
+    def __setitem__(self, col: int | str, val: Formattable):
+        if isinstance(col, int):
+            self.cells[col] = val
+        else:
+            self.cells[self.tbl.col_names[col]] = val
+
+
+class Table:
+    cols: tuple[ColSpec, ...]
+    rows: list[Row]
+    col_names: dict[str, int]
+
+    def __init__(self, *cols: ColSpec):
         self.cols = cols
         self.rows = []
-        self.colsep = colsep
 
-    def __getitem__(self, row: tuple[Formattable, ...]):
+        self.col_names = {
+            col.name: i for i, col in enumerate(self.cols)
+        }
+
+    def append_row(self, *row: tuple[Formattable, ...]):
         assert len(row) == len(self.cols), \
             "Each row must have a column for each column in the table."
+        self.rows.append(Row(self, list(row)))
+
+    def next_row(self) -> Row:
+        row = Row(self, [""] * len(self.cols))
         self.rows.append(row)
-        return self
+        return row
 
     def _get_col_widths(self) -> list[int]:
         widths = [0] * len(self.cols)
         for row in self.rows:
-            for i, c in enumerate(row):
-                widths[i] = max(widths[i], len(c))
+            for i, cell in enumerate(row):
+                widths[i] = max(widths[i], len(cell))
         return widths
 
     def _format_strings(self) -> list[str]:
         colw = self._get_col_widths()
         fmt_strings: list[str] = []
         for i in range(len(colw)):
-            if self.cols[i] is Align.LEFT:
+            # FIXME: pattern match this when mypy can handle it
+            if self.cols[i].align is Align.LEFT:
                 fmt_strings.append("{"+f":{colw[i]}"+"}")
-            if self.cols[i] is Align.RIGHT:
+            elif self.cols[i].align is Align.RIGHT:
                 fmt_strings.append("{"+f":>{colw[i]}"+"}")
+            else:
+                assert False, "Unknown alignment"
         return fmt_strings
 
     def __str__(self):
@@ -135,7 +179,9 @@ class table:
         rows = []
         for row in self.rows:
             rows.append(
-                self.colsep.join(fmt.format(str(x))
-                                 for fmt, x in zip(fmt_strings, row))
+                "".join(
+                    cspec.left_pad+fmt.format(str(x))+cspec.right_pad
+                    for fmt, cspec, x in zip(fmt_strings, self.cols, row)
+                )
             )
         return "\n".join(rows)
