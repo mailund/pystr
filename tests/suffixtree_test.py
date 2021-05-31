@@ -7,6 +7,9 @@ from helpers import random_string, check_sorted, check_matches
 from pystr.suffixtree import SuffixTree
 from pystr import naive_st_construction
 from pystr import mccreight_st_construction
+from pystr import lcp_st_construction
+from pystr import sais
+from pystr.lcp import lcp_from_sa
 
 from typing import Callable
 
@@ -57,3 +60,31 @@ def test_search_mississippi_naive():
 
 def test_search_mississippi_mccreight():
     check_search_mississippi(mccreight_st_construction)
+
+
+def lcp_construction_wrapper(x: str, include_sentinel=False):
+    sa = sais(x, include_sentinel=include_sentinel)
+    lcp = lcp_from_sa(x, sa)
+    return lcp_st_construction(x, sa, lcp)
+
+
+def test_lcp_to_dot():
+    mississippi_to_dot(lcp_construction_wrapper)
+
+
+def test_lcp_sorted():
+    for k in range(10):
+        x = random_string(500)
+        st = lcp_construction_wrapper(x)
+        check_sorted(x, list(st.root))  # using the leaf iterator
+
+
+def test_search_mississippi_lcp():
+    check_search_mississippi(lcp_construction_wrapper)
+
+
+if __name__ == '__main__':
+    for name, f in list(globals().items()):
+        if name.startswith("test_"):
+            print(name)
+            f()

@@ -2,9 +2,11 @@ from __future__ import annotations
 from collections.abc import Iterator, Iterable
 from dataclasses import dataclass, field
 from typing import Optional
+import sys
 
 from .subseq import subseq
 
+# SECTION Suffix Tree representation
 
 # You don't need separate leaf/inner classes, but you get a little
 # type checking if you have them. You also save a little space by
@@ -83,6 +85,31 @@ class Leaf(Node):
         yield self.leaf_label
 
 
+@dataclass
+class SuffixTree:
+    root: Inner
+
+    def search(self, p: str) -> Iterator[int]:
+        n, j, y = tree_search(self.root, subseq[str](p))
+        if j == len(y):
+            # We search all the way through the last string,
+            # so we have a match
+            return iter(n)
+        else:
+            return iter(())
+
+    def __contains__(self, p: str):
+        _, j, y = tree_search(self.root, subseq[str](p))
+        return j == len(y)
+
+    def to_dot(self) -> str:
+        return "digraph { rankdir=\"LR\" " + '\n'.join(self.root.to_dot([])) + "}"  # noqa
+
+# !SECTION
+
+# SECTION Searching in a suffix tree
+
+
 def first_mismatch(x: Iterable[str], y: Iterable[str]) -> int:
     """Returns how far along x and y we can match.
 Return index of first mismatch."""
@@ -93,6 +120,7 @@ Return index of first mismatch."""
     return i + 1  # matched all the way through
 
 
+# FIXME: I think this would be nicer with classes and pattern matching...
 SearchResult = tuple[Node, int, subseq[str]]
 # This is the node we last searched on, how far down
 # the edge we got (or zero if we couldn't leave the
@@ -142,27 +170,6 @@ def tree_fastsearch(n: Inner, p: subseq[str]) -> SearchResult:
     assert False, "We should never get here"
 
 
-@dataclass
-class SuffixTree:
-    root: Inner
-
-    def search(self, p: str) -> Iterator[int]:
-        n, j, y = tree_search(self.root, subseq[str](p))
-        if j == len(y):
-            # We search all the way through the last string,
-            # so we have a match
-            return iter(n)
-        else:
-            return iter(())
-
-    def __contains__(self, p: str):
-        _, j, y = tree_search(self.root, subseq[str](p))
-        return j == len(y)
-
-    def to_dot(self) -> str:
-        return "digraph { rankdir=\"LR\" " + '\n'.join(self.root.to_dot([])) + "}"  # noqa
-
-
 def break_edge(leaf_label: int, n: Node, k: int, z: subseq[str]) -> Leaf:
     """Break the edge to node `n`, `k` characters down, adding a new leaf
 with label `label` with edge `z`. Returns the new leaf."""
@@ -178,7 +185,11 @@ with label `label` with edge `z`. Returns the new leaf."""
     return new_leaf
 
 
-def naive_st_construction(s: str, include_sentinel=True):
+# !SECTION
+
+# SECTION Naive construction algorithm
+
+def naive_st_construction(s: str, include_sentinel=True) -> SuffixTree:
     """Construct a suffix tree by searching from the root
 down to the insertion point for each suffix in `s`."""
 
@@ -204,8 +215,12 @@ down to the insertion point for each suffix in `s`."""
 
     return SuffixTree(root)
 
+# !SECTION
 
-def mccreight_st_construction(s: str, include_sentinel=True):
+# SECTION McCreights construction algorithm
+
+
+def mccreight_st_construction(s: str, include_sentinel=True) -> SuffixTree:
     """Construct a suffix tree by searching from the root
 down to the insertion point for each suffix in `s`."""
 
@@ -288,3 +303,49 @@ down to the insertion point for each suffix in `s`."""
             v = break_edge(i, n, j, w[j:])
 
     return SuffixTree(root)
+
+# !SECTION
+
+# SECTION LCP construction algorithm
+
+
+def search_up(n: Node, length: int) -> tuple[Node, int]:
+    # print()
+    #print("search_up:", n, length)
+    while length and len(n.edge_label) <= length:
+        assert length - len(n.edge_label) >= 0
+        # print("move to", n.parent, "and reducing",
+        #      length, "->", length - len(n.edge_label))
+        assert n.parent is not None  # This is mostly for the type checker...
+        length -= len(n.edge_label)
+        n = n.parent
+    assert length == 0 or len(n.edge_label) > length, "the hell???"
+    #print("forpulede lort", n, length)
+    # print
+    return n, len(n.edge_label) - length
+
+
+def lcp_st_construction(s: str, sa: list[int], lcp: list[int]) -> SuffixTree:
+    # Add the sentinel character. We always need it.
+    # The sa/lcp arrays determine if it is included in the
+    # topology
+    x = subseq[str](s + '\x00')
+
+    root = Inner(x[0:0])
+    v = Leaf(sa[0], x[sa[0]:])
+    root.add_children(v)
+
+    for i in range(1, len(sa)):
+        n, depth = search_up(v, len(x) - sa[i-1] - lcp[i])
+        if depth == 0:
+            # It is, but the type checker doesn't know yet...
+            assert isinstance(n, Inner)
+
+            v = Leaf(sa[i], x[sa[i] + lcp[i]:])
+            n.add_children(v)
+        else:
+            v = break_edge(sa[i], n, depth, x[sa[i] + lcp[i]:])
+
+    return SuffixTree(root)
+
+# !SECTION
