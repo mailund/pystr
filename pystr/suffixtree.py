@@ -310,18 +310,10 @@ down to the insertion point for each suffix in `s`."""
 
 
 def search_up(n: Node, length: int) -> tuple[Node, int]:
-    # print()
-    #print("search_up:", n, length)
     while length and len(n.edge_label) <= length:
-        assert length - len(n.edge_label) >= 0
-        # print("move to", n.parent, "and reducing",
-        #      length, "->", length - len(n.edge_label))
         assert n.parent is not None  # This is mostly for the type checker...
         length -= len(n.edge_label)
         n = n.parent
-    assert length == 0 or len(n.edge_label) > length, "the hell???"
-    #print("forpulede lort", n, length)
-    # print
     return n, len(n.edge_label) - length
 
 
