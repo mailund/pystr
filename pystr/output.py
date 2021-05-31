@@ -1,6 +1,7 @@
 from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum, auto
+from collections import deque
 from typing import NamedTuple, Callable, Any
 from .cols import Colour, plain, strip_ansi, ansifree_len
 
@@ -25,6 +26,67 @@ ColourSegment = NamedTuple(
     "ColourSegment",
     [("start", int), ("stop", int), ("col", Colour)]
 )
+
+
+# There must be a better way to handle overlapping intervals,
+# but segmented text is short and I am ok with a hack that's
+# fast to impement...
+# This function merges lists of sorted non-overlapping segments
+# and with divide and conquer I get segmentation in O(n log n).
+# FIXME: I haven't tested it particularly well yet!
+def merge_segments(x: list[ColourSegment], y: list[ColourSegment]) \
+        -> list[ColourSegment]:
+
+    res: list[ColourSegment] = []
+    while x and y:
+        a, b = x.pop(), y.pop()
+
+        if b.start >= a.stop:
+            # we can emit all of b and keep a
+            res.append(b)
+            x.append(a)
+        elif a.start >= b.stop:
+            # we can emit all of a and keep b
+            res.append(a)
+            y.append(b)
+
+        elif a.stop < b.stop:
+            # emit the non-overlapping part of b
+            res.append(ColourSegment(a.stop, b.stop, b.col))
+            if b.start < a.stop:  # if there is something left of b, keep it
+                y.append(ColourSegment(b.start, a.stop, b.col))
+            x.append(a)  # keep a
+
+        elif b.stop < a.stop:
+            # emit the non-overlapping part of a
+            res.append(ColourSegment(b.stop, a.stop, a.col))
+            if a.start < b.stop:  # if there is something left of b, keep it
+                x.append(ColourSegment(a.start, b.stop, a.col))
+            y.append(b)  # keep b
+
+        elif a.stop == b.stop:
+            # Now we split based on the starting point
+            if a.start < b.start:
+                # emit b and reduce a
+                res.append(b)
+                x.append(ColourSegment(a.start, b.start, a.col))
+            else:
+                # emit a and reduce b
+                res.append(a)
+                x.append(ColourSegment(b.start, a.start, b.col))
+
+        else:
+            assert False, "We should have handled all cases"
+
+    res.extend(reversed(x))
+    res.extend(reversed(y))
+    res = res[::-1]
+
+    # FIXME: remove this check
+    for i in range(len(res) - 1):
+        assert res[i].stop <= res[i+1].start
+
+    return res
 
 
 class colour:
@@ -59,10 +121,19 @@ class colour:
         )
         return self
 
-    def complete_segments(self):
+    def _split_segments(self):
         if not self.segments:
             return
-        self.segments.sort(key=lambda seg: seg.start)
+        queue = deque([seg] for seg in self.segments)
+        while len(queue) > 1:
+            queue.append(merge_segments(queue.popleft(), queue.popleft()))
+        self.segments = queue[0]
+
+    def _complete_segments(self):
+        if not self.segments:
+            return
+
+        self._split_segments()
         res: list[ColourSegment] = []
         cur: int = 0
         for seg in self.segments:
@@ -77,7 +148,7 @@ class colour:
         self.segments = res
 
     def __str__(self):
-        self.complete_segments()
+        self._complete_segments()
         return "".join(
             str(col(self.x[start:stop]))
             for start, stop, col in self.segments
@@ -177,3 +248,11 @@ class Table:
                 )
             )
         return "\n".join(rows)
+
+
+def place_pointers(*pointers: tuple[str, int]):
+    m = max(p[1] for p in pointers)
+    out = [' '] * (m + 1)
+    for name, loc in pointers:
+        out[loc] = name
+    return ''.join(out)
