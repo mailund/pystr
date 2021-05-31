@@ -199,14 +199,6 @@ def bmh_shift(x: str, p: str, i: int, j: int, shift: int):
     out()
 
 
-def foo():
-    print("foo")
-
-
-def bar():
-    print("bar")
-
-
 def main():
     algos = {
         'naive': naive,
