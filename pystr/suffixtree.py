@@ -48,7 +48,7 @@ class Inner(Node):
             res.append(f'{id(self)}[label="", shape=point]')
             res.append(f'{id(self.parent)} -> {id(self)}[label="{el}"]')
         if self.suffix_link:
-            res.append(f"{id(self)} -> {id(self.suffix_link)}[style=dashed, color=red]") # noqa
+            res.append(f"{id(self)} -> {id(self.suffix_link)}[style=dashed, color=red]")  # noqa
         for child in self.children.values():
             child.to_dot(res)
 
@@ -160,7 +160,7 @@ class SuffixTree:
         return j == len(y)
 
     def to_dot(self) -> str:
-        return "digraph { rankdir=\"LR\" " + '\n'.join(self.root.to_dot([])) + "}" # noqa
+        return "digraph { rankdir=\"LR\" " + '\n'.join(self.root.to_dot([])) + "}"  # noqa
 
 
 def break_edge(leaf_label: int, n: Node, k: int, z: subseq[str]) -> Leaf:
@@ -178,7 +178,7 @@ with label `label` with edge `z`. Returns the new leaf."""
     return new_leaf
 
 
-def naive_st_construction(s: str):
+def naive_st_construction(s: str, include_sentinel=True):
     """Construct a suffix tree by searching from the root
 down to the insertion point for each suffix in `s`."""
 
@@ -186,10 +186,9 @@ down to the insertion point for each suffix in `s`."""
     root = Inner(x[0:0])
 
     # Insert suffixes one at a time...
-    # I leave out the last suffix, the sentinel, since it is
-    # just an artefact of the algorithm and we practically
-    # never want it...
-    for i in range(len(x) - 1):
+    # The expression (not include_sentinel) removes the
+    # last suffix (the sentinel) if we do not want it
+    for i in range(len(x) - (not include_sentinel)):
         n, j, y = tree_search(root, x[i:])
         if j == 0:
             # We couldn't get out of the node
@@ -206,7 +205,7 @@ down to the insertion point for each suffix in `s`."""
     return SuffixTree(root)
 
 
-def mccreight_st_construction(s: str):
+def mccreight_st_construction(s: str, include_sentinel=True):
     """Construct a suffix tree by searching from the root
 down to the insertion point for each suffix in `s`."""
 
@@ -217,10 +216,9 @@ down to the insertion point for each suffix in `s`."""
     root.suffix_link = root
 
     # Insert suffixes one at a time...
-    # I leave out the last suffix, the sentinel, since it is
-    # just an artefact of the algorithm and we practically
-    # never want it...
-    for i in range(1, len(x) - 1):
+    # The expression (not include_sentinel) removes the
+    # last suffix (the sentinel) if we do not want it
+    for i in range(1, len(x) - (not include_sentinel)):
         # Idea: split x[i:] into a+y+z where we jump
         # past a, then fast-scan through y, and then
         # slow-scan through z.

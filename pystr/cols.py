@@ -1,5 +1,6 @@
 from __future__ import annotations
 import re
+
 RESET = "\u001b[0m"
 
 strip_ANSI_escapes = re.compile(r"""

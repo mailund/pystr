@@ -5,8 +5,6 @@ class BitVector:
 
     def __init__(self, size: int):
         self.size = size
-        # FIXME: not sure if this is the right calculation, it can
-        # overshoot a bit... fix it later. It should be (size+8-1)//8
         self.bytes = bytearray((size+8-1)//8)
 
     def __getitem__(self, i: int) -> bool:

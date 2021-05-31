@@ -38,9 +38,9 @@ def test_mccreight_sorted():
         check_sorted(x, list(st.root))  # using the leaf iterator
 
 
-def check_search_mississippi(constr: Callable[[str], SuffixTree]) -> None:
+def check_search_mississippi(constr: Callable[[str, bool], SuffixTree]):
     x = "mississippi"
-    st = constr(x)
+    st = constr(x, False)  # exclude sentinel this time...
     for p in ("ssi", "ppi", "si", "pip", "x", ""):
         check_matches(x, p, st.search(p))
     assert len(set(st.search(""))) == len(x)
