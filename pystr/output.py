@@ -22,10 +22,17 @@ def clamp_index(x: str, i: int) -> int:
     return min(max(0, i), len(x))
 
 
-ColourSegment = NamedTuple(
+_ColourSegment = NamedTuple(
     "ColourSegment",
     [("start", int), ("stop", int), ("col", Colour)]
 )
+
+
+# This makes debugging a little nicer...
+class ColourSegment(_ColourSegment):
+    def __str__(self):
+        return self.col(f"[{self.start},{self.stop})")
+    __repr__ = __str__
 
 
 # There must be a better way to handle overlapping intervals,
@@ -73,7 +80,7 @@ def merge_segments(x: list[ColourSegment], y: list[ColourSegment]) \
             else:
                 # emit a and reduce b
                 res.append(a)
-                x.append(ColourSegment(b.start, a.start, b.col))
+                y.append(ColourSegment(b.start, a.start, b.col))
 
         else:
             assert False, "We should have handled all cases"

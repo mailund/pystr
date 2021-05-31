@@ -18,6 +18,14 @@ def ansifree_len(s: str):
     return len(strip_ansi(s))
 
 
+def ansi_align_left(x: str, w: int):
+    return x + ' ' * (w - ansifree_len(x))
+
+
+def ansi_align_right(x: str, w: int):
+    return ' ' * (w - ansifree_len(x)) + x
+
+
 class Colour:
     ansi_code: str
 
