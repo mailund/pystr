@@ -1,10 +1,11 @@
 import _setup  # noqa: F401
 
 from pystr.sais import sais
-from pystr.cols import underline, bright_yellow, bold, black, red, magenta
-from pystr.cols import bright_red, bright_green, bright_blue, green
-from pystr.output import colour, Table, L, R, ColSpec, Align
 from pystr.bwt import c_table, o_table
+
+from pystr_vis.cols import underline, bright_yellow, bold, black, red, magenta
+from pystr_vis.cols import bright_red, bright_green, bright_blue, green
+from pystr_vis.output import colour, Table, L, R, ColSpec, Align
 
 
 def test_sa_table():

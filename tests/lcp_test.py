@@ -4,8 +4,6 @@ from helpers import random_string
 from pystr import mccreight_st_construction, sais
 from pystr.lcp import compare_lcp, sa_lcp_from_suffix_tree
 from pystr.lcp import inverse_sa, lcp_from_sa
-from pystr.cols import green, red, underline, bright_red
-from pystr.output import colour
 
 
 def check_lcp(x: str, sa: list[int], lcp: list[int], include_sentinel: bool):
@@ -13,15 +11,7 @@ def check_lcp(x: str, sa: list[int], lcp: list[int], include_sentinel: bool):
     assert len(sa) == len(lcp)
     assert lcp[0] == 0            # first lcp is always zero
     for i in range(1, len(lcp)):
-        comp_lcp = compare_lcp(x, sa[i], sa[i-1])
-        if comp_lcp != lcp[i]:
-            print(underline(bright_red(("ERROR!"))))
-            print(colour(x[sa[i-1]:])
-                  [:comp_lcp, green & underline][comp_lcp, red])
-            print(colour(x[sa[i]:])
-                  [:comp_lcp, green & underline][comp_lcp, red])
-            print("Algo lcp:", lcp[i])
-        assert lcp[i] == comp_lcp
+        assert lcp[i] == compare_lcp(x, sa[i], sa[i-1])
 
 
 def test_st_construction():

@@ -6,6 +6,12 @@ test:
 	mypy -p pystr
 	pytest --cov-report term-missing --cov=pystr tests
 
+build:
+	python3 -m build
+
+install:
+	python3 setup.py install
+
 # For this, use the kitty terminal: https://sw.kovidgoyal.net/kitty/
 idot=dot -Tpng -Gbgcolor=black -Nfontcolor=white -Efontcolor=white -Efontsize=26 -Nfontsize=26 -Ncolor=white -Ecolor=white | kitty +kitten icat --align=left
 display:
@@ -28,4 +34,4 @@ display:
 	@cd tests && python3 -c "from trie_test import *; test_mississippi_suffixes(breadth_first_trie)" | $(idot)
 
 
-.PHONY: init test display
+.PHONY: init test build install display

@@ -1,9 +1,9 @@
 import argparse
 from pystr import sais
 from pystr.lcp import compare_lcp
-from pystr.cols import bright_cyan, bright_green, bright_yellow, \
+from pystr_vis.cols import bright_cyan, bright_green, bright_yellow, \
     bright_red, ansifree_len, green, red, underline
-from pystr.output import colour, out, place_pointers, Table, ColSpec, Align
+from pystr_vis.output import colour, out, place_pointers, Table, ColSpec, Align
 
 
 def hit_enter():

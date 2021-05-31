@@ -121,11 +121,11 @@ def bmh(x: str, p: str) -> None:
 
 
 # Code for visualising the algorithms...
-from pystr.output import colour                      # noqa: E402
-from pystr.output import indent, out                 # noqa: E402
-from pystr.cols import plain, yellow, green, red     # noqa: E402
-from pystr.cols import bright_green, bright_blue     # noqa: E402
-from pystr.cols import underline                     # noqa: E402
+from pystr_vis.output import colour                      # noqa: E402
+from pystr_vis.output import indent, out                 # noqa: E402
+from pystr_vis.cols import plain, yellow, green, red     # noqa: E402
+from pystr_vis.cols import bright_green, bright_blue     # noqa: E402
+from pystr_vis.cols import underline                     # noqa: E402
 
 
 def naive_show_mismatch(x: str, p: str, i: int, j: int):
