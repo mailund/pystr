@@ -8,7 +8,10 @@ setup(
     author_email="thomas@mailund.dk",
     packages=['pystr', 'pystr_vis'],
     entry_points={
-        'console_scripts': ['show-trie=pystr_vis.trie:show_trie'],
+        'console_scripts': [
+            'show-trie=pystr_vis.trie:show_trie',
+            'show-suffixtree=pystr_vis.suffixtree:show_suffixtree',
+        ],
     },
     install_requires=[],
 )
