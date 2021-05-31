@@ -1,6 +1,5 @@
 # Simple exact matching algorithms
 import argparse
-from typing import Iterator
 from collections import defaultdict
 from pystr.border_array import strict_border_array
 
@@ -207,7 +206,7 @@ def main():
         'bmh': bmh,
     }
     parser = argparse.ArgumentParser(
-        description='Display run of a classic exact pattern matching algorithm.')
+        description='Display run of a classic exact pattern matching algorithm.')  # noqa: E501
 
     parser.add_argument('algo', choices=algos.keys(),
                         help='algorithm to run')

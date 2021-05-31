@@ -66,12 +66,6 @@ def test_sa_construction():
         check_lcp(x, sa, lcp, include_sentinel=False)
 
 
-def test_sa_progress():
-    x = "aababaaaaaababbbaa"
-    sa = sais(x, include_sentinel=False)
-    lcp_from_sa(x, sa, progress=True)
-
-
 if __name__ == '__main__':
     for name, f in list(globals().items()):
         if name.startswith("test_"):

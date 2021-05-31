@@ -10,6 +10,7 @@ setup(
     entry_points={
         'console_scripts': [
             'show-exact=pystr_vis.exact:main',
+            'show-lcp-sa=pystr_vis.lcp:show_lcp_sa',
             'show-trie=pystr_vis.trie:show_trie',
             'show-suffixtree=pystr_vis.suffixtree:show_suffixtree',
         ],
