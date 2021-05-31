@@ -4,7 +4,8 @@ init:
 
 test:
 	mypy -p pystr
-	pytest --cov-report term-missing --cov=pystr tests
+	mypy -p pystr_vis
+	pytest --cov-report term-missing --cov=pystr --cov=pystr_vis tests
 
 build:
 	python3 -m build
