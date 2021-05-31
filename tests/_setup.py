@@ -1,3 +1,3 @@
 from os.path import dirname
 import sys
-sys.path.append(dirname(dirname(__file__)))
+sys.path.insert(0, dirname(dirname(__file__)))
