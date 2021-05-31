@@ -23,7 +23,7 @@ def clamp_index(x: str, i: int) -> int:
 
 
 _ColourSegment = NamedTuple(
-    "ColourSegment",
+    "_ColourSegment",
     [("start", int), ("stop", int), ("col", Colour)]
 )
 
