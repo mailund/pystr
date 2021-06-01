@@ -11,6 +11,7 @@ setup(
         'console_scripts': [
             'show-exact=pystr_scripts.exact:main',
             'show-lcp-sa=pystr_scripts.lcp:show_lcp_sa',
+            'show-skew=pystr_scripts.skew:show_skew',
             'show-trie=pystr_scripts.trie:show_trie',
             'show-suffixtree=pystr_scripts.suffixtree:show_suffixtree',
         ],
