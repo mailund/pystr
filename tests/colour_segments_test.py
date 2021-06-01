@@ -16,6 +16,15 @@ def test_colour_segments():
             c[i:j, random.choice([green, red, blue])]
         print(c)  # triggers the segment processing
 
+        # negative segments
+        c = colour(x)
+        print(c)
+        for _ in range(m):
+            j = random.randrange(1, n)
+            i = random.randrange(j)
+            c[-j:-i, random.choice([green, red, blue])]
+        print(c)  # triggers the segment processing
+
 
 if __name__ == '__main__':
     for name, f in list(globals().items()):

@@ -27,7 +27,6 @@ class ColourSegment(_ColourSegment):
 # fast to impement...
 # This function merges lists of sorted non-overlapping segments
 # and with divide and conquer I get segmentation in O(n log n).
-# FIXME: I haven't tested it particularly well yet!
 def merge_segments(x: list[ColourSegment], y: list[ColourSegment]) \
         -> list[ColourSegment]:
 
@@ -76,7 +75,7 @@ def merge_segments(x: list[ColourSegment], y: list[ColourSegment]) \
     res.extend(reversed(y))
     res = res[::-1]
 
-    # FIXME: remove this check
+    # FIXME: remove this check when I'm more sure that the merge works...
     for i in range(len(res) - 1):
         assert res[i].stop <= res[i+1].start
 
