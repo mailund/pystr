@@ -23,9 +23,8 @@ Alpha = dict[int, str]
 
 
 def hit_enter():
-    # FIXME
-    # if INTERACTIVE: input("Press ENTER to continue")
-    pass
+    if INTERACTIVE:
+        input("Press ENTER to continue")
 
 
 # SECTION Helpers for displaying integer strings
@@ -399,7 +398,6 @@ def skew_rec(x: list[int], alpha: Alpha) -> list[int]:
     print()
     hit_enter()
 
-    # FIXME: illustrate merge
     SA = show_merge(x, SA12, SA3, alpha)
 
     print(bright_green(underline("\n\nSuffix array sorted.\n")))
