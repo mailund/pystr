@@ -4,11 +4,12 @@ from collections import defaultdict
 from pystr.border_array import strict_border_array
 
 
-def hit_enter():
-    input("Press ENTER to continue")
+def hit_enter(interactive: bool):
+    if interactive:
+        input("Press ENTER to continue")
 
 
-def naive(x: str, p: str) -> None:
+def naive(x: str, p: str, interactive: bool) -> None:
     # If we have an empty string, j is never set,
     # and that can mess up the progress text. So we
     # need to give it a value here, just for that special case.
@@ -29,10 +30,10 @@ def naive(x: str, p: str) -> None:
         else:
             naive_show_mismatch(x, p, i, j)
 
-        hit_enter()
+        hit_enter(interactive)
 
 
-def border(x: str, p: str) -> None:
+def border(x: str, p: str, interactive: bool) -> None:
     assert p, "Doesn't handle empty patterns"
 
     # Build the border array
@@ -57,10 +58,10 @@ def border(x: str, p: str) -> None:
             # yield i - len(p) + 1
             b = ba[b - 1]
 
-        hit_enter()
+        hit_enter(interactive)
 
 
-def kmp(x: str, p: str) -> None:
+def kmp(x: str, p: str, interactive: bool) -> None:
 
     ba = strict_border_array(p)
     i, j = 0, 0
@@ -87,10 +88,10 @@ def kmp(x: str, p: str) -> None:
         else:
             j = ba[j - 1]
 
-        hit_enter()
+        hit_enter(interactive)
 
 
-def bmh(x: str, p: str) -> None:
+def bmh(x: str, p: str, interactive) -> None:
 
     jump: dict[str, int] = \
         defaultdict(lambda: len(p))
@@ -115,75 +116,75 @@ def bmh(x: str, p: str) -> None:
             print(bright_green(f"We matched at index {i}\n"))
         print(underline("Shifting:"))
         bmh_shift(x, p, i, j, jump[x[i + len(p) - 1]])
-        hit_enter()
+        hit_enter(interactive)
 
         i += jump[x[i + len(p) - 1]]
 
 
 # Code for visualising the algorithms...
-from pystr_vis.output import colour                      # noqa: E402
-from pystr_vis.output import indent, out                 # noqa: E402
+from pystr_vis import colour                             # noqa: E402
+from pystr_vis import indent                             # noqa: E402
 from pystr_vis.cols import plain, yellow, green, red     # noqa: E402
 from pystr_vis.cols import bright_green, bright_blue     # noqa: E402
 from pystr_vis.cols import underline                     # noqa: E402
 
 
 def naive_show_mismatch(x: str, p: str, i: int, j: int):
-    out(indent(i), "i")
-    out(colour(x)[i:i+j, green][i+j, red])
-    out(indent(i), colour(p)[:j, green][j, red])
-    out(indent(i+j), "j")
-    out()
+    print(indent(i), "i", sep="")
+    print(colour(x)[i:i+j, green][i+j, red], sep="")
+    print(indent(i), colour(p)[:j, green][j, red], sep="")
+    print(indent(i+j), "j", sep="")
+    print()
 
 
 def naive_show_match(x: str, p: str, i: int):
-    out(indent(i), "i")
-    out(colour(x)[i:i+len(p), green])
-    out(indent(i), green(p))
-    out(indent(i+len(p)), "j")
-    out()
+    print(indent(i), "i", sep="")
+    print(colour(x)[i:i+len(p), green], sep="")
+    print(indent(i), green(p), sep="")
+    print(indent(i+len(p)), "j", sep="")
+    print()
 
 
 def border_show_prefix_next_comp(x: str, p: str, i: int, b: int):
-    out(indent(i), "i")
-    out(colour(x)[i-b:i, green][i, yellow])
-    out(indent(i - b), colour(p)[:b, green][b, yellow])
-    out(indent(i), "b")
-    out()
+    print(indent(i), "i", sep="")
+    print(colour(x)[i-b:i, green][i, yellow], sep="")
+    print(indent(i - b), colour(p)[:b, green][b, yellow], sep="")
+    print(indent(i), "b", sep="")
+    print()
 
 
 def kmp_show_prefix_next_comp(x: str, p: str, i: int, j: int):
-    out(indent(i), "i")
-    out(colour(x)[i-j:i, green][i, yellow])
-    out(indent(i - j), colour(p)[:j, green][j, yellow])
-    out(indent(i), "j")
-    out()
+    print(indent(i), "i", sep="")
+    print(colour(x)[i-j:i, green][i, yellow], sep="")
+    print(indent(i - j), colour(p)[:j, green][j, yellow], sep="")
+    print(indent(i), "j", sep="")
+    print()
 
 
 def kmp_show_prefix_mismatch(x: str, p: str, i: int, j: int):
-    out(indent(i), "i")
-    out(colour(x)[i-j:i, green][i, red])
-    out(indent(i - j), colour(p)[:j, green][j, red])
-    out(indent(i), "j")
-    out()
+    print(indent(i), "i", sep="")
+    print(colour(x)[i-j:i, green][i, red], sep="")
+    print(indent(i - j), colour(p)[:j, green][j, red], sep="")
+    print(indent(i), "j", sep="")
+    print()
 
 
 def bmh_next_comp(x: str, p: str, i: int):
     j = len(p)
-    out(indent(i + j - 1), "v")
-    out(colour(x)[i+j-1, yellow])
-    out(indent(i), colour(p)[-1, yellow])
-    out(indent(i + j - 1), "^")
-    out()
+    print(indent(i + j - 1), "v", sep="")
+    print(colour(x)[i+j-1, yellow], sep="")
+    print(indent(i), colour(p)[-1, yellow], sep="")
+    print(indent(i + j - 1), "^", sep="")
+    print()
 
 
 def bmh_mismatch(x: str, p: str, i: int, j: int):
     col = red if x[i+j] != p[j] else green
-    out(indent(i + j), "v")
-    out(colour(x)[i+j, col][i+j+1:i+len(p), green])
-    out(indent(i), colour(p)[j, col][j+1:, green])
-    out(indent(i + j), "^")
-    out()
+    print(indent(i + j), "v", sep="")
+    print(colour(x)[i+j, col][i+j+1:i+len(p), green], sep="")
+    print(indent(i), colour(p)[j, col][j+1:, green], sep="")
+    print(indent(i + j), "^", sep="")
+    print()
 
 
 def bmh_shift(x: str, p: str, i: int, j: int, shift: int):
@@ -191,11 +192,11 @@ def bmh_shift(x: str, p: str, i: int, j: int, shift: int):
     rmost = len(p) - shift - 1
     col = green if rmost >= 0 else red
     rmost_col = green if rmost >= 0 else plain
-    out(indent(pos), "v")
-    out(colour(x)[pos, col])
-    out(indent(i + shift), colour(p)[rmost, rmost_col])
-    out(indent(i + shift + rmost), "^")
-    out()
+    print(indent(pos), "v", sep="")
+    print(colour(x)[pos, col], sep="")
+    print(indent(i + shift), colour(p)[rmost, rmost_col], sep="")
+    print(indent(i + shift + rmost), "^", sep="")
+    print()
 
 
 def main():
@@ -208,6 +209,14 @@ def main():
     parser = argparse.ArgumentParser(
         description='Display run of a classic exact pattern matching algorithm.')  # noqa: E501
 
+    parser.add_argument('-i', '--interactive',
+                        dest='interactive', action='store_true',
+                        help='the visualisation should pause between steps (default).')  # noqa: E501
+    parser.add_argument('-n', '--not-interactive',
+                        dest='interactive', action='store_false',
+                        help='the visualisation should not pause between steps.')        # noqa: E501
+    parser.set_defaults(interactive=True)
+
     parser.add_argument('algo', choices=algos.keys(),
                         help='algorithm to run')
     parser.add_argument('x', metavar='x', type=str,
@@ -216,4 +225,4 @@ def main():
                         help='string to search for.')
 
     args = parser.parse_args()
-    algos[args.algo](args.x, args.p)
+    algos[args.algo](args.x, args.p, args.interactive)

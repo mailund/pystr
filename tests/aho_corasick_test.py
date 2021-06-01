@@ -1,5 +1,3 @@
-import _setup  # noqa: F401
-
 from pystr.aho_corasick import aho_corasick
 from pystr.exact import naive
 from helpers import random_string, pick_random_patterns

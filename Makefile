@@ -1,11 +1,13 @@
 
 init:
 	pip3 install -r requirements.txt
+	pip3 install --editable .
 
 test:
 	mypy -p pystr
 	mypy -p pystr_vis
-	pytest --cov-report term-missing --cov=pystr --cov=pystr_vis tests
+	mypy -p pystr_scripts
+	pytest --cov-report term-missing --cov=pystr --cov=pystr_vis --cov=pystr_scripts tests
 
 build:
 	python3 -m build

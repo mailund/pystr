@@ -1,5 +1,3 @@
-import _setup  # noqa: F401
-
 from pystr.bv import BitVector
 
 

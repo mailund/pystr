@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
     name='pystr',
@@ -6,13 +6,13 @@ setup(
     url="http://github.com/mailund/pystr",
     author="Thomas Mailund",
     author_email="thomas@mailund.dk",
-    packages=['pystr', 'pystr_vis'],
+    packages=find_packages(),
     entry_points={
         'console_scripts': [
-            'show-exact=pystr_vis.exact:main',
-            'show-lcp-sa=pystr_vis.lcp:show_lcp_sa',
-            'show-trie=pystr_vis.trie:show_trie',
-            'show-suffixtree=pystr_vis.suffixtree:show_suffixtree',
+            'show-exact=pystr_scripts.exact:main',
+            'show-lcp-sa=pystr_scripts.lcp:show_lcp_sa',
+            'show-trie=pystr_scripts.trie:show_trie',
+            'show-suffixtree=pystr_scripts.suffixtree:show_suffixtree',
         ],
     },
     install_requires=[],

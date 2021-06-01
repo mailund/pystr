@@ -1,7 +1,3 @@
-import _setup  # noqa: F401
-
-import sys
-
 from helpers import random_string, check_sorted, check_matches
 
 from pystr.suffixtree import SuffixTree
@@ -16,7 +12,7 @@ from typing import Callable
 
 def mississippi_to_dot(constr: Callable[[str], SuffixTree]) -> None:
     st = constr("mississippi")
-    print(st.to_dot(), file=sys.stdout)
+    print(st.to_dot())
 
 
 def test_naive_to_dot():

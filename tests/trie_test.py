@@ -1,5 +1,3 @@
-import _setup  # noqa: F401
-
 from pystr.trie import Trie, TrieNode
 from pystr.trie import depth_first_trie
 from pystr.trie import breadth_first_trie

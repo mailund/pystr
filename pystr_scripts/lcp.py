@@ -3,11 +3,12 @@ from pystr import sais
 from pystr.lcp import compare_lcp
 from pystr_vis.cols import bright_cyan, bright_green, bright_yellow, \
     bright_red, ansifree_len, green, red, underline
-from pystr_vis.output import colour, out, place_pointers, Table, ColSpec, Align
+from pystr_vis import colour, place_pointers, Table, ColSpec, Align
 
 
-def hit_enter():
-    input("Press ENTER to continue")
+def hit_enter(interactive: bool):
+    if interactive:
+        input("Press ENTER to continue")
 
 
 def inverse_sa(sa: list[int]) -> list[int]:
@@ -35,7 +36,8 @@ def sa_lcp_tbl(x: str, sa: list[int], lcp: list[int]) -> Table:
     return tbl
 
 
-def lcp_from_sa(x: str, sa: list[int]) -> list[int]:
+def lcp_from_sa(x: str, sa: list[int],
+                interactive: bool) -> list[int]:
     lcp = [-1] * len(sa)  # -1 for "unknown". Used in visualisation
     isa = inverse_sa(sa)
 
@@ -56,7 +58,7 @@ def lcp_from_sa(x: str, sa: list[int]) -> list[int]:
 
             print(bright_green(f"i={i} -> ii={ii}, lcp[0] is always 0"))
             print()
-            hit_enter()
+            hit_enter(interactive)
             print()
 
             lcp[ii] = 0
@@ -71,35 +73,40 @@ def lcp_from_sa(x: str, sa: list[int]) -> list[int]:
         print()
 
         if offset > 0:
-            out(bright_yellow(
-                place_pointers(("i", i), ("+offset", i + offset))))
+            print(bright_yellow(
+                place_pointers(("i", i), ("+offset", i + offset))),
+                sep="")
         else:
-            out(bright_yellow(place_pointers(("i", i))))
-            out(bright_yellow(place_pointers(("v", i), ("v", i + offset))))
-            out(colour(x)[i:i+offset, green][j:j+offset, green])
-            out(bright_yellow(place_pointers(("^", j), ("^", j + offset))))
+            print(bright_yellow(place_pointers(("i", i))), sep="")
+            print(bright_yellow(place_pointers(
+                ("v", i), ("v", i + offset))), sep="")
+            print(colour(x)[i:i+offset, green][j:j+offset, green], sep="")
+            print(bright_yellow(place_pointers(
+                ("^", j), ("^", j + offset))), sep="")
             if offset > 0:
-                out(bright_yellow(
-                    place_pointers(("j", j), ("+offset", j + offset))))
+                print(bright_yellow(
+                    place_pointers(("j", j), ("+offset", j + offset))), sep="")
             else:
-                out(bright_yellow(place_pointers(("j", j))))
+                print(bright_yellow(place_pointers(("j", j))), sep="")
 
             old_offset = offset
 
         print()
-        hit_enter()
+        hit_enter(interactive)
         print()
 
         offset += compare_lcp(x, i+offset, j+offset)
         lcp[ii] = offset
 
         print(underline("Scan result:\n"))
-        out(f"sa[{isa[j]:>2}] = ",
-            colour(x[j:])[:old_offset, green]
-            [old_offset:offset, bright_yellow][offset, red])
-        out(f"sa[{isa[i]:>2}] = ",
-            colour(x[i:])[:old_offset, green]
-            [old_offset:offset, bright_yellow][offset, red])
+        print(f"sa[{isa[j]:>2}] = ",
+              colour(x[j:])[:old_offset, green]
+              [old_offset:offset, bright_yellow][offset, red],
+              sep="")
+        print(f"sa[{isa[i]:>2}] = ",
+              colour(x[i:])[:old_offset, green]
+              [old_offset:offset, bright_yellow][offset, red],
+              sep="")
         print()
         print(bright_green(f"lcp[{ii}] == {lcp[ii]}"))
         print()
@@ -122,7 +129,7 @@ def lcp_from_sa(x: str, sa: list[int]) -> list[int]:
 
         print(tbl)
         print()
-        hit_enter()
+        hit_enter(interactive)
 
     print()
     print(bright_green("DONE"))
@@ -135,11 +142,18 @@ def lcp_from_sa(x: str, sa: list[int]) -> list[int]:
 
 def show_lcp_sa():
     parser = argparse.ArgumentParser(
-        description='Display run of algorithm for constructing the lcp from the sa.')  # noqa: E501
+        description='Display run of algorithm for constructing the lcp from the sa.')    # noqa: E501
 
+    parser.add_argument('-i', '--interactive',
+                        dest='interactive', action='store_true',
+                        help='the visualisation should pause between steps (default).')  # noqa: E501
+    parser.add_argument('-n', '--not-interactive',
+                        dest='interactive', action='store_false',
+                        help='the visualisation should not pause between steps.')        # noqa: E501
+    parser.set_defaults(interactive=True)
     parser.add_argument('x', metavar='x', type=str,
                         help='string to build the sa/lcp from.')
 
     args = parser.parse_args()
     sa = sais(args.x)
-    lcp_from_sa(args.x, sa)
+    lcp_from_sa(args.x, sa, args.interactive)

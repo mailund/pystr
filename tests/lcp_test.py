@@ -1,5 +1,3 @@
-import _setup  # noqa: F401
-
 from helpers import random_string
 from pystr import mccreight_st_construction, sais
 from pystr.lcp import compare_lcp, sa_lcp_from_suffix_tree

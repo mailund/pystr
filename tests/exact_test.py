@@ -1,5 +1,3 @@
-import _setup  # noqa: F401
-
 from pystr.exact import naive, border, kmp, bmh
 from pystr.bwt import bwt_search
 from pystr.suffixtree import mccreight_st_construction as mccreight
@@ -26,7 +24,8 @@ def check_occurrences(x: str, p: str,
     matches = algo(x, p)
     for i in matches:
         if x[i:i+len(p)] != p:
-            print(f"Mismatch: x[{i}:{i+len(p)}] == {x[i:i+len(p)]} != p == {p}") # noqal
+            print(
+                f"Mismatch: x[{i}:{i+len(p)}] == {x[i:i+len(p)]} != p == {p}")  # noqal
         assert x[i:i+len(p)] == p
 
 

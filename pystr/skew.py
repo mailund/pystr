@@ -117,10 +117,7 @@ def build_u(x: list[int], alpha: SkewTripletDict) -> list[int]:
 
 def u_idx(i: int, m: int) -> int:
     "Map indices in u back to indices in the original string."
-    if i < m:
-        return 1 + 3 * i
-    else:
-        return 2 + 3 * (i - m - 1)
+    return 1 + 3 * i if i < m else 2 + 3 * (i - m - 1)
 
 
 def skew_rec(x: list[int], asize: int) -> list[int]:

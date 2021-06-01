@@ -102,9 +102,8 @@ def induce_S(x: subseq[int], sa: msubseq[int],
 
 def equal_LMS(x: subseq[int], is_S: BitVector, i: int, j: int) -> bool:
     if i == j:
-        return True   # noqa: 701
-    if i == len(x) or j == len(x):
-        return False  # noqa: 701
+        # This happens as a special case in the beginning of placing them.
+        return True
 
     for k in count():  # k goes from 0 to infinity
         iLMS = is_LMS(is_S, i + k)

@@ -1,5 +1,3 @@
-import _setup  # noqa: F401
-
 from helpers import random_string, check_sorted
 from pystr import skew
 
