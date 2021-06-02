@@ -5,21 +5,17 @@ from .border_array import strict_border_array
 
 
 def naive(x: str, p: str) -> Iterator[int]:
-    # If we have an empty string, j is never set,
-    # and that can mess up the progress text. So we
-    # need to give it a value here, just for that special case.
-    j = 0
     for i in range(len(x) - len(p) + 1):
         for j in range(len(p)):
             if x[i + j] != p[j]:
                 break
         else:
-            # We made it through without breaking...
             yield i
 
 
 def border(x: str, p: str) -> Iterator[int]:
     # Doesn't handle empty patterns directly...
+    # (There would be several special cases to handle)
     if not p:
         yield from range(len(x) + 1)
         return
@@ -70,8 +66,8 @@ def bmh(x: str, p: str) -> Iterator[int]:
 
     jump: dict[str, int] = \
         defaultdict(lambda: len(p))
-    for j in range(len(p) - 1):  # skip last index!
-        jump[p[j]] = len(p) - j - 1
+    for j, a in enumerate(p[:-1]):  # skip last index!
+        jump[a] = len(p) - j - 1
 
     i, j = 0, 0
     while i < len(x) - len(p) + 1:
