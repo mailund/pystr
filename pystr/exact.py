@@ -19,7 +19,9 @@ def naive(x: str, p: str) -> Iterator[int]:
 
 
 def border(x: str, p: str) -> Iterator[int]:
-    assert p, "Doesn't handle empty patterns"
+    # Doesn't handle empty patterns directly...
+    if not p:
+        return list(range(len(x) + 1))
 
     # Build the border array
     ba = strict_border_array(p)
@@ -37,6 +39,9 @@ def border(x: str, p: str) -> Iterator[int]:
 
 
 def kmp(x: str, p: str) -> Iterator[int]:
+    # Doesn't handle empty patterns directly...
+    if not p:
+        return list(range(len(x) + 1))
 
     ba = strict_border_array(p)
     i, j = 0, 0

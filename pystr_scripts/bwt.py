@@ -194,3 +194,23 @@ def show_bwt_transition():
     print()
     print(tbl | res_tbl)
     print()
+
+
+def show_bwt_search():
+
+    x = 'mississippi'  # FIXME
+    p = 'ssi'
+
+    sa = sais(x, include_sentinel=True)
+    ctab = c_table(x)
+    otab = o_table(x, sa, ctab.keys())
+
+    L = 0  # Starting at 0 (the sentinel) handles empty strings
+    R = len(x) + 1  # +1 because of the sentinel
+    for y in p[::-1]:
+        if y not in ctab:
+            return 0, 0
+        L = ctab[y] + otab[y][L]
+        R = ctab[y] + otab[y][R]
+        if L >= R:
+            return 0, 0

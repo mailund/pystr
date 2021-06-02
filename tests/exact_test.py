@@ -17,6 +17,15 @@ ALGOS = [
 ]
 
 
+def test_empty():
+    for _ in range(10):
+        x = random_string(10)
+        p = ""
+        for algo in [naive, bmh, bwt_search, suffix_tree_exact]:
+            hits = list(sorted(algo(x, p)))
+            assert hits == list(range(len(x) + 1))
+
+
 def check_occurrences(x: str, p: str,
                       algo: Callable[[str, str], Iterator[int]]):
     print(f"Checking occurrences for {algo.__name__}")

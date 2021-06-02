@@ -2,7 +2,7 @@ import argparse
 from pystr_scripts import bwt
 
 
-def test_show_skew(mocker):
+def test_show_bwt_transition(mocker):
     x = 'mississippimmiissiissiippii'
     alpha = set(x)
 
