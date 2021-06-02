@@ -4,6 +4,21 @@ from collections.abc import Iterable, Iterator, Callable
 from pystr.subseq import substr
 
 
+def collect_tests(tests: Iterable[tuple[str, Callable]]) -> type:
+    return type(
+        '__generated_class__',
+        (object,),
+        {
+            ('test_'+name): method
+            for name, method in tests
+        }
+    )
+
+
+def add_test(cls, name, method):
+    setattr(cls, 'test_' + name, method)
+
+
 def random_string(n: int, alpha=string.ascii_uppercase) -> str:
     return ''.join(random.choices(alpha, k=n))
 
@@ -32,6 +47,18 @@ def pick_random_patterns_len(x: str, n: int, patlen: int) -> Iterator[str]:
         yield x[i:j]
 
 
+def pick_random_prefix(x: str, n: int) -> Iterator[str]:
+    for _ in range(n):
+        i = random.randrange(0, len(x))
+        yield x[:i]
+
+
+def pick_random_suffix(x: str, n: int) -> Iterator[str]:
+    for _ in range(n):
+        i = random.randrange(0, len(x))
+        yield x[i:]
+
+
 def check_sorted(x: str, sa: list[int]):
     assert len(x) > 0
     assert len(x) == len(sa) or len(x) + 1 == len(sa)
@@ -57,7 +84,6 @@ def check_equal_matches(x: str, p: str,
                         *algos: Callable[[str, str], Iterator[int]]):
     # We sort the search results since some algorithms do not automatically
     # give us sorted output
-    print("Check equal matches:", x, p)
     iters: list[list[int]] = [sorted(algo(x, p)) for algo in algos]
     for res in zip(*iters, strict=True):  # type: ignore
         assert all(res[i] == res[0] for i in range(1, len(res)))

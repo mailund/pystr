@@ -1,12 +1,17 @@
-import unittest
+from typing import Callable, Iterator
+
 from pystr.exact import naive, border, kmp, bmh
 from pystr.bwt import bwt_search
 from pystr.suffixtree import mccreight_st_construction as mccreight
-from helpers import random_string, fibonacci_string, check_equal_matches
-from helpers import pick_random_patterns, pick_random_patterns_len
-from typing import Callable, Iterator
+
+from helpers import random_string, fibonacci_string
+from helpers import pick_random_patterns, pick_random_patterns_len, \
+    pick_random_prefix, pick_random_suffix
+from helpers import check_matches, check_equal_matches
+from helpers import collect_tests
 
 
+# wrapper
 def suffix_tree_exact(x, p):
     yield from mccreight(x).search(p)
 
@@ -28,24 +33,10 @@ def check_empty(algo):
     return test
 
 
-class EmptyPatterns(unittest.TestCase):
-    pass
-
-
-for algo in ALGOS:
-    setattr(EmptyPatterns, 'test_'+algo.__name__+'_empty', check_empty(algo))
-
-
-def check_occurrences(x: str, p: str,
-                      algo: Callable[[str, str], Iterator[int]]):
-    print(f"Checking occurrences for {algo.__name__}")
-    print(f"x = {repr(x)}; p = {repr(p)}")
-    matches = algo(x, p)
-    for i in matches:
-        if x[i:i+len(p)] != p:
-            print(f"Mismatch: x[{i}:{i+len(p)}] == " +
-                  f"{x[i:i+len(p)]} != p == {p}")
-        assert x[i:i+len(p)] == p
+TestEmptyPatterns = collect_tests(
+    (algo.__name__, check_empty(algo))
+    for algo in ALGOS
+)
 
 
 def check_exact_matching(algo: Callable[[str, str], Iterator[int]]):
@@ -53,39 +44,48 @@ def check_exact_matching(algo: Callable[[str, str], Iterator[int]]):
         for _ in range(10):
             x = random_string(100, alpha="abcd")
             for p in pick_random_patterns(x, 10):
-                check_occurrences(x, p, algo)
+                check_matches(x, p, algo(x, p))
             for p in pick_random_patterns_len(x, 10, 3):
-                check_occurrences(x, p, algo)
+                check_matches(x, p, algo(x, p))
+            for p in pick_random_prefix(x, 10):
+                check_matches(x, p, algo(x, p))
+            for p in pick_random_suffix(x, 10):
+                check_matches(x, p, algo(x, p))
 
         for n in range(10, 15):
             x = fibonacci_string(n)
             for p in pick_random_patterns(x, 10):
-                check_occurrences(x, p, algo)
+                check_matches(x, p, algo(x, p))
+            for p in pick_random_prefix(x, 10):
+                check_matches(x, p, algo(x, p))
+            for p in pick_random_suffix(x, 10):
+                check_matches(x, p, algo(x, p))
+
     return test
 
 
-class CheckExactMatching(unittest.TestCase):
-    pass
+TestExactMatching = collect_tests(
+    (algo.__name__, check_exact_matching(algo))
+    for algo in ALGOS
+)
 
 
-for algo in ALGOS:
-    setattr(CheckExactMatching,
-            'test_'+algo.__name__ + '_empty',
-            check_exact_matching(algo))
+def check_against_naive(algo: Callable[[str, str], Iterator[int]]):
+    def test(_):
+        for _ in range(10):
+            x = random_string(50, alpha="abcd")
+            for p in pick_random_patterns(x, 10):
+                check_equal_matches(x, p, naive, algo)
+            for p in pick_random_patterns_len(x, 10, 3):
+                check_equal_matches(x, p, naive, algo)
+            for p in pick_random_prefix(x, 10):
+                check_equal_matches(x, p, naive, algo)
+            for p in pick_random_suffix(x, 10):
+                check_equal_matches(x, p, naive, algo)
+    return test
 
 
-def test_equal_matches():
-    for _ in range(10):
-        x = random_string(50, alpha="abcd")
-        for p in pick_random_patterns(x, 10):
-            check_equal_matches(x, p, *ALGOS)
-        for p in pick_random_patterns_len(x, 10, 3):
-            check_equal_matches(x, p, *ALGOS)
-
-
-if __name__ == '__main__':
-    globs = list(globals().items())
-    for name, f in globs:
-        if name.startswith("test_"):
-            print(name)
-            f()
+TestAgainstNaive = collect_tests(
+    (algo.__name__, check_against_naive(algo))
+    for algo in ALGOS
+)
