@@ -42,7 +42,7 @@ def bwt_preprocess(x: str) -> tuple[list[int], CTAB, OTAB]:
 
 def bwt_search_tbls(x: str, p: str,
                     ctab: CTAB, otab: OTAB) -> tuple[int, int]:
-    L = 1  # Starting at 0 (the sentinel) handles empty strings
+    L = 0  # Starting at 0 (the sentinel) handles empty strings
     R = len(x) + 1  # +1 because of the sentinel
     for y in p[::-1]:
         if y not in ctab:

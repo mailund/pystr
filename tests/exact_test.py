@@ -1,3 +1,4 @@
+import unittest
 from pystr.exact import naive, border, kmp, bmh
 from pystr.bwt import bwt_search
 from pystr.suffixtree import mccreight_st_construction as mccreight
@@ -17,25 +18,43 @@ ALGOS = [
 ]
 
 
-def test_empty():
-    for _ in range(10):
-        x = random_string(10)
-        p = ""
-        for algo in [naive, bmh, bwt_search, suffix_tree_exact]:
+def check_empty(algo):
+    def test(self):
+        for _ in range(10):
+            x = random_string(10)
+            p = ""
             hits = list(sorted(algo(x, p)))
             assert hits == list(range(len(x) + 1))
+    return test
 
 
-def check_occurrences(x: str, p: str,
-                      algo: Callable[[str, str], Iterator[int]]):
-    print(f"Checking occurrences for {algo.__name__}")
-    print(f"x = {repr(x)}; p = {repr(p)}")
-    matches = algo(x, p)
-    for i in matches:
-        if x[i:i+len(p)] != p:
-            print(
-                f"Mismatch: x[{i}:{i+len(p)}] == {x[i:i+len(p)]} != p == {p}")  # noqal
-        assert x[i:i+len(p)] == p
+class EmptyPatterns(unittest.TestCase):
+    pass
+
+
+for algo in ALGOS:
+    setattr(EmptyPatterns, 'test_'+algo.__name__+'_empty', check_empty(algo))
+
+
+def check_occurrences(algo: Callable[[str, str], Iterator[int]])
+   def test(x: str, p: str):
+        print(f"Checking occurrences for {algo.__name__}")
+        print(f"x = {repr(x)}; p = {repr(p)}")
+        matches = algo(x, p)
+        for i in matches:
+            if x[i:i+len(p)] != p:
+                print(
+                    f"Mismatch: x[{i}:{i+len(p)}] == {x[i:i+len(p)]} != p == {p}")  # noqal
+            assert x[i:i+len(p)] == p
+    return test
+
+
+class CheckSimpleOccurrences(unittest.TestCase):
+    pass
+
+
+for algo in ALGOS:
+    setattr(EmptyPatterns, 'test_'+algo.__name__+'_empty', check_empty(algo))
 
 
 def test_simple():

@@ -21,7 +21,8 @@ def naive(x: str, p: str) -> Iterator[int]:
 def border(x: str, p: str) -> Iterator[int]:
     # Doesn't handle empty patterns directly...
     if not p:
-        return list(range(len(x) + 1))
+        yield from range(len(x) + 1)
+        return
 
     # Build the border array
     ba = strict_border_array(p)
@@ -39,10 +40,6 @@ def border(x: str, p: str) -> Iterator[int]:
 
 
 def kmp(x: str, p: str) -> Iterator[int]:
-    # Doesn't handle empty patterns directly...
-    if not p:
-        return list(range(len(x) + 1))
-
     ba = strict_border_array(p)
     i, j = 0, 0
     while i < len(x):
@@ -60,8 +57,16 @@ def kmp(x: str, p: str) -> Iterator[int]:
         else:
             j = ba[j - 1]
 
+    # If p is the empty string we have one more position to report
+    if not p:
+        yield len(x)
+
 
 def bmh(x: str, p: str) -> Iterator[int]:
+    # Can't handle empty strings directly
+    if not p:
+        yield from range(len(x) + 1)
+        return
 
     jump: dict[str, int] = \
         defaultdict(lambda: len(p))
