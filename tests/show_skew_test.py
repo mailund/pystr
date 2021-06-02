@@ -13,7 +13,27 @@ def test_show_skew(mocker):
             interactive=False,
             terminal_sentinel='$',
             central_sentinel='#',
-            x='mississippi')
+            x='mississippimmiissiissiippii')
+    )
+    try:
+        skew.show_skew()
+    except Exception:
+        assert False, \
+            "Something went wrong in the script"
+
+
+def test_show_skew_interactive(mocker):
+    mocker.patch(
+        'argparse.ArgumentParser.parse_args',
+        return_value=argparse.Namespace(
+            interactive=True,
+            terminal_sentinel='$',
+            central_sentinel='#',
+            x='mississippimmiissiissiippii')
+    )
+    mocker.patch(
+        'builtins.input',
+        return_value=''
     )
     try:
         skew.show_skew()

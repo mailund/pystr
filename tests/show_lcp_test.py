@@ -1,5 +1,6 @@
 import argparse
 from pystr_scripts import lcp
+from helpers import random_string
 
 # This is really just a call... I don't know
 # how to check that the arguments are correct when
@@ -7,10 +8,26 @@ from pystr_scripts import lcp
 
 
 def test_show_lcp(mocker):
+    for _ in range(10):
+        x = random_string(100, alpha="abcd")
+        mocker.patch(
+            'argparse.ArgumentParser.parse_args',
+            return_value=argparse.Namespace(
+                interactive=False,
+                x=x)
+        )
+        lcp.show_lcp_sa()
+
+
+def test_show_lcp_interactive(mocker):
     mocker.patch(
         'argparse.ArgumentParser.parse_args',
         return_value=argparse.Namespace(
-            interactive=False,
+            interactive=True,
             x='mississippi')
+    )
+    mocker.patch(
+        'builtins.input',
+        return_value=''
     )
     lcp.show_lcp_sa()

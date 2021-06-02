@@ -209,13 +209,6 @@ def merge_show_arrays(x: list[int],
     return tbl
 
 
-def safe_slice(x: list[int], sa: list[int], i: int) -> list[int]:
-    if i >= len(x) or i >= len(sa):
-        return []
-    else:
-        return x[i:]
-
-
 def show_less(ii: int, jj: int,
               x: list[int], SA12: list[int], SA3: list[int],
               ISA: dict[int, int], alpha: Alpha) -> bool:

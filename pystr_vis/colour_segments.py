@@ -16,7 +16,7 @@ _ColourSegment = NamedTuple(
 
 
 # This makes debugging a little nicer...
-class ColourSegment(_ColourSegment):
+class ColourSegment(_ColourSegment):  # pragma: no cover -- just for debugging
     def __str__(self):
         return self.col(f"[{self.start},{self.stop})")
     __repr__ = __str__
@@ -68,7 +68,7 @@ def merge_segments(x: list[ColourSegment], y: list[ColourSegment]) \
                 res.append(a)
                 y.append(ColourSegment(b.start, a.start, b.col))
 
-        else:
+        else:  # pragma: no cover
             assert False, "We should have handled all cases"
 
     res.extend(reversed(x))

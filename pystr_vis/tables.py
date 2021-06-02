@@ -2,7 +2,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum, auto
 from typing import Callable
-from .cols import ansifree_len
+from .cols import ansi_align_left, ansi_align_right, ansifree_len
 
 
 class Align(Enum):
@@ -81,15 +81,15 @@ class Table:
     def _formatters(self) -> list[Callable[[str], str]]:
         colw = self._get_col_widths()
         formatters: list[Callable[[str], str]] = []
-        def left(w): return lambda x: x + ' ' * (w - ansifree_len(x))
-        def right(w): return lambda x: ' ' * (w - ansifree_len(x)) + x
+        def left(w): return lambda x: ansi_align_left(x, w)
+        def right(w): return lambda x: ansi_align_right(x, w)
         for i in range(len(colw)):
             # FIXME: pattern match this when mypy can handle it
             if self.cols[i].align is Align.LEFT:
                 formatters.append(left(colw[i]))
             elif self.cols[i].align is Align.RIGHT:
                 formatters.append(right(colw[i]))
-            else:
+            else:  # pragma: no cover
                 assert False, "Unknown alignment"
         return formatters
 

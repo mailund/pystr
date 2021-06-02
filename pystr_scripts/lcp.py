@@ -80,16 +80,16 @@ def lcp_from_sa(x: str, sa: list[int],
             print(bright_yellow(place_pointers(("i", i))), sep="")
             print(bright_yellow(place_pointers(
                 ("v", i), ("v", i + offset))), sep="")
-            print(colour(x)[i:i+offset, green][j:j+offset, green], sep="")
-            print(bright_yellow(place_pointers(
-                ("^", j), ("^", j + offset))), sep="")
-            if offset > 0:
-                print(bright_yellow(
-                    place_pointers(("j", j), ("+offset", j + offset))), sep="")
-            else:
-                print(bright_yellow(place_pointers(("j", j))), sep="")
+        print(colour(x)[i:i+offset, green][j:j+offset, green], sep="")
+        print(bright_yellow(place_pointers(
+            ("^", j), ("^", j + offset))), sep="")
+        if offset > 0:
+            print(bright_yellow(
+                place_pointers(("j", j), ("+offset", j + offset))), sep="")
+        else:
+            print(bright_yellow(place_pointers(("j", j))), sep="")
 
-            old_offset = offset
+        old_offset = offset
 
         print()
         hit_enter(interactive)
