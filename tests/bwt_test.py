@@ -30,5 +30,5 @@ def test_mississippi():
         check_equal_matches(x, p,
                             lambda x, p: search_tbls(x, p, *prep),
                             bwt_search)
-    # the empty string should give us the entire x
-    assert len(set(search_tbls(x, "", *prep))) == len(x)
+    # the empty string should give us the entire x + 1 (past the string)
+    assert len(set(search_tbls(x, "", *prep))) == len(x) + 1

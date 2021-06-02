@@ -51,10 +51,6 @@ def bwt_search_tbls(x: str, p: str,
         R = ctab[y] + otab[y][R]
         if L >= R:
             return 0, 0
-
-    # if we search for the empty string, we will include
-    # the sentinel position in the output. We never should
-    L += (L == 0)
     return L, R
 
 
