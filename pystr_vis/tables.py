@@ -1,7 +1,7 @@
 from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum, auto
-from typing import Callable
+from typing import Callable, Iterable, overload, cast
 from .cols import ansi_align_left, ansi_align_right, ansifree_len
 
 
@@ -17,6 +17,19 @@ class ColSpec:
     left_pad: str = ""
     right_pad: str = " "
     align: Align = Align.LEFT
+
+
+def _copy_spec(col: ColSpec, prefix: str) -> ColSpec:
+    return ColSpec(
+        name=prefix + col.name,
+        left_pad=col.left_pad,
+        right_pad=col.right_pad,
+        align=col.align
+    )
+
+
+def _copy_cols(tbl: Table, prefix: str) -> tuple[ColSpec, ...]:
+    return tuple(_copy_spec(col, prefix) for col in tbl.cols)
 
 
 L = ColSpec()
@@ -37,9 +50,19 @@ class Row:
         else:
             return self.cells[self.tbl.col_names[col]]
 
-    def __setitem__(self, col: int | str, val: str):
+    @overload
+    def __setitem__(self, col: int, val: str) -> None: ...
+    @overload
+    def __setitem__(self, col: str, val: str) -> None: ...
+    @overload
+    def __setitem__(self, col: slice, val: Iterable[str]) -> None: ...
+
+    def __setitem__(self, col: int | slice | str, val: str | Iterable[str]):
         if isinstance(col, int):
-            self.cells[col] = str(val)
+            # FIXME: it shouldn't be necessary to make this val a string!
+            self.cells[col] = cast(str, str(val))
+        elif isinstance(col, slice):
+            self.cells[col] = cast(Iterable[str], val)
         else:
             self.cells[self.tbl.col_names[col]] = str(val)
 
@@ -110,3 +133,15 @@ class Table:
 
     def __len__(self):
         return len(self.rows)
+
+    def __or__(self, other: Table) -> Table:
+        new = Table(*(_copy_cols(self, "1_")+_copy_cols(other, "2_")))
+        n1, n2 = len(self.cols), len(other.cols)
+        m = max(len(self), len(other))
+        for _ in range(m):
+            new.add_row()
+        for i in range(len(self)):
+            new[i][0:n1] = self[i].cells
+        for i in range(len(other)):
+            new[i][n1:n1+n2] = other[i].cells
+        return new

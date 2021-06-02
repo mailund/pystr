@@ -60,12 +60,12 @@ def merge_segments(x: list[ColourSegment], y: list[ColourSegment]) \
         elif a.stop == b.stop:
             # Now we split based on the starting point
             if a.start < b.start:
-                # emit b and reduce a
-                res.append(b)
+                # Do the overlap (if possible)
+                res.append(ColourSegment(b.start, b.stop, b.col & a.col))
                 x.append(ColourSegment(a.start, b.start, a.col))
             else:
-                # emit a and reduce b
-                res.append(a)
+                # Do the overlap (if possible)
+                res.append(ColourSegment(a.start, a.stop, a.col & b.col))
                 y.append(ColourSegment(b.start, a.start, b.col))
 
         else:  # pragma: no cover
