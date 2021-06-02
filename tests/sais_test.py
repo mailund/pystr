@@ -1,7 +1,7 @@
 from pystr.sais import map_string, classify_SL, is_LMS
 from pystr.sais import sais
 from pystr.bv import BitVector
-from helpers import random_string, check_sorted
+from helpers import random_string, fibonacci_string, check_sorted
 
 
 def test_remap():
@@ -100,7 +100,11 @@ def test_adccacacbbccdccdbccb():
 def test_sais_sorted():
     for _ in range(10):
         x = random_string(1000)
-        print(x)
+        sa = sais(x)
+        check_sorted(x, sa)
+
+    for n in range(10, 15):
+        x = fibonacci_string(n)
         sa = sais(x)
         check_sorted(x, sa)
 

@@ -1,6 +1,7 @@
 from pystr.aho_corasick import aho_corasick
 from pystr.exact import naive
-from helpers import random_string, pick_random_patterns
+from helpers import random_string, fibonacci_string, \
+    pick_random_patterns
 
 
 def test_abc():
@@ -32,6 +33,14 @@ def test_compare_naive():
         assert compare_naive(x, ps)
     for _ in range(10):
         x = random_string(100)  # try larger alphabet
+        # need to go through set to remove duplicates.
+        # naive can handle those, but Aho-Corasick cannot
+        ps = list(set(pick_random_patterns(x, 10)))
+        print(f'\nCompare with naive:\nx="{x}"\nps={ps}\n\n')
+        assert compare_naive(x, ps)
+
+    for n in range(10, 15):
+        x = fibonacci_string(n)
         # need to go through set to remove duplicates.
         # naive can handle those, but Aho-Corasick cannot
         ps = list(set(pick_random_patterns(x, 10)))

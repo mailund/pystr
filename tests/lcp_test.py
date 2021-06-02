@@ -1,4 +1,4 @@
-from helpers import random_string
+from helpers import random_string, fibonacci_string
 from pystr import mccreight_st_construction, sais
 from pystr.lcp import compare_lcp, sa_lcp_from_suffix_tree
 from pystr.lcp import inverse_sa, lcp_from_sa
@@ -45,6 +45,17 @@ def test_sa_construction():
     for _ in range(20):
         # smaller alpha for more branches...
         x = random_string(50, alpha="abc")
+        sa = sais(x, include_sentinel=True)
+        lcp = lcp_from_sa(x, sa)
+        check_lcp(x, sa, lcp, include_sentinel=True)
+
+        sa = sais(x, include_sentinel=False)
+        lcp = lcp_from_sa(x, sa)
+        check_lcp(x, sa, lcp, include_sentinel=False)
+
+    for n in range(10, 15):
+        x = fibonacci_string(n)
+
         sa = sais(x, include_sentinel=True)
         lcp = lcp_from_sa(x, sa)
         check_lcp(x, sa, lcp, include_sentinel=True)

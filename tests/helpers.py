@@ -8,6 +8,14 @@ def random_string(n: int, alpha=string.ascii_uppercase) -> str:
     return ''.join(random.choices(alpha, k=n))
 
 
+def fibonacci_string(n: int):
+    """Fibonacci string n; has length Fib(n+2)."""
+    a, b = "a", "ab"
+    for _ in range(n):
+        a, b = b, a+b
+    return b
+
+
 def pick_random_patterns(x: str, n: int) -> Iterator[str]:
     for _ in range(n):
         i = random.randrange(0, len(x) - 1)

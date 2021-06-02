@@ -1,7 +1,7 @@
 from pystr.exact import naive, border, kmp, bmh
 from pystr.bwt import bwt_search
 from pystr.suffixtree import mccreight_st_construction as mccreight
-from helpers import random_string, check_equal_matches
+from helpers import random_string, fibonacci_string, check_equal_matches
 from helpers import pick_random_patterns, pick_random_patterns_len
 from typing import Callable, Iterator
 
@@ -55,6 +55,11 @@ def check_exact_matching(algo: Callable[[str, str], Iterator[int]]):
         for p in pick_random_patterns(x, 10):
             check_occurrences(x, p, algo)
         for p in pick_random_patterns_len(x, 10, 3):
+            check_occurrences(x, p, algo)
+
+    for n in range(10, 15):
+        x = fibonacci_string(n)
+        for p in pick_random_patterns(x, 10):
             check_occurrences(x, p, algo)
 
 
