@@ -8,7 +8,7 @@ test:
 	mypy -p pystr_vis
 	mypy -p pystr_scripts
 	mypy tests/*.py
-	pytest --verbose --cov-report term-missing --cov=pystr --cov=pystr_vis --cov=pystr_scripts tests
+	pytest --cov-report term-missing --cov=pystr --cov=pystr_vis --cov=pystr_scripts tests
 
 build:
 	python3 -m build
