@@ -4,7 +4,11 @@ from pystr.lcp import compare_lcp, sa_lcp_from_suffix_tree
 from pystr.lcp import inverse_sa, lcp_from_sa
 
 
-def check_lcp(x: str, sa: list[int], lcp: list[int], include_sentinel: bool):
+def check_lcp(x: str,
+              sa: list[int],
+              lcp: list[int],
+              include_sentinel: bool
+              ) -> None:
     assert len(sa) == len(x) + include_sentinel
     assert len(sa) == len(lcp)
     assert lcp[0] == 0            # first lcp is always zero
@@ -12,7 +16,7 @@ def check_lcp(x: str, sa: list[int], lcp: list[int], include_sentinel: bool):
         assert lcp[i] == compare_lcp(x, sa[i], sa[i-1])
 
 
-def test_st_construction():
+def test_st_construction() -> None:
     for _ in range(20):
         # smaller alpha for more branches...
         x = random_string(50, alpha="abc")
@@ -30,7 +34,7 @@ def test_st_construction():
         check_lcp(x, sa, lcp, include_sentinel=False)
 
 
-def test_inverse():
+def test_inverse() -> None:
     for _ in range(20):
         x = random_string(50, alpha="abc")
         sa = sais(x)
@@ -41,7 +45,7 @@ def test_inverse():
             assert sa[isa[i]] == i
 
 
-def test_sa_construction():
+def test_sa_construction() -> None:
     for _ in range(20):
         # smaller alpha for more branches...
         x = random_string(50, alpha="abc")

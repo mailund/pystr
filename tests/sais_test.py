@@ -4,7 +4,7 @@ from pystr.bv import BitVector
 from helpers import random_string, fibonacci_string, check_sorted
 
 
-def test_remap():
+def test_remap() -> None:
     x = "mississippi"
     mapped, asize = map_string(x)
     assert mapped == [2, 1, 4, 4, 1, 4, 4, 1, 3, 3, 1, 0]
@@ -16,7 +16,7 @@ def test_remap():
         assert set(mapped) == set(range(asize))
 
 
-def test_classify():
+def test_classify() -> None:
     # mississippi$
     # LSLLSLLSLLLS
     x, _ = map_string("mississippi")
@@ -37,10 +37,10 @@ def test_classify():
         assert is_S[i] == expected[i]
 
 
-def test_is_LMS():
+def test_is_LMS() -> None:
     x, _ = map_string("mississippi")
     assert len(x) == len("mississippi") + 1
-    is_S = [False] * len(x)
+    is_S = BitVector(len(x))
     assert len(is_S) == len(x)
     classify_SL(is_S, x)
     # mississippi$
@@ -59,22 +59,22 @@ def test_is_LMS():
         assert is_LMS(is_S, i) == expected[i]
 
     for _ in range(10):
-        x = random_string(20, "abcd")
-        y, _ = map_string(x)
-        is_S = [False] * len(y)
+        z = random_string(20, "abcd")
+        y, _ = map_string(z)
+        is_S = BitVector(len(y))
         classify_SL(is_S, y)
 
         assert is_S[len(y) - 1]
         assert is_LMS(is_S, len(y) - 1)
 
 
-def test_base_case():
+def test_base_case() -> None:
     assert sais("abc") == [3, 0, 1, 2]
     assert sais("cba") == [3, 2, 1, 0]
     assert sais("acb") == [3, 0, 2, 1]
 
 
-def test_mississippi():
+def test_mississippi() -> None:
     x = "mississippi"
     sa = sais(x)
     assert len(x) == len(sa) - 1
@@ -85,7 +85,7 @@ def test_mississippi():
     check_sorted(x, sa)
 
 
-def test_adccacacbbccdccdbccb():
+def test_adccacacbbccdccdbccb() -> None:
     x = "adccacacbbccdccdbccb"
     sa = sais(x)
     assert len(x) == len(sa) - 1
@@ -97,7 +97,7 @@ def test_adccacacbbccdccdbccb():
     check_sorted(x, sa)
 
 
-def test_sais_sorted():
+def test_sais_sorted() -> None:
     for _ in range(10):
         x = random_string(1000)
         sa = sais(x)

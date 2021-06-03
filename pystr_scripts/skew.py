@@ -1,5 +1,5 @@
 import argparse
-from typing import Iterable
+from typing import Callable, Sequence
 
 from pystr.skew import bucket_sort, u_idx, safe_idx, \
     build_u, collect_alphabet, SkewTriplet, triplet
@@ -22,7 +22,7 @@ BLOCK_COLS = [green, yellow, cyan, magenta, bright_blue]
 Alpha = dict[int, str]
 
 
-def hit_enter():
+def hit_enter() -> None:
     if INTERACTIVE:
         input("Press ENTER to continue")
 
@@ -55,7 +55,11 @@ def map_char(a: int, alpha: Alpha, width: int) -> str:
     return s if len(s) == 1 else f"[{s}]"
 
 
-def default_colour(i: int, a: int, mapped_a: str, x: list[int]) -> str:
+Colourer = Callable[[int, int, str, Sequence[int]], str]
+Transformer = Callable[[Sequence[int]], Sequence[int]]
+
+
+def default_colour(i: int, a: int, mapped_a: str, x: Sequence[int]) -> str:
     # Colours sentinels and nothing else
     sentinel_cols = [blue, red]
     if a <= 1:
@@ -64,7 +68,10 @@ def default_colour(i: int, a: int, mapped_a: str, x: list[int]) -> str:
         return mapped_a
 
 
-def map_str(x: Iterable[int], alpha: Alpha, col=default_colour) -> str:
+def map_str(x: Sequence[int],
+            alpha: Alpha,
+            col: Colourer = default_colour
+            ) -> str:
     # assuming here that all characters in alpha have the same with...
     a, *_ = alpha.values()
     width = ansifree_len(a)
@@ -77,12 +84,16 @@ def map_str(x: Iterable[int], alpha: Alpha, col=default_colour) -> str:
 # SECTION The Skew algorithm
 
 
-def default_suffix_transform(x: list[int]) -> list[int]:
+def default_suffix_transform(x: Sequence[int]) -> Sequence[int]:
     return x  # let's you modify x before colour
 
 
-def sa_table(name: str, saXX: list[int], x: list[int], alpha: Alpha,
-             tr=default_suffix_transform, col=default_colour) \
+def sa_table(name: str,
+             saXX: list[int],
+             x: list[int],
+             alpha: Alpha,
+             tr: Transformer = default_suffix_transform,
+             col: Colourer = default_colour) \
         -> Table:
     tbl = Table(
         ColSpec("sa", align=Align.RIGHT),
@@ -97,8 +108,8 @@ def sa_table(name: str, saXX: list[int], x: list[int], alpha: Alpha,
     return tbl
 
 
-def highlight_offset(offset):
-    def col(i: int, a: int, a_mapped: str, x: list[int]):
+def highlight_offset(offset: int) -> Colourer:
+    def col(i: int, a: int, a_mapped: str, x: Sequence[int]) -> str:
         if i == offset:
             return bright_yellow(a_mapped)
         else:
@@ -106,13 +117,14 @@ def highlight_offset(offset):
     return col
 
 
-def pad_3(x: list[int]):
-    for _ in range(max(0, 3 - len(x))):
-        x.append(TERMINAL_SENTINEL)
-    return x
+def pad_3(x: Sequence[int]) -> Sequence[int]:
+    return tuple(x) + (TERMINAL_SENTINEL,) * max(0, 3 - len(x))
 
 
-def show_radix_sort(x: list[int], alpha: Alpha, SA12: list[int]):
+def show_radix_sort(x: list[int],
+                    alpha: Alpha,
+                    SA12: list[int]
+                    ) -> list[int]:
     # This is handled in the actual algorithm, but we
     # get it from alpha in the visualisation
     asize = len(alpha) + 2  # +2 for sentinels
@@ -131,7 +143,8 @@ def show_sorted_SA12(x: list[int],
                      alpha: Alpha,
                      SA12: list[int],
                      umap: dict[SkewTriplet, int],
-                     blocked=False):
+                     blocked: bool = False
+                     ) -> Table:
     # This is handled in the actual algorithm, but we
     # get it from alpha in the visualisation
     if blocked:
@@ -139,7 +152,7 @@ def show_sorted_SA12(x: list[int],
     else:
         cols = [green]
 
-    def col(i: int, a: int, a_mapped: str, x: list[int]) -> str:
+    def col(i: int, a: int, a_mapped: str, x: Sequence[int]) -> str:
         if i < 3:
             idx = umap[triplet(x, 0)] - 2
             return cols[idx % len(cols)](a_mapped)
@@ -149,7 +162,7 @@ def show_sorted_SA12(x: list[int],
     return sa_table("SA12", SA12, x, alpha, col=col)
 
 
-def col_block(i: int, a: int, a_mapped: str, x: list[int]) -> str:
+def col_block(i: int, a: int, a_mapped: str, x: Sequence[int]) -> str:
     if a < 2:
         # handle sentinels as usual.
         return default_colour(i, a, a_mapped, x)
@@ -157,8 +170,8 @@ def col_block(i: int, a: int, a_mapped: str, x: list[int]) -> str:
     return BLOCK_COLS[idx % len(BLOCK_COLS)](a_mapped)
 
 
-def col_notsent(col: Colour):
-    def colour_a(i: int, a: int, a_mapped: str, x: list[int]) -> str:
+def col_notsent(col: Colour) -> Colourer:
+    def colour_a(i: int, a: int, a_mapped: str, x: Sequence[int]) -> str:
         if a < 2:
             # handle sentinels as usual.
             return default_colour(i, a, a_mapped, x)
@@ -170,7 +183,8 @@ def col_notsent(col: Colour):
 def merge_show_arrays(x: list[int],
                       SA12: list[int], SA3: list[int], SA: list[int],
                       alpha: Alpha,
-                      merge_index_i: int, merge_index_j: int):
+                      merge_index_i: int, merge_index_j: int
+                      ) -> Table:
     m = max(len(SA12), len(SA3), len(SA))
     tbl = Table(
         ColSpec("sa12_ptr"), ColSpec("sa12"), ColSpec("sa12_suf"),
@@ -406,7 +420,7 @@ def skew_rec(x: list[int], alpha: Alpha) -> list[int]:
 # SECTION Main application
 
 
-def show_skew():
+def show_skew() -> None:
     global INTERACTIVE, TERMINAL_SENTINEL_SYMBOL, CENTRAL_SENTINEL_SYMBOL
     parser = argparse.ArgumentParser(
         description='Display run of skew algorithm.')

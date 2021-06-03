@@ -13,12 +13,13 @@ def occurrences(n: TrieNode) -> Iterator[int]:
         olist = olist.out_list
 
 
-def find_out(n: TrieNode, a: str):
+def find_out(n: TrieNode, a: str) -> TrieNode:
     """Find the node we get to with an a move.
 We will end up in the node if we cannot make one,
 but that works fine with the out list reporting."""
     while not n.is_root and a not in n:
-        n = cast(TrieNode, n.suffix_link)
+        assert n.suffix_link is not None
+        n = n.suffix_link
     return n[a] if a in n else n
 
 

@@ -1,4 +1,6 @@
 import argparse
+from pytest_mock import MockerFixture
+
 from pystr_scripts import lcp
 from helpers import random_string
 
@@ -7,7 +9,7 @@ from helpers import random_string
 # it will accept any string arguments..
 
 
-def test_show_lcp(mocker):
+def test_show_lcp(mocker: MockerFixture) -> None:
     for _ in range(10):
         x = random_string(100, alpha="abcd")
         mocker.patch(
@@ -19,7 +21,7 @@ def test_show_lcp(mocker):
         lcp.show_lcp_sa()
 
 
-def test_show_lcp_interactive(mocker):
+def test_show_lcp_interactive(mocker: MockerFixture) -> None:
     mocker.patch(
         'argparse.ArgumentParser.parse_args',
         return_value=argparse.Namespace(

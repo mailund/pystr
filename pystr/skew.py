@@ -5,11 +5,13 @@ Straightforward implementation of the skew/DC3 algorithm
 
 """
 
+from typing import Sequence
+
 SkewTriplet = tuple[int, int, int]
 SkewTripletDict = dict[SkewTriplet, int]
 
 
-def safe_idx(x: list[int], i: int) -> int:
+def safe_idx(x: Sequence[int], i: int) -> int:
     "Hack to get zero if we index beyond the end."
     return 0 if i >= len(x) else x[i]
 
@@ -54,7 +56,7 @@ def radix3(x: list[int], asize: int, idx: list[int]) -> list[int]:
     return bucket_sort(x, asize, idx)
 
 
-def triplet(x: list[int], i: int) -> SkewTriplet:
+def triplet(x: Sequence[int], i: int) -> SkewTriplet:
     "Extract the triplet (x[i],x[i+1],x[i+2])."
     return (safe_idx(x, i), safe_idx(x, i + 1), safe_idx(x, i + 2))
 
@@ -147,7 +149,7 @@ def skew_rec(x: list[int], asize: int) -> list[int]:
     return merge(x, SA12, SA3)
 
 
-def skew(x: str, include_sentinel=True) -> list[int]:
+def skew(x: str, include_sentinel: bool = True) -> list[int]:
     "Skew algorithm for a string."
     # The skew_rec() function wants a list of integers,
     # so we convert the string in the first call.

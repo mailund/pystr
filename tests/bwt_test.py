@@ -20,7 +20,7 @@ def search_tbls(x: str, p: str,
         yield sa[i]
 
 
-def test_mississippi():
+def test_mississippi() -> None:
     x = "mississippi"
     sa = sais(x, include_sentinel=True)
     prep = preprocess(x, sa)

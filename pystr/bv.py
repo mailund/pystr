@@ -10,7 +10,7 @@ class BitVector:
     def __getitem__(self, i: int) -> bool:
         return bool(self.bytes[i//8] & (1 << (i % 8)))
 
-    def __setitem__(self, i: int, v: bool):
+    def __setitem__(self, i: int, v: bool) -> None:
         if v:
             self.bytes[i//8] = self.bytes[i//8] | (1 << (i % 8))
         else:

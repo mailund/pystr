@@ -3,11 +3,13 @@ init:
 	pip3 install -r requirements.txt
 	pip3 install --editable .
 
-test:
-	mypy -p pystr
-	mypy -p pystr_vis
-	mypy -p pystr_scripts
-	mypy tests/*.py
+check:
+	mypy --disallow-untyped-calls --disallow-untyped-defs --disallow-incomplete-defs -p pystr
+	mypy --disallow-untyped-calls --disallow-untyped-defs --disallow-incomplete-defs -p pystr_vis
+	mypy --disallow-untyped-calls --disallow-untyped-defs --disallow-incomplete-defs -p pystr_scripts
+	mypy --disallow-untyped-calls --disallow-untyped-defs --disallow-incomplete-defs tests/*.py
+
+test: check
 	pytest --cov-report term-missing --cov=pystr --cov=pystr_vis --cov=pystr_scripts tests
 
 build:
@@ -38,4 +40,4 @@ display:
 	@cd tests && python3 -c "from trie_test import *; test_mississippi_suffixes(breadth_first_trie)" | $(idot)
 
 
-.PHONY: init test build install display
+.PHONY: init check test build install display

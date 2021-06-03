@@ -4,7 +4,7 @@ import argparse
 from pystr.suffixtree import mccreight_st_construction
 
 
-def show_suffixtree():
+def show_suffixtree() -> None:
     parser = argparse.ArgumentParser(
         description='Display a trie of a set of strings.')
     parser.add_argument('x', metavar='STRING', type=str,

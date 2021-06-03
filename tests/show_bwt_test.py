@@ -1,8 +1,10 @@
 import argparse
+from pytest_mock import MockerFixture
+
 from pystr_scripts import bwt
 
 
-def test_show_bwt_transition(mocker):
+def test_show_bwt_transition(mocker: MockerFixture) -> None:
     x = 'mississippimmiissiissiippii'
     alpha = set(x)
 

@@ -2,7 +2,7 @@ from helpers import random_string, fibonacci_string, check_sorted
 from pystr import skew
 
 
-def test_skew_sorted():
+def test_skew_sorted() -> None:
     for k in range(10):
         x = random_string(1000)
         sa = skew(x, include_sentinel=False)

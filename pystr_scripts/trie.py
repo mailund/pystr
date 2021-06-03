@@ -4,7 +4,7 @@ import argparse
 from pystr.trie import depth_first_trie
 
 
-def show_trie():
+def show_trie() -> None:
     parser = argparse.ArgumentParser(
         description='Display a trie of a set of strings.')
     parser.add_argument('strings', metavar='STRING', type=str, nargs='+',

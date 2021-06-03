@@ -6,7 +6,7 @@ from pystr_vis.cols import bright_cyan, bright_green, bright_yellow, \
 from pystr_vis import colour, place_pointers, Table, ColSpec, Align
 
 
-def hit_enter(interactive: bool):
+def hit_enter(interactive: bool) -> None:
     if interactive:
         input("Press ENTER to continue")
 
@@ -140,7 +140,7 @@ def lcp_from_sa(x: str, sa: list[int],
     return lcp
 
 
-def show_lcp_sa():
+def show_lcp_sa() -> None:
     parser = argparse.ArgumentParser(
         description='Display run of algorithm for constructing the lcp from the sa.')    # noqa: E501
 

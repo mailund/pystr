@@ -10,36 +10,36 @@ strip_ANSI_escapes = re.compile(r"""
     """, re.VERBOSE).sub
 
 
-def strip_ansi(s: str):
+def strip_ansi(s: str) -> str:
     return strip_ANSI_escapes("", s)
 
 
-def ansifree_len(s: str):
+def ansifree_len(s: str) -> int:
     return len(strip_ansi(s))
 
 
-def ansi_align_left(x: str, w: int):
+def ansi_align_left(x: str, w: int) -> str:
     return x + ' ' * (w - ansifree_len(x))
 
 
-def ansi_align_right(x: str, w: int):
+def ansi_align_right(x: str, w: int) -> str:
     return ' ' * (w - ansifree_len(x)) + x
 
 
 class Colour:
     ansi_code: str
 
-    def __init__(self, ansi_code: str):
+    def __init__(self, ansi_code: str) -> None:
         self.ansi_code = ansi_code
 
     def __call__(self, s: str) -> str:
         x = str(s)
         return f"{self}{x}{RESET}"
 
-    def __and__(self, other: Colour):
+    def __and__(self, other: Colour) -> Colour:
         return Colour(self.ansi_code + other.ansi_code)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.ansi_code
 
 

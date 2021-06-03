@@ -3,7 +3,7 @@ from pystr_vis.cols import green, red, blue
 from pystr_vis.colour_segments import colour
 
 
-def test_colour_segments():
+def test_colour_segments() -> None:
     n = 25
     m = 10
     x = 'a' * n

@@ -1,4 +1,6 @@
 import argparse
+from pytest_mock import MockerFixture
+
 from pystr_scripts import exact
 from helpers import random_string, \
     pick_random_patterns, pick_random_patterns_len
@@ -8,7 +10,7 @@ from helpers import random_string, \
 # it will accept any string arguments..
 
 
-def run_alg(mocker, algo: str):
+def run_alg(mocker: MockerFixture, algo: str) -> None:
     for _ in range(10):
         x = random_string(100, alpha="abcd")
         for p in pick_random_patterns(x, 10):
@@ -31,7 +33,7 @@ def run_alg(mocker, algo: str):
             exact.main()
 
 
-def run_alg_interactive(mocker, algo: str):
+def run_alg_interactive(mocker: MockerFixture, algo: str) -> None:
     mocker.patch(
         'argparse.ArgumentParser.parse_args',
         return_value=argparse.Namespace(
@@ -47,13 +49,33 @@ def run_alg_interactive(mocker, algo: str):
     exact.main()
 
 
-def test_naive(mocker):  run_alg(mocker, 'naive')
-def test_border(mocker): run_alg(mocker, 'border')
-def test_kmp(mocker):    run_alg(mocker, 'kmp')
-def test_bmh(mocker):    run_alg(mocker, 'bmh')
+def test_naive(mocker: MockerFixture) -> None:
+    run_alg(mocker, 'naive')
 
 
-def test_int_naive(mocker):  run_alg_interactive(mocker, 'naive')
-def test_int_border(mocker): run_alg_interactive(mocker, 'border')
-def test_int_kmp(mocker):    run_alg_interactive(mocker, 'kmp')
-def test_int_bmh(mocker):    run_alg_interactive(mocker, 'bmh')
+def test_border(mocker: MockerFixture) -> None:
+    run_alg(mocker, 'border')
+
+
+def test_kmp(mocker: MockerFixture) -> None:
+    run_alg(mocker, 'kmp')
+
+
+def test_bmh(mocker: MockerFixture) -> None:
+    run_alg(mocker, 'bmh')
+
+
+def test_int_naive(mocker: MockerFixture) -> None:
+    run_alg_interactive(mocker, 'naive')
+
+
+def test_int_border(mocker: MockerFixture) -> None:
+    run_alg_interactive(mocker, 'border')
+
+
+def test_int_kmp(mocker: MockerFixture) -> None:
+    run_alg_interactive(mocker, 'kmp')
+
+
+def test_int_bmh(mocker: MockerFixture) -> None:
+    run_alg_interactive(mocker, 'bmh')

@@ -4,7 +4,7 @@ from collections import defaultdict
 from pystr.border_array import strict_border_array
 
 
-def hit_enter(interactive: bool):
+def hit_enter(interactive: bool) -> None:
     if interactive:
         input("Press ENTER to continue")
 
@@ -91,7 +91,7 @@ def kmp(x: str, p: str, interactive: bool) -> None:
         hit_enter(interactive)
 
 
-def bmh(x: str, p: str, interactive) -> None:
+def bmh(x: str, p: str, interactive: bool) -> None:
 
     jump: dict[str, int] = \
         defaultdict(lambda: len(p))
@@ -129,7 +129,7 @@ from pystr_vis.cols import bright_green, bright_blue     # noqa: E402
 from pystr_vis.cols import underline                     # noqa: E402
 
 
-def naive_show_mismatch(x: str, p: str, i: int, j: int):
+def naive_show_mismatch(x: str, p: str, i: int, j: int) -> None:
     print(indent(i), "i", sep="")
     print(colour(x)[i:i+j, green][i+j, red], sep="")
     print(indent(i), colour(p)[:j, green][j, red], sep="")
@@ -137,7 +137,7 @@ def naive_show_mismatch(x: str, p: str, i: int, j: int):
     print()
 
 
-def naive_show_match(x: str, p: str, i: int):
+def naive_show_match(x: str, p: str, i: int) -> None:
     print(indent(i), "i", sep="")
     print(colour(x)[i:i+len(p), green], sep="")
     print(indent(i), green(p), sep="")
@@ -145,7 +145,7 @@ def naive_show_match(x: str, p: str, i: int):
     print()
 
 
-def border_show_prefix_next_comp(x: str, p: str, i: int, b: int):
+def border_show_prefix_next_comp(x: str, p: str, i: int, b: int) -> None:
     print(indent(i), "i", sep="")
     print(colour(x)[i-b:i, green][i, yellow], sep="")
     print(indent(i - b), colour(p)[:b, green][b, yellow], sep="")
@@ -153,7 +153,7 @@ def border_show_prefix_next_comp(x: str, p: str, i: int, b: int):
     print()
 
 
-def kmp_show_prefix_next_comp(x: str, p: str, i: int, j: int):
+def kmp_show_prefix_next_comp(x: str, p: str, i: int, j: int) -> None:
     print(indent(i), "i", sep="")
     print(colour(x)[i-j:i, green][i, yellow], sep="")
     print(indent(i - j), colour(p)[:j, green][j, yellow], sep="")
@@ -161,7 +161,7 @@ def kmp_show_prefix_next_comp(x: str, p: str, i: int, j: int):
     print()
 
 
-def kmp_show_prefix_mismatch(x: str, p: str, i: int, j: int):
+def kmp_show_prefix_mismatch(x: str, p: str, i: int, j: int) -> None:
     print(indent(i), "i", sep="")
     print(colour(x)[i-j:i, green][i, red], sep="")
     print(indent(i - j), colour(p)[:j, green][j, red], sep="")
@@ -169,7 +169,7 @@ def kmp_show_prefix_mismatch(x: str, p: str, i: int, j: int):
     print()
 
 
-def bmh_next_comp(x: str, p: str, i: int):
+def bmh_next_comp(x: str, p: str, i: int) -> None:
     j = len(p)
     print(indent(i + j - 1), "v", sep="")
     print(colour(x)[i+j-1, yellow], sep="")
@@ -178,7 +178,7 @@ def bmh_next_comp(x: str, p: str, i: int):
     print()
 
 
-def bmh_mismatch(x: str, p: str, i: int, j: int):
+def bmh_mismatch(x: str, p: str, i: int, j: int) -> None:
     col = red if x[i+j] != p[j] else green
     print(indent(i + j), "v", sep="")
     print(colour(x)[i+j, col][i+j+1:i+len(p), green], sep="")
@@ -187,7 +187,7 @@ def bmh_mismatch(x: str, p: str, i: int, j: int):
     print()
 
 
-def bmh_shift(x: str, p: str, i: int, j: int, shift: int):
+def bmh_shift(x: str, p: str, i: int, j: int, shift: int) -> None:
     pos = i + len(p) - 1
     rmost = len(p) - shift - 1
     col = green if rmost >= 0 else red
@@ -199,7 +199,7 @@ def bmh_shift(x: str, p: str, i: int, j: int, shift: int):
     print()
 
 
-def main():
+def main() -> None:
     algos = {
         'naive': naive,
         'border': border,

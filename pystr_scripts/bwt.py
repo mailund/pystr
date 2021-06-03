@@ -14,11 +14,11 @@ from pystr_vis.cols import \
     black, green, magenta, red, blue
 
 
-def hit_enter():
+def hit_enter() -> None:
     input("Press ENTER to continue")
 
 
-def rotation_table(x: str, sa: list[int]):
+def rotation_table(x: str, sa: list[int]) -> Table:
     tbl = Table(
         ColSpec("pointer", align=Align.RIGHT),
         ColSpec("prefix", right_pad=""),
@@ -31,7 +31,7 @@ def rotation_table(x: str, sa: list[int]):
     return tbl
 
 
-def rot_row(row: Row, a: str):
+def rot_row(row: Row, a: str) -> None:
     rot = strip_ansi(row["rotation"])
     if rot[-1] == a:
         row["prefix"] = green(a)
@@ -40,7 +40,7 @@ def rot_row(row: Row, a: str):
         row["rotation"] = colour(rot)[-1, red]
 
 
-def shift_row(row: Row):
+def shift_row(row: Row) -> None:
     rot = strip_ansi(row["rotation"])
     row["prefix"] = green(rot[0])
     row["rotation"] = colour(rot[1:])[:, underline]
@@ -49,20 +49,21 @@ def shift_row(row: Row):
 # FIXME: Figure out how to specify that f should take a row
 # as its first argument and then *args...
 def map_rows(tbl: Table, start: int, stop: int,
-             f: Callable[..., Any], *args: Any):
+             f: Callable[..., Any], *args: Any
+             ) -> None:
     for i in range(start, stop):
         f(tbl[i], *args)
 
 
-def rot_rows(tbl: Table, a: str, start: int, stop: int):
+def rot_rows(tbl: Table, a: str, start: int, stop: int) -> None:
     map_rows(tbl, start, stop, rot_row, a)
 
 
-def shift_rows(tbl: Table, start: int, stop: int):
+def shift_rows(tbl: Table, start: int, stop: int) -> None:
     map_rows(tbl, start, stop, shift_row)
 
 
-def show_bwt_transition():
+def show_bwt_transition() -> None:
 
     parser = argparse.ArgumentParser(
         description='Show one transition, (i, "a") -> C["a"] + O["a", i], in the BWT search.')  # noqa: E501
@@ -196,11 +197,31 @@ def show_bwt_transition():
     print()
 
 
-def show_bwt_search():
+def show_bwt_search() -> None:
 
-    x = 'mississippi'  # FIXME
-    p = 'ssi'
+    parser = argparse.ArgumentParser(
+        description="Show a BWT search for patter 'p' in string 'x'.")  # noqa: E501
 
+    parser.add_argument('-i', '--interactive',
+                        dest='interactive', action='store_true',
+                        help='the visualisation should pause between steps (default).')  # noqa: E501
+    parser.add_argument('-n', '--not-interactive',
+                        dest='interactive', action='store_false',
+                        help='the visualisation should not pause between steps.')        # noqa: E501
+    parser.set_defaults(interactive=True)
+
+    parser.add_argument('x', metavar='x', type=str,
+                        help='string the BWT rotations are made over.')
+    parser.add_argument('p', metavar='p', type=str,
+                        help='pattern we search for.')
+
+    args = parser.parse_args()
+    if len(args.x) < len(args.p):
+        print("The pattern can't be longer than the string.")
+        import sys
+        sys.exit(1)
+
+    x, p = args.x, args.p
     sa = sais(x, include_sentinel=True)
     ctab = c_table(x)
     otab = o_table(x, sa, ctab.keys())
@@ -209,8 +230,10 @@ def show_bwt_search():
     R = len(x) + 1  # +1 because of the sentinel
     for y in p[::-1]:
         if y not in ctab:
-            return 0, 0
+            L, R = 0, 0
+            break
         L = ctab[y] + otab[y][L]
         R = ctab[y] + otab[y][R]
         if L >= R:
-            return 0, 0
+            L, R = 0, 0
+            break

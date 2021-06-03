@@ -2,7 +2,6 @@ from __future__ import annotations
 from collections.abc import Iterator, Iterable
 from dataclasses import dataclass, field
 from typing import Optional
-import sys
 
 from .subseq import subseq
 
@@ -98,7 +97,7 @@ class SuffixTree:
         else:
             return iter(())
 
-    def __contains__(self, p: str):
+    def __contains__(self, p: str) -> bool:
         _, j, y = tree_search(self.root, subseq[str](p))
         return j == len(y)
 
@@ -189,7 +188,7 @@ with label `label` with edge `z`. Returns the new leaf."""
 
 # SECTION Naive construction algorithm
 
-def naive_st_construction(s: str, include_sentinel=True) -> SuffixTree:
+def naive_st_construction(s: str, include_sentinel: bool = True) -> SuffixTree:
     """Construct a suffix tree by searching from the root
 down to the insertion point for each suffix in `s`."""
 
@@ -220,7 +219,9 @@ down to the insertion point for each suffix in `s`."""
 # SECTION McCreights construction algorithm
 
 
-def mccreight_st_construction(s: str, include_sentinel=True) -> SuffixTree:
+def mccreight_st_construction(s: str,
+                              include_sentinel: bool = True
+                              ) -> SuffixTree:
     """Construct a suffix tree by searching from the root
 down to the insertion point for each suffix in `s`."""
 

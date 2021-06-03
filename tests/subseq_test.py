@@ -1,7 +1,7 @@
 from pystr.subseq import subseq, msubseq, substr, isseq, misseq
 
 
-def test_substr():
+def test_substr() -> None:
     underlying = "mississippi"
     assert substr(underlying) == underlying
     assert substr(underlying, 1) == underlying[1:]
@@ -24,7 +24,7 @@ def test_substr():
     assert z[:] == z
 
 
-def test_int_subseq():
+def test_int_subseq() -> None:
     underlying = [2, 1, 4, 4, 1, 4, 4, 1, 3, 3, 1, 0]
     assert subseq(underlying) == underlying
     assert subseq(underlying, 1) == underlying[1:]
@@ -35,7 +35,7 @@ def test_int_subseq():
     for i, a in enumerate(x):
         assert underlying[1 + i] == a
 
-    y: subseq[int] = underlying[1:6]
+    y: list[int] = underlying[1:6]
     assert x == y
     for i in range(len(x)):
         assert x[i] == y[i]
@@ -46,7 +46,7 @@ def test_int_subseq():
     assert z[:] == z
 
 
-def test_mutable():
+def test_mutable() -> None:
     underlying = [2, 1, 4, 4, 1, 4, 4, 1, 3, 3, 1, 0]
     x: msubseq[int] = msubseq(underlying, 1)
     x[1] = 42
@@ -58,14 +58,14 @@ def test_mutable():
     assert x[1:5] == [17, 17, 17, 17]
 
 
-def test_compare():
+def test_compare() -> None:
     x, y, z = isseq([1, 2, 3]), isseq([1, 2, 3, 4]), isseq([1, 3])
     assert x < y and y > x and not y < x
     assert x < z and z > x and not z < x
     assert y < z and z > y and not z < y
 
 
-def test_assigments():
+def test_assigments() -> None:
     x = [1, 2, 3, 4]
     ss: misseq = misseq(x)
     assert x == ss

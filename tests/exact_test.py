@@ -8,23 +8,25 @@ from helpers import random_string, fibonacci_string
 from helpers import pick_random_patterns, pick_random_patterns_len, \
     pick_random_prefix, pick_random_suffix
 from helpers import check_matches, check_equal_matches
-from helpers import collect_tests
+from helpers import collect_tests, _Test
+
+Algo = Callable[[str, str], Iterator[int]]
 
 
 # wrapper
-def suffix_tree_exact(x, p):
+def suffix_tree_exact(x: str, p: str) -> Iterator[int]:
     yield from mccreight(x).search(p)
 
 
-ALGOS = [
+ALGOS: list[Algo] = [
     naive, border, kmp, bmh,
     bwt_search,
     suffix_tree_exact,
 ]
 
 
-def check_empty(algo):
-    def test(_):
+def check_empty(algo: Algo) -> _Test:
+    def test(_: object) -> None:
         for _ in range(10):
             x = random_string(10)
             p = ""
@@ -39,8 +41,8 @@ TestEmptyPatterns = collect_tests(
 )
 
 
-def check_exact_matching(algo: Callable[[str, str], Iterator[int]]):
-    def test(_):
+def check_exact_matching(algo: Algo) -> _Test:
+    def test(_: object) -> None:
         for _ in range(10):
             x = random_string(100, alpha="abcd")
             for p in pick_random_patterns(x, 10):
@@ -70,8 +72,8 @@ TestExactMatching = collect_tests(
 )
 
 
-def check_against_naive(algo: Callable[[str, str], Iterator[int]]):
-    def test(_):
+def check_against_naive(algo: Algo) -> _Test:
+    def test(_: object) -> None:
         for _ in range(10):
             x = random_string(50, alpha="abcd")
             for p in pick_random_patterns(x, 10):

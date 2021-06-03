@@ -1,12 +1,19 @@
 from __future__ import annotations
 from collections.abc import Iterator
-from typing import Generic, TypeVar, Optional
-from typing import Sequence, MutableSequence
-from typing import overload
+from typing import Generic, TypeVar, Protocol
+from typing import Optional, Sequence, MutableSequence
+from typing import overload, cast
 
 # Type specifications...
 T = TypeVar('T')
 S = TypeVar('S', bound="subseq")
+
+C = TypeVar('C', covariant=True)
+
+
+class Ordered(Protocol[C]):
+    def __lt__(self, other: object) -> bool: ...
+    def __gt__(self, other: object) -> bool: ...
 
 
 # Then the functional stuff...
@@ -31,7 +38,7 @@ without copying them.
         assert 0 <= self._j <= len(self._x), \
             "Indices must be within the sequence's range."
 
-    def __repr__(self):  # pragma: no cover
+    def __repr__(self) -> str:  # pragma: no cover
         cls_name = self.__class__.__name__
         return f"{cls_name}(x={repr(self._x)}, start={self._i}, stop={self._j})"  # noqa: E501
 
@@ -47,16 +54,28 @@ without copying them.
     def __str__(self) -> str:
         return str(self._x[self._i:self._j])
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: object) -> bool:
+        # duck typing from here on... __eq__ must accept all objects
+        # but we can only handle sequences.
+        # FIXME: Unfortunately, I haven't figured out how to runtime check
+        # if an object implements a generic protocol...
+        other = cast(Sequence[T], other)
         return len(self) == len(other) and \
             all(a == b for a, b in zip(self, other))
 
     # You can move this to a mixin if you need to deal with
     # types that do not have an ordering.
-    def __lt__(self, other):
+    def __lt__(self, other: object) -> bool:
+        # duck typing from here on... __eq__ must accept all objects
+        # but we can only handle sequences.
+        # FIXME: Unfortunately, I haven't figured out how to runtime check
+        # if an object implements a generic protocol...
+        other = cast(Sequence[Ordered[T]], other)
         for a, b in zip(self, other):
-            if a < b: return True    # noqal
-            if a > b: return False   # noqal
+            if a < b:
+                return True    # noqal
+            if a > b:
+                return False   # noqal
         return len(self) < len(other)
 
     @overload
@@ -83,7 +102,7 @@ class msubseq(subseq[T]):
                  stop: Optional[int] = None):
         super().__init__(x, start, stop)
 
-    def __setitem__(self, idx: int | slice, val: T):
+    def __setitem__(self, idx: int | slice, val: T) -> None:
         if isinstance(idx, int):
             self._x[self._i + idx] = val
         else:

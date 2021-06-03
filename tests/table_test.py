@@ -4,10 +4,9 @@ from pystr.bwt import c_table, o_table
 from pystr_vis.cols import underline, bright_yellow, bold, black, red, magenta
 from pystr_vis.cols import bright_red, bright_green, bright_blue, green
 from pystr_vis import colour, Table, L, R, ColSpec, Align
-from pystr_vis.tables import Row
 
 
-def test_sa_table():
+def test_sa_table() -> None:
     x = "mississippi$"
     sa = sais(x)
     tbl = Table(R, L)
@@ -15,14 +14,12 @@ def test_sa_table():
         row = tbl.add_row()
         sa_i = colour(f"sa[{i:>2}] =")[:2, bright_blue][3:-3, bright_green]
         suffix = colour(x[j:])[:-1, underline][-1, bright_red]
-        # FIXME: why the fuck isn't this a type error? a colour isn't a string
-        assert isinstance(row, Row)
         row[0] = sa_i
         row[1] = suffix
     print(tbl)
 
 
-def rotation_table(x: str, sa: list[int]):
+def rotation_table(x: str, sa: list[int]) -> Table:
     tbl = Table(
         ColSpec("pointer", align=Align.RIGHT),
         ColSpec("prefix", right_pad=""),
@@ -34,7 +31,7 @@ def rotation_table(x: str, sa: list[int]):
     return tbl
 
 
-def test_bwt():
+def test_bwt() -> None:
     k, a = 3, "s"
     x = "mississippi"
     sa = sais(x, include_sentinel=True)
@@ -129,7 +126,7 @@ def test_bwt():
     print(tbl)
 
 
-def test_or():
+def test_or() -> None:
     tbl_a = Table(L, R).append_row("foo", "bar").append_row("barfoo", "foobar")
     tbl_b = Table(R, L, L).append_row("quux", "qax", "qux")
     print(tbl_a)

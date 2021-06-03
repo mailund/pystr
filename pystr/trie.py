@@ -31,10 +31,10 @@ class TrieNode:
         # to look at, avoiding the .children[].
         return self.children[a]
 
-    def __setitem__(self, a: str, n: TrieNode):
+    def __setitem__(self, a: str, n: TrieNode) -> None:
         self.children[a] = n
 
-    def __contains__(self, a: str):
+    def __contains__(self, a: str) -> bool:
         return a in self.children
 
     def to_dot(self, res: list[str]) -> list[str]:
@@ -57,8 +57,10 @@ class TrieNode:
 
         return res
 
-    def __eq__(self, other) -> bool:
-        return type(other) == type(self) and \
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, TrieNode):
+            raise NotImplementedError()
+        return \
             sorted(self.children) == sorted(other.children) and \
             all(self[k] == other[k] for k in self.children)
 
@@ -67,7 +69,7 @@ class TrieNode:
 class Trie:
     root: TrieNode = field(default_factory=TrieNode)
 
-    def insert(self, x: str, label: int):
+    def insert(self, x: str, label: int) -> None:
         n = self.root
         for i in range(len(x)):
             if x[i] not in n:
@@ -88,7 +90,9 @@ class Trie:
             '\n'.join(self.root.to_dot([])) + \
             '}'
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Trie):
+            raise NotImplementedError()
         return type(other) == type(self) and self.root == other.root
 
 
@@ -111,7 +115,7 @@ def depth_first_trie(*strings: str) -> Trie:
     return trie
 
 
-def set_suffix_link(node: TrieNode, in_edge: str):
+def set_suffix_link(node: TrieNode, in_edge: str) -> None:
     # We get the suffix link by running up the links from the
     # parent and trying to extend them. Casts are for the type
     # checker, telling them that nodes are not None
@@ -158,7 +162,6 @@ def breadth_first_trie(*strings: str) -> Trie:
 
 def group_strings(strings: list[LS]) -> \
         tuple[Optional[int], dict[str, list[LS]]]:
-
     """Split input into groups according to first character.
 If there is an empty string in the input, get its label.
 Returns the label (or None) and the groups in a dict."""

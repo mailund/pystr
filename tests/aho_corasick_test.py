@@ -4,7 +4,7 @@ from helpers import random_string, fibonacci_string, \
     pick_random_patterns
 
 
-def test_abc():
+def test_abc() -> None:
     x = "abcabcab"
     p = ("abc", "a", "b", "")
     for label, i in aho_corasick(x, *p):
@@ -23,7 +23,7 @@ def compare_naive(x: str, ps: list[str]) -> bool:
     return naive_res == ac_res
 
 
-def test_compare_naive():
+def test_compare_naive() -> None:
     for _ in range(10):
         x = random_string(100, alpha="abcd")
         # need to go through set to remove duplicates.

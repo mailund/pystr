@@ -1,4 +1,5 @@
 import argparse
+from pytest_mock import MockerFixture
 from pystr_scripts import skew
 
 # This is really just a call... I don't know
@@ -6,7 +7,7 @@ from pystr_scripts import skew
 # it will accept any string arguments..
 
 
-def test_show_skew(mocker):
+def test_show_skew(mocker: MockerFixture) -> None:
     mocker.patch(
         'argparse.ArgumentParser.parse_args',
         return_value=argparse.Namespace(
@@ -22,7 +23,7 @@ def test_show_skew(mocker):
             "Something went wrong in the script"
 
 
-def test_show_skew_interactive(mocker):
+def test_show_skew_interactive(mocker: MockerFixture) -> None:
     mocker.patch(
         'argparse.ArgumentParser.parse_args',
         return_value=argparse.Namespace(

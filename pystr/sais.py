@@ -68,7 +68,8 @@ class Buckets:
 
 
 def bucket_LMS(x: subseq[int], sa: msubseq[int],
-               buckets: Buckets, is_S: BitVector):
+               buckets: Buckets, is_S: BitVector
+               ) -> None:
     next_end = buckets.calc_ends()
     sa[:] = UNDEFINED
     for i in range(len(x)):
@@ -77,7 +78,8 @@ def bucket_LMS(x: subseq[int], sa: msubseq[int],
 
 
 def induce_L(x: subseq[int], sa: msubseq[int],
-             buckets: Buckets, is_S: BitVector):
+             buckets: Buckets, is_S: BitVector
+             ) -> None:
     next_front = buckets.calc_fronts()
     for i in range(len(x)):
         j = sa[i] - 1
@@ -89,7 +91,8 @@ def induce_L(x: subseq[int], sa: msubseq[int],
 
 
 def induce_S(x: subseq[int], sa: msubseq[int],
-             buckets: Buckets, is_S: BitVector):
+             buckets: Buckets, is_S: BitVector
+             ) -> None:
     next_end = buckets.calc_ends()
     for i in reversed(range(len(x))):
         j = sa[i] - 1
@@ -158,7 +161,8 @@ def reduce_LMS(x: subseq[int], sa: msubseq[int], is_S: BitVector) \
 def reverse_reduction(x: subseq[int], sa: msubseq[int],
                       offsets: msubseq[int], red_sa: msubseq[int],
                       buckets: Buckets,
-                      is_S: BitVector):
+                      is_S: BitVector
+                      ) -> None:
 
     # Work out where the LMS strings are in the
     # original string. Compact those indices
@@ -178,7 +182,11 @@ def reverse_reduction(x: subseq[int], sa: msubseq[int],
         sa[next_end(x[j])] = j
 
 
-def sais_rec(x: subseq[int], sa: msubseq[int], asize: int, is_S: BitVector):
+def sais_rec(x: subseq[int],
+             sa: msubseq[int],
+             asize: int,
+             is_S: BitVector
+             ) -> None:
     if len(x) == asize:
         # base case...
         for i, a in enumerate(x):
@@ -205,7 +213,7 @@ def sais_rec(x: subseq[int], sa: msubseq[int], asize: int, is_S: BitVector):
         induce_S(x, sa, buckets, is_S)
 
 
-def sais(x: str, include_sentinel=True) -> list[int]:
+def sais(x: str, include_sentinel: bool = True) -> list[int]:
     s, asize = map_string(x)
     sa = [0] * len(s)
     is_S = BitVector(size=len(s))

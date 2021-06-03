@@ -15,29 +15,31 @@ def mississippi_to_dot(constr: Callable[[str], SuffixTree]) -> None:
     print(st.to_dot())
 
 
-def test_naive_to_dot():
+def test_naive_to_dot() -> None:
     mississippi_to_dot(naive_st_construction)
 
 
-def test_mccreight_to_dot():
+def test_mccreight_to_dot() -> None:
     mississippi_to_dot(mccreight_st_construction)
 
 
-def test_naive_sorted():
+def test_naive_sorted() -> None:
     for k in range(10):
         x = random_string(500)
         st = naive_st_construction(x)
         check_sorted(x, list(st.root))  # using the leaf iterator
 
 
-def test_mccreight_sorted():
+def test_mccreight_sorted() -> None:
     for k in range(10):
         x = random_string(500)
         st = mccreight_st_construction(x)
         check_sorted(x, list(st.root))  # using the leaf iterator
 
 
-def check_search_mississippi(constr: Callable[[str, bool], SuffixTree]):
+def check_search_mississippi(
+    constr: Callable[[str, bool], SuffixTree]
+) -> None:
     x = "mississippi"
     st = constr(x, False)  # exclude sentinel this time...
     for p in ("ssi", "ppi", "si", "pip", "x", ""):
@@ -50,32 +52,34 @@ def check_search_mississippi(constr: Callable[[str, bool], SuffixTree]):
         assert p not in st
 
 
-def test_search_mississippi_naive():
+def test_search_mississippi_naive() -> None:
     check_search_mississippi(naive_st_construction)
 
 
-def test_search_mississippi_mccreight():
+def test_search_mississippi_mccreight() -> None:
     check_search_mississippi(mccreight_st_construction)
 
 
-def lcp_construction_wrapper(x: str, include_sentinel=False):
+def lcp_construction_wrapper(x: str,
+                             include_sentinel: bool = False
+                             ) -> SuffixTree:
     sa = sais(x, include_sentinel=include_sentinel)
     lcp = lcp_from_sa(x, sa)
     return lcp_st_construction(x, sa, lcp)
 
 
-def test_lcp_to_dot():
+def test_lcp_to_dot() -> None:
     mississippi_to_dot(lcp_construction_wrapper)
 
 
-def test_lcp_sorted():
+def test_lcp_sorted() -> None:
     for k in range(10):
         x = random_string(500)
         st = lcp_construction_wrapper(x)
         check_sorted(x, list(st.root))  # using the leaf iterator
 
 
-def test_search_mississippi_lcp():
+def test_search_mississippi_lcp() -> None:
     check_search_mississippi(lcp_construction_wrapper)
 
 

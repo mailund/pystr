@@ -1,6 +1,8 @@
-from typing import NamedTuple
+from typing import NamedTuple, TypeVar
 from collections import deque
 from .cols import Colour, plain, strip_ansi
+
+C = TypeVar('C', bound="colour")
 
 
 def clamp_index(x: str, i: int) -> int:
@@ -17,7 +19,7 @@ _ColourSegment = NamedTuple(
 
 # This makes debugging a little nicer...
 class ColourSegment(_ColourSegment):  # pragma: no cover -- just for debugging
-    def __str__(self):
+    def __str__(self) -> str:
         return self.col(f"[{self.start},{self.stop})")
     __repr__ = __str__
 
@@ -90,7 +92,9 @@ class colour:
         self.x = strip_ansi(x)
         self.segments = []
 
-    def __getitem__(self, arg: tuple[int | slice, Colour]):
+    # FIXME: I only use getitem to get slice syntax, but it is
+    # a bit ugly...
+    def __getitem__(self: C, arg: tuple[int | slice, Colour]) -> C:
         i, col = arg
         if isinstance(i, int):
             start = i if i >= 0 else i + len(self.x)
@@ -114,7 +118,7 @@ class colour:
         )
         return self
 
-    def _split_segments(self):
+    def _split_segments(self) -> None:
         assert self.segments, "Should only be called with non-empty segments"
 
         queue = deque([seg] for seg in self.segments)
@@ -122,7 +126,7 @@ class colour:
             queue.append(merge_segments(queue.popleft(), queue.popleft()))
         self.segments = queue[0]
 
-    def _complete_segments(self):
+    def _complete_segments(self) -> None:
         if not self.segments:
             return
 
@@ -140,7 +144,7 @@ class colour:
             res.append(ColourSegment(cur, len(self.x), plain))
         self.segments = res
 
-    def __str__(self):
+    def __str__(self) -> str:
         self._complete_segments()
         return "".join(
             str(col(self.x[start:stop]))

@@ -3,8 +3,15 @@ import string
 from collections.abc import Iterable, Iterator, Callable
 from pystr.subseq import substr
 
+# I'm not sure about the prototype here. I think I want
+# to allow any number of paramters, if pytest can add
+# mock objects and such... I haven't studied that sufficiently
+# yet to have a good feeling for it.
+# Underscored to prevent pytest from instantiating it.
+_Test = Callable[[int], None]
 
-def collect_tests(tests: Iterable[tuple[str, Callable]]) -> type:
+
+def collect_tests(tests: Iterable[tuple[str, _Test]]) -> type:
     return type(
         '__generated_class__',
         (object,),
@@ -15,15 +22,11 @@ def collect_tests(tests: Iterable[tuple[str, Callable]]) -> type:
     )
 
 
-def add_test(cls, name, method):
-    setattr(cls, 'test_' + name, method)
-
-
-def random_string(n: int, alpha=string.ascii_uppercase) -> str:
+def random_string(n: int, alpha: str = string.ascii_uppercase) -> str:
     return ''.join(random.choices(alpha, k=n))
 
 
-def fibonacci_string(n: int):
+def fibonacci_string(n: int) -> str:
     """Fibonacci string n; has length Fib(n+2)."""
     a, b = "a", "ab"
     for _ in range(n):
@@ -59,7 +62,7 @@ def pick_random_suffix(x: str, n: int) -> Iterator[str]:
         yield x[i:]
 
 
-def check_sorted(x: str, sa: list[int]):
+def check_sorted(x: str, sa: list[int]) -> None:
     assert len(x) > 0
     assert len(x) == len(sa) or len(x) + 1 == len(sa)
     y = substr(x)  # For faster comparison (faster than slicing)
@@ -74,14 +77,14 @@ def check_substring(x: str, p: str, i: int) -> bool:
     return x[i:i+len(p)] == p
 
 
-def check_matches(x: str, p: str, matches: Iterable[int]):
+def check_matches(x: str, p: str, matches: Iterable[int]) -> None:
     for i in matches:
         assert check_substring(x, p, i), \
             f"Substring {x[i:]} should match pattern {p}"
 
 
 def check_equal_matches(x: str, p: str,
-                        *algos: Callable[[str, str], Iterator[int]]):
+                        *algos: Callable[[str, str], Iterator[int]]) -> None:
     # We sort the search results since some algorithms do not automatically
     # give us sorted output
     iters: list[list[int]] = [sorted(algo(x, p)) for algo in algos]

@@ -1,7 +1,7 @@
 from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum, auto
-from typing import Callable, Iterable, overload, cast
+from typing import Callable, Iterable, Iterator, overload, cast
 from .cols import ansi_align_left, ansi_align_right, ansifree_len
 
 
@@ -41,7 +41,7 @@ class Row:
     tbl: Table
     cells: list[str]
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[str]:
         return iter(self.cells)
 
     def __getitem__(self, col: int | str) -> str:
@@ -51,18 +51,20 @@ class Row:
             return self.cells[self.tbl.col_names[col]]
 
     @overload
-    def __setitem__(self, col: int, val: str) -> None: ...
+    def __setitem__(self, col: int, val: object) -> None: ...
     @overload
-    def __setitem__(self, col: str, val: str) -> None: ...
+    def __setitem__(self, col: str, val: object) -> None: ...
     @overload
-    def __setitem__(self, col: slice, val: Iterable[str]) -> None: ...
+    def __setitem__(self, col: slice, val: Iterable[object]) -> None: ...
 
-    def __setitem__(self, col: int | slice | str, val: str | Iterable[str]):
+    def __setitem__(self,
+                    col: int | slice | str, val: object | Iterable[object]
+                    ) -> None:
         if isinstance(col, int):
-            # FIXME: it shouldn't be necessary to make this val a string!
-            self.cells[col] = cast(str, str(val))
+            self.cells[col] = str(val)
         elif isinstance(col, slice):
-            self.cells[col] = cast(Iterable[str], val)
+            # FIXME: check the length of the val object...
+            self.cells[col] = [str(v) for v in cast(Iterable[object], val)]
         else:
             self.cells[self.tbl.col_names[col]] = str(val)
 
@@ -72,7 +74,7 @@ class Table:
     rows: list[Row]
     col_names: dict[str, int]
 
-    def __init__(self, *cols: ColSpec):
+    def __init__(self, *cols: ColSpec) -> None:
         self.cols = cols
         self.rows = []
 
@@ -80,7 +82,7 @@ class Table:
             col.name: i for i, col in enumerate(self.cols)
         }
 
-    def __getitem__(self, i: int):
+    def __getitem__(self, i: int) -> Row:
         return self.rows[i]
 
     def append_row(self, *cells: str) -> Table:
@@ -104,8 +106,13 @@ class Table:
     def _formatters(self) -> list[Callable[[str], str]]:
         colw = self._get_col_widths()
         formatters: list[Callable[[str], str]] = []
-        def left(w): return lambda x: ansi_align_left(x, w)
-        def right(w): return lambda x: ansi_align_right(x, w)
+
+        def left(w: int) -> Callable[[str], str]:
+            return lambda x: ansi_align_left(x, w)
+
+        def right(w: int) -> Callable[[str], str]:
+            return lambda x: ansi_align_right(x, w)
+
         for i in range(len(colw)):
             # FIXME: pattern match this when mypy can handle it
             if self.cols[i].align is Align.LEFT:
@@ -116,7 +123,7 @@ class Table:
                 assert False, "Unknown alignment"
         return formatters
 
-    def __str__(self):
+    def __str__(self) -> str:
         formatters = self._formatters()
         rows = []
         for row in self.rows:
@@ -128,10 +135,10 @@ class Table:
             )
         return "\n".join(rows)
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[Row]:
         return iter(self.rows)
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.rows)
 
     def __or__(self, other: Table) -> Table:

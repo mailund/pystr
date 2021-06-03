@@ -1,7 +1,7 @@
 from pystr.bv import BitVector
 
 
-def test_v():
+def test_v() -> None:
     bvec = BitVector(4)
     for i in range(4):
         assert not bvec[i]
