@@ -62,6 +62,21 @@ class Inner(Node):
         for x in sorted(self.children):
             yield from self.children[x]
 
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Inner):
+            return False
+        assert isinstance(other, Inner)  # For the type checker
+        if self.edge_label != other.edge_label:
+            return False
+        # Equal if sorted children are equal.
+        my_children = sorted(self.children.items())
+        others_children = sorted(other.children.items())
+
+        return all(a == b
+                   for a, b
+                   in zip(my_children, others_children,
+                          strict=True))  # type: ignore
+
 
 @dataclass(init=False)
 class Leaf(Node):
@@ -83,6 +98,12 @@ class Leaf(Node):
     def __iter__(self) -> Iterator[int]:
         yield self.leaf_label
 
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Leaf):
+            return False
+        return self.edge_label == other.edge_label and \
+            self.leaf_label == other.leaf_label
+
 
 @dataclass
 class SuffixTree:
@@ -103,6 +124,11 @@ class SuffixTree:
 
     def to_dot(self) -> str:
         return "digraph { rankdir=\"LR\" " + '\n'.join(self.root.to_dot([])) + "}"  # noqa
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, SuffixTree):
+            return False
+        return self.root == other.root
 
 # !SECTION
 
@@ -253,7 +279,7 @@ down to the insertion point for each suffix in `s`."""
             # through a + y, so from here we need to scan
             # for z (later in the function)
             y_node = p.suffix_link
-            z = v.edge_label if p != root else x[i:]
+            z = v.edge_label if p is not root else x[i:]
 
         else:
             # Otherwise, we need to fast scan to find y_node.

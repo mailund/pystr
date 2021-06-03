@@ -8,7 +8,7 @@ from pystr.subseq import substr
 # mock objects and such... I haven't studied that sufficiently
 # yet to have a good feeling for it.
 # Underscored to prevent pytest from instantiating it.
-_Test = Callable[[int], None]
+_Test = Callable[..., None]
 
 
 def collect_tests(tests: Iterable[tuple[str, _Test]]) -> type:
@@ -78,6 +78,7 @@ def check_substring(x: str, p: str, i: int) -> bool:
 
 
 def check_matches(x: str, p: str, matches: Iterable[int]) -> None:
+    matches = list(matches)
     for i in matches:
         assert check_substring(x, p, i), \
             f"Substring {x[i:]} should match pattern {p}"
@@ -88,5 +89,6 @@ def check_equal_matches(x: str, p: str,
     # We sort the search results since some algorithms do not automatically
     # give us sorted output
     iters: list[list[int]] = [sorted(algo(x, p)) for algo in algos]
+    print(iters)
     for res in zip(*iters, strict=True):  # type: ignore
         assert all(res[i] == res[0] for i in range(1, len(res)))
