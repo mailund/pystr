@@ -113,7 +113,7 @@ def build_u(x: list[int], alpha: SkewTripletDict) -> list[int]:
     # By putting the i % 3 == 1 indices first, we know that the central
     # sentinel will always be at len(u) // 2.
     return [*(alpha[triplet(x, i)] for i in range(1, len(x), 3)),
-            1,
+            1,  # Central sentinel
             *(alpha[triplet(x, i)] for i in range(2, len(x), 3))]
 
 

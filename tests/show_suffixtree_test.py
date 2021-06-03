@@ -1,4 +1,6 @@
 import argparse
+import pytest
+
 from pytest_mock import MockerFixture
 from pystr_scripts import suffixtree
 
@@ -7,10 +9,12 @@ from pystr_scripts import suffixtree
 # it will accept any string arguments..
 
 
-def test_show_trie(mocker: MockerFixture) -> None:
+@pytest.mark.parametrize("algo", ["naive", "mccreight", "lcp"])
+def test_show_trie(algo: str, mocker: MockerFixture) -> None:
     mocker.patch(
         'argparse.ArgumentParser.parse_args',
         return_value=argparse.Namespace(
+            algo=algo,
             x='mississippi')
     )
     suffixtree.show_suffixtree()

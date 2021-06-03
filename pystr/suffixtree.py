@@ -66,16 +66,17 @@ class Inner(Node):
         if not isinstance(other, Inner):
             return False
         assert isinstance(other, Inner)  # For the type checker
+
         if self.edge_label != other.edge_label:
             return False
+
         # Equal if sorted children are equal.
         my_children = sorted(self.children.items())
         others_children = sorted(other.children.items())
-
-        return all(a == b
-                   for a, b
-                   in zip(my_children, others_children,
-                          strict=True))  # type: ignore
+        return all(
+            a == b for a, b
+            in zip(my_children, others_children, strict=True)  # type: ignore
+        )
 
 
 @dataclass(init=False)
@@ -341,7 +342,9 @@ def search_up(n: Node, length: int) -> tuple[Node, int]:
         assert n.parent is not None  # This is mostly for the type checker...
         length -= len(n.edge_label)
         n = n.parent
-    return n, len(n.edge_label) - length
+    # Depth down the edge depends on whether we reached
+    depth = 0 if length == 0 else len(n.edge_label) - length
+    return n, depth
 
 
 def lcp_st_construction(s: str, sa: list[int], lcp: list[int]) -> SuffixTree:
