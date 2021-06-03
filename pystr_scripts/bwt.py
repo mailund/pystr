@@ -95,17 +95,17 @@ def show_bwt_transition() -> None:
                         help='character to prepend.')
 
     args = parser.parse_args()
-    if len(args.a) != 1:
+    if len(args.a) != 1:  # pragma: no cover
         print("The prepend-character 'a' must have length 1. " +
               f"You provided '{args.a}'")
         import sys
         sys.exit(1)
-    if not (0 <= args.k <= len(args.x)):
+    if not (0 <= args.k <= len(args.x)):  # pragma: no cover
         print(f"The index variable k={args.k} must be in the range " +
               f"[0,{len(args.x)}] (a valid index in the rotations).")
         import sys
         sys.exit(1)
-    if args.a not in args.x:
+    if args.a not in args.x:  # pragma: no cover
         print(f"The character {args.a} is not in the string.")
         import sys
         sys.exit(1)
@@ -227,7 +227,7 @@ def show_bwt_search() -> None:
                         help='pattern we search for.')
 
     args = parser.parse_args()
-    if len(args.x) < len(args.p):
+    if len(args.x) < len(args.p):  # pragma: no cover
         print("The pattern can't be longer than the string.")
         import sys
         sys.exit(1)
@@ -288,11 +288,7 @@ def show_bwt_search() -> None:
             shift_rows(res_tbl, L, R, amount=j + 1,
                        prefix_col=underline & green, rot_col=yellow)
         else:
-            if L == R:
-                res_tbl[L]["pointer"] = bold("L & R ->")
-            else:
-                res_tbl[L]["pointer"] = bold("L ->")
-                res_tbl[R]["pointer"] = bold("R ->")
+            res_tbl[L]["pointer"] = bold("L & R ->")
 
         print()
         print(start_tbl | L_tbl | R_tbl | res_tbl)
@@ -313,17 +309,14 @@ def show_bwt_search() -> None:
         tbl[R]["pointer"] = bold("R ->")
         for i in range(L, R):
             row = tbl[i]
-            row["rotation"] = colour(row["rotation"])[
-                :len(p), bright_green & underline & bold]
+            row["rotation"] = \
+                colour(row["rotation"])[:len(p),
+                                        bright_green & underline & bold]
         print(tbl)
         print()
 
     else:
-        if L == R:
-            tbl[L]["pointer"] = bold("L & R ->")
-        else:
-            tbl[L]["pointer"] = bold("L ->")
-            tbl[R]["pointer"] = bold("R ->")
+        tbl[L]["pointer"] = bold("L & R ->")
 
         print(tbl)
         print()

@@ -58,7 +58,7 @@ class TrieNode:
         return res
 
     def __eq__(self, other: object) -> bool:
-        if not isinstance(other, TrieNode):
+        if not isinstance(other, TrieNode):  # pragma: no cover
             raise NotImplementedError()
         return \
             sorted(self.children) == sorted(other.children) and \
@@ -91,7 +91,7 @@ class Trie:
             '}'
 
     def __eq__(self, other: object) -> bool:
-        if not isinstance(other, Trie):
+        if not isinstance(other, Trie):  # pragma: no cover
             raise NotImplementedError()
         return type(other) == type(self) and self.root == other.root
 

@@ -57,5 +57,6 @@ def bwt_search_tbls(x: str, p: str,
 def bwt_search(x: str, p: str) -> Iterator[int]:
     sa, ctab, otab = bwt_preprocess(x)
     L, R = bwt_search_tbls(x, p, ctab, otab)
+    assert L <= R, "R should never be smaller than L."
     for i in range(L, R):
         yield sa[i]

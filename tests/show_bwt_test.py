@@ -32,9 +32,8 @@ def test_show_bwt_transition(mocker: MockerFixture) -> None:
             bwt.show_bwt_transition()
 
 
-def test_show_bwt_search(mocker: MockerFixture) -> None:
-    x = 'mississippimmiissiissiippii'
-    p = 'ssi'
+def check_bwt_search(x: str, p: str,
+                     mocker: MockerFixture) -> None:
     mocker.patch(
         'argparse.ArgumentParser.parse_args',
         return_value=argparse.Namespace(
@@ -53,3 +52,15 @@ def test_show_bwt_search(mocker: MockerFixture) -> None:
         'builtins.input', result_value=''
     )
     bwt.show_bwt_search()
+
+
+def test_show_bwt_search(mocker: MockerFixture) -> None:
+    x = 'mississippimmiissiissiippii'
+    p = 'ssi'
+    check_bwt_search(x, p, mocker)
+
+    # Character that isn't there
+    check_bwt_search(x, 'x', mocker)
+
+    # mismatch
+    check_bwt_search(x, 'ssss', mocker)
