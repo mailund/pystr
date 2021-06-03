@@ -13,6 +13,7 @@ setup(
             'show-lcp-sa=pystr_scripts.lcp:show_lcp_sa',
             'show-skew=pystr_scripts.skew:show_skew',
             'show-bwt-transition=pystr_scripts.bwt:show_bwt_transition',
+            'show-bwt-search=pystr_scripts.bwt:show_bwt_search',
             'show-trie=pystr_scripts.trie:show_trie',
             'show-suffixtree=pystr_scripts.suffixtree:show_suffixtree',
         ],

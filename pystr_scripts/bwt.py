@@ -5,13 +5,14 @@ from typing import Callable, Any
 from pystr import sais
 from pystr.bwt import c_table, o_table
 
-from pystr_vis import colour, Table, ColSpec, Align
+from pystr_vis import colour, Table, ColSpec, Align, indent
 from pystr_vis.tables import Row
 from pystr_vis.cols import \
+    Colour, \
     strip_ansi, \
-    underline, bold, \
-    bright_blue, bright_green,  \
-    black, green, magenta, red, blue
+    underline, bold, plain, \
+    bright_blue, bright_green,  bright_red, \
+    black, green, magenta, red, blue, yellow
 
 
 def hit_enter() -> None:
@@ -28,22 +29,27 @@ def rotation_table(x: str, sa: list[int]) -> Table:
     for j in sa:
         row = tbl.add_row()
         row["rotation"] = x[j:]+'$'+x[:j]
+    tbl.add_row()  # so we can index beyond the last
     return tbl
 
 
-def rot_row(row: Row, a: str) -> None:
+def rot_row(row: Row, a: str, col: Colour) -> None:
     rot = strip_ansi(row["rotation"])
     if rot[-1] == a:
-        row["prefix"] = green(a)
-        row["rotation"] = colour(rot[:-1])[:, underline]
+        row["prefix"] = underline(green(a))
+        row["rotation"] = colour(rot)[:-1, col][-1, underline & green]
     else:
         row["rotation"] = colour(rot)[-1, red]
 
 
-def shift_row(row: Row) -> None:
+def shift_row(row: Row,
+              amount: int = 1,
+              prefix_col: Colour = green,
+              rot_col: Colour = underline
+              ) -> None:
     rot = strip_ansi(row["rotation"])
-    row["prefix"] = green(rot[0])
-    row["rotation"] = colour(rot[1:])[:, underline]
+    row["prefix"] = prefix_col(rot[:amount])
+    row["rotation"] = rot_col(rot[amount:])
 
 
 # FIXME: Figure out how to specify that f should take a row
@@ -55,12 +61,17 @@ def map_rows(tbl: Table, start: int, stop: int,
         f(tbl[i], *args)
 
 
-def rot_rows(tbl: Table, a: str, start: int, stop: int) -> None:
-    map_rows(tbl, start, stop, rot_row, a)
+def rot_rows(tbl: Table, a: str,
+             start: int, stop: int,
+             col: Colour = plain) -> None:
+    map_rows(tbl, start, stop, rot_row, a, col)
 
 
-def shift_rows(tbl: Table, start: int, stop: int) -> None:
-    map_rows(tbl, start, stop, shift_row)
+def shift_rows(tbl: Table, start: int, stop: int,
+               amount: int = 1,
+               prefix_col: Colour = green,
+               rot_col: Colour = underline) -> None:
+    map_rows(tbl, start, stop, shift_row, amount, prefix_col, rot_col)
 
 
 def show_bwt_transition() -> None:
@@ -173,7 +184,7 @@ def show_bwt_transition() -> None:
     res_tbl[ctab[a]]["pointer"] = green(f"C[{a}] ->")
 
     hit_idx = ctab[a]+otab[a][k]
-    if hit_idx < len(tbl):
+    if hit_idx < len(x):
         row = res_tbl[hit_idx]
         row["pointer"] = green(f"C[{a}]") + " + " + \
             magenta(f"O[{a},{k}]") + " ->"
@@ -188,7 +199,7 @@ def show_bwt_transition() -> None:
 
     else:
         # We are pointing one past the range...
-        row = res_tbl.add_row()
+        row = res_tbl[-1]
         row["pointer"] = green(f"C[{a}]") + " + " + \
             magenta(f"O[{a},{k}]") + " ->"
 
@@ -228,12 +239,93 @@ def show_bwt_search() -> None:
 
     L = 0  # Starting at 0 (the sentinel) handles empty strings
     R = len(x) + 1  # +1 because of the sentinel
-    for y in p[::-1]:
+    for j, y in enumerate(p[::-1]):
+
+        print()
+        print(bright_blue(underline("Scanning...")))
+        print(indent(len("p = ")+len(p)-j-1), "v", sep="")
+        if j > 0:
+            print(f"p = {colour(p)[-j:, underline]}")
+        else:
+            print(f"p = {p}")
+        print()
+        print("Prepending:", green(y))
+        print()
+
         if y not in ctab:
+            print(
+                f"Character {bright_red(y)} is not in {x} so we don't have a match.")  # noqa: E501
+            if args.interactive:
+                hit_enter()
+            print()
             L, R = 0, 0
             break
+
+        start_tbl = rotation_table(x, sa)
+        start_tbl[L]["pointer"] = bold("L ->")
+        start_tbl[R]["pointer"] = bold("R ->")
+        for i in range(L, R):
+            row = start_tbl[i]
+            row["rotation"] = colour(row["rotation"])[:j, underline & bold]
+
+        L_tbl = rotation_table(x, sa)
+        L_tbl[L]["pointer"] = bold("L ->")
+        rot_rows(L_tbl, y, 0, L, blue)
+
+        R_tbl = rotation_table(x, sa)
+        R_tbl[R]["pointer"] = bold("R ->")
+        rot_rows(R_tbl, y, 0, R, yellow)
+
         L = ctab[y] + otab[y][L]
         R = ctab[y] + otab[y][R]
+
+        res_tbl = rotation_table(x, sa)
+        if L < R:
+            res_tbl[L]["pointer"] = bold("L ->")
+            res_tbl[R]["pointer"] = bold("R ->")
+            shift_rows(res_tbl, ctab[y], L,
+                       amount=j + 1, prefix_col=red, rot_col=blue)
+            shift_rows(res_tbl, L, R, amount=j + 1,
+                       prefix_col=underline & green, rot_col=yellow)
+        else:
+            if L == R:
+                res_tbl[L]["pointer"] = bold("L & R ->")
+            else:
+                res_tbl[L]["pointer"] = bold("L ->")
+                res_tbl[R]["pointer"] = bold("R ->")
+
+        print()
+        print(start_tbl | L_tbl | R_tbl | res_tbl)
+        print()
+        if args.interactive:
+            hit_enter()
+        print()
+
         if L >= R:
             L, R = 0, 0
             break
+
+    tbl = rotation_table(x, sa)
+    if L < R:
+        print(bright_green("Found matches:"))
+        print()
+        tbl[L]["pointer"] = bold("L ->")
+        tbl[R]["pointer"] = bold("R ->")
+        for i in range(L, R):
+            row = tbl[i]
+            row["rotation"] = colour(row["rotation"])[
+                :len(p), bright_green & underline & bold]
+        print(tbl)
+        print()
+
+    else:
+        if L == R:
+            tbl[L]["pointer"] = bold("L & R ->")
+        else:
+            tbl[L]["pointer"] = bold("L ->")
+            tbl[R]["pointer"] = bold("R ->")
+
+        print(tbl)
+        print()
+        print(bright_red("No hits."))
+        print()
