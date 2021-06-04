@@ -34,7 +34,7 @@ def classify_SL(is_S: BitVector, x: subseq[int]) -> None:
 
 
 def is_LMS(is_S: BitVector, i: int) -> bool:
-    return False if i == 0 else is_S[i] and not is_S[i - 1]
+    return is_S[i] and not is_S[i - 1] if i > 0 else False
 
 
 class Buckets:
