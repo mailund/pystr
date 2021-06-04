@@ -14,7 +14,12 @@ def map_string(x: str) -> tuple[subseq[int], int]:
         a: i + 1 for i, a in enumerate(sorted(set(x)))
     }
 
-    # Build a string and add the sentinel
+    # Build a string and add the sentinel. Having an explicit sentinel
+    # simplifies the algorithm, and this is the only place we need to
+    # add it (it is automatically carried over in the recursion). Without
+    # the explicit sentinel, we would need to represent it implicitly
+    # several places in the code, to ensure that it is represented as
+    # an LMS string.
     new_string = list(alphabet[a] for a in x)
     new_string.append(0)  # add sentinel
 
@@ -84,9 +89,9 @@ def induce_L(x: subseq[int], sa: msubseq[int],
     for i in range(len(x)):
         j = sa[i] - 1
         if sa[i] == 0 or sa[i] == UNDEFINED:
-            continue  # noqa: 701
+            continue
         if is_S[j]:
-            continue  # noqa: 701
+            continue
         sa[next_front(x[j])] = j
 
 
