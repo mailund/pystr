@@ -50,14 +50,17 @@ TestMississippiToDo = collect_tests(
 
 def check_st_sorted(algo: STConstructor) -> _Test:
     def test(_: object) -> None:
-        for k in range(10):
+        for _ in range(10):
             x = random_string(20, alpha="abc")
             # using the leaf iterator
             check_sorted(x, list(algo(x, False).root))
             check_sorted(x, list(algo(x, True).root))
-
         for f in range(5, 10):
             x = fibonacci_string(f)
+            check_sorted(x, list(algo(x, False).root))
+            check_sorted(x, list(algo(x, True).root))
+        for n in range(5, 50):
+            x = 'a' * n
             check_sorted(x, list(algo(x, False).root))
             check_sorted(x, list(algo(x, True).root))
     return test
@@ -77,6 +80,10 @@ def check_equal_mccreight(algo: STConstructor) -> _Test:
             assert mccreight_st_construction(x, True) == algo(x, True)
         for f in range(5, 10):
             x = fibonacci_string(f)
+            assert mccreight_st_construction(x, False) == algo(x, False)
+            assert mccreight_st_construction(x, True) == algo(x, True)
+        for n in range(5, 50):
+            x = 'a' * n
             assert mccreight_st_construction(x, False) == algo(x, False)
             assert mccreight_st_construction(x, True) == algo(x, True)
     return test
