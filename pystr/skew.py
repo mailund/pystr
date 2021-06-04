@@ -10,10 +10,15 @@ from typing import Sequence
 SkewTriplet = tuple[int, int, int]
 SkewTripletDict = dict[SkewTriplet, int]
 
+# We only explicitly use this for the central sentinel,
+# but it is the same for the terminal sentinel
+SENTINEL = 0
+SENTINEL_TRIP = (SENTINEL, SENTINEL, SENTINEL)
+
 
 def safe_idx(x: Sequence[int], i: int) -> int:
     "Hack to get zero if we index beyond the end."
-    return 0 if i >= len(x) else x[i]
+    return SENTINEL if i >= len(x) else x[i]
 
 
 def symbcount(x: list[int], asize: int) -> list[int]:
@@ -58,22 +63,26 @@ def radix3(x: list[int], asize: int, idx: list[int]) -> list[int]:
 
 def triplet(x: Sequence[int], i: int) -> SkewTriplet:
     "Extract the triplet (x[i],x[i+1],x[i+2])."
+    assert i < len(x), "Don't create empty triplets!"
     return (safe_idx(x, i), safe_idx(x, i + 1), safe_idx(x, i + 2))
 
 
 def collect_alphabet(x: list[int], idx: list[int]) -> SkewTripletDict:
     "Map the triplets starting at idx to a new alphabet."
-    # I use 0 for the terminal sentinel and 1 for the
-    # separator, so I start the alphabet at 2, thus the + 2 later.
     # I'm using a dictionary for the alphabet, but you can build
     # it more efficiently by looking at the previous triplet in the
     # sorted SA12. It won't affect the asymptotic running time,
     # though.
-    alpha: SkewTripletDict = {}
+    alpha: SkewTripletDict = {
+        # The (central and terminal) sentinel.
+        # We never use it, but it gives the alphabet
+        # the right size.
+        (0, 0, 0): 0,
+    }
     for i in idx:
         trip = triplet(x, i)
         if trip not in alpha:
-            alpha[trip] = len(alpha) + 2  # +2 to reserve sentinels
+            alpha[trip] = len(alpha)
     return alpha
 
 
@@ -113,7 +122,7 @@ def build_u(x: list[int], alpha: SkewTripletDict) -> list[int]:
     # By putting the i % 3 == 1 indices first, we know that the central
     # sentinel will always be at len(u) // 2.
     return [*(alpha[triplet(x, i)] for i in range(1, len(x), 3)),
-            1,  # Central sentinel
+            SENTINEL,
             *(alpha[triplet(x, i)] for i in range(2, len(x), 3))]
 
 
@@ -129,14 +138,15 @@ def skew_rec(x: list[int], asize: int) -> list[int]:
     SA12 = radix3(x, asize, SA12)
     new_alpha = collect_alphabet(x, SA12)
 
-    if len(new_alpha) < len(SA12):
+    # The alphabet includes sentinel, so it has to be
+    # one larger than SA12 to have given all triplets
+    # unique names... Thus the <= instead of <.
+    if len(new_alpha) <= len(SA12):
         # Recursively sort SA12.
-        # Construct the u string and compute its suffix array
+        # Construct the u string and compute its suffix array,
+        # then map the suffix array back to SA12 indices
         u = build_u(x, new_alpha)
-        # For the recursion, remember that the real alphabet has
-        # two sentinels, so + 2
-        sa_u = skew_rec(u, len(new_alpha) + 2)
-        # Then map u's suffix array back to a sorted SA12
+        sa_u = skew_rec(u, len(new_alpha))
         m = len(sa_u) // 2
         SA12 = [u_idx(i, m) for i in sa_u if i != m]
 
@@ -162,6 +172,7 @@ def skew(x: str, include_sentinel: bool = True) -> list[int]:
     # of course it might not be. It is a simplification instead of
     # remapping the string.
     istring = [ord(y) for y in x]
-    if include_sentinel:
-        istring.append(0)
-    return skew_rec(istring, 256)
+    # Build the sa without sentinel (we have it implicitly), and
+    # then add it afterwards if we want it
+    sa = skew_rec(istring, 256)
+    return [len(x)] + sa if include_sentinel else sa

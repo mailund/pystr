@@ -2,7 +2,7 @@ import argparse
 from typing import Callable, Sequence
 
 from pystr.skew import bucket_sort, u_idx, safe_idx, \
-    build_u, collect_alphabet, SkewTriplet, triplet
+    SkewTriplet, SkewTripletDict, triplet
 
 from pystr_vis import colour, Table, ColSpec, L, R, Align
 from pystr_vis.cols import Colour, \
@@ -40,7 +40,6 @@ def remap_str(x: str) -> tuple[list[int], Alpha]:
         k += 1
 
     mapped_str = [str2int[a] for a in x]
-    mapped_str.append(0)
     return mapped_str, int2str
 
 
@@ -82,6 +81,36 @@ def map_str(x: Sequence[int],
 # !SECTION
 
 # SECTION The Skew algorithm
+
+# I use variants of these for the visualisation to show the central
+# and terminal sentinels as different
+
+
+def collect_alphabet(x: list[int], idx: list[int]) -> SkewTripletDict:
+    "Map the triplets starting at idx to a new alphabet."
+    # In the show version, add two sentinel characters. (Doesn't
+    # matter what they are, we just need their size...)
+    alpha: SkewTripletDict = {
+        # These triplets don't exist, but they represent the
+        # two sentinels. We never look them up, so they are only
+        # here to give us the right alphabet size
+        (0, 0, 0): 0,
+        (-1, -1, -1): 1
+    }
+    for i in idx:
+        trip = triplet(x, i)
+        if trip not in alpha:
+            alpha[trip] = len(alpha)
+    return alpha
+
+
+def build_u(x: list[int], alpha: SkewTripletDict) -> list[int]:
+    "Construct u string, using 1 as central sentinel."
+    # By putting the i % 3 == 1 indices first, we know that the central
+    # sentinel will always be at len(u) // 2.
+    return [*(alpha[triplet(x, i)] for i in range(1, len(x), 3)),
+            CENTRAL_SENTINEL,
+            *(alpha[triplet(x, i)] for i in range(2, len(x), 3))]
 
 
 def default_suffix_transform(x: Sequence[int]) -> Sequence[int]:
@@ -236,7 +265,7 @@ def show_less(ii: int, jj: int,
 
     # This is a mighty ugly hack to get the width of a character,
     # but for something like this, I don't really care
-    w = len(list(alpha.values())[0])
+    w = ansifree_len(next(iter(alpha.values())))
 
     a = safe_idx(x, ii)
     b = safe_idx(x, jj)
@@ -339,16 +368,18 @@ def skew_rec(x: list[int], alpha: Alpha) -> list[int]:
     print()
 
     skew_new_alpha = collect_alphabet(x, SA12)
-    if len(skew_new_alpha) == len(SA12):
+    if len(skew_new_alpha) - 2 == len(SA12):  # -2 for $ and #
         print(underline(bright_green(
             "All triplets are unique, so we don't need to recurse.\n")))
 
-    if len(skew_new_alpha) < len(SA12):
+    if len(skew_new_alpha) - 2 < len(SA12):
         print(underline("We have duplicated triplets and must recurse.\n"))
 
         # Make my kind of alpha for the visualisation
         new_alpha: dict[int, str] = {}
         for trip, a in skew_new_alpha.items():
+            if a < 2:
+                continue  # skip sentinels
             new_alpha[a] = map_str(trip, alpha)
 
         print('Numbering:')
@@ -357,7 +388,7 @@ def skew_rec(x: list[int], alpha: Alpha) -> list[int]:
         for i, (a, s) in enumerate(new_alpha.items()):
             print(BLOCK_COLS[i % len(BLOCK_COLS)](strip_ansi(s)), '=>', a)
 
-        u = build_u(x, skew_new_alpha)
+        u = build_u(x, skew_new_alpha)  # FIXME: insert central sentinel
 
         print()
         print(
