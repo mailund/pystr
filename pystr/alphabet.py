@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Optional, Sequence, TypeVar
+from typing import Optional, Sequence, Iterable, TypeVar
 from .subseq import subseq
 
 S = TypeVar('S', bound="String")
@@ -22,13 +22,20 @@ class Alphabet:
             self._map[chr(0)] = 0
             self._revmap[0] = chr(0)
 
+        # We save some space by packing strings into bytearrays,
+        # but that means that we must fit the entire alphabet
+        # into a byte (or do some other encoding that I do not
+        # feel up to implementing right now).
+        assert len(self._map) <= 256, \
+            "Cannot handle alphabets we cannot fit into bytes"  # noqal: E501
+
     def __len__(self) -> int:
         return len(self._map)
 
-    def map(self, x: str) -> list[int]:
-        return [self._map[a] for a in x]
+    def map(self, x: Iterable[str]) -> bytearray:
+        return bytearray(self._map[a] for a in x)
 
-    def revmap(self, x: Sequence[int]) -> str:
+    def revmap(self, x: Iterable[int]) -> str:
         return ''.join(self._revmap[i] for i in x)
 
 
@@ -46,6 +53,7 @@ class String(subseq[int]):
         # the alphabet must also have it
         include_sentinel |= append_sentinel
 
+        # Handle the alphabet
         if alpha is None:
             self.alpha = Alphabet(x, include_sentinel)
         else:
@@ -54,11 +62,14 @@ class String(subseq[int]):
                     "Alphabet must have sentinel for us to append it."
             self.alpha = alpha
 
-        y = self.alpha.map(x)
+        # Generate the underlying bytes.
+        underlying = self.alpha.map(x)
         if append_sentinel:
-            y.append(0)
+            underlying.append(0)
 
-        super().__init__(y)
+        # Use the underlying bytes as a Sequence[int]
+        # that we hold as a subseq[int].
+        super().__init__(underlying)
 
     def __str__(self) -> str:
         return self.alpha.revmap(self)
