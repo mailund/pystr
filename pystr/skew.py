@@ -6,6 +6,7 @@ Straightforward implementation of the skew/DC3 algorithm
 """
 
 from typing import Sequence
+from .alphabet import String
 
 SkewTriplet = tuple[int, int, int]
 SkewTripletDict = dict[SkewTriplet, int]
@@ -21,7 +22,7 @@ def safe_idx(x: Sequence[int], i: int) -> int:
     return SENTINEL if i >= len(x) else x[i]
 
 
-def symbcount(x: list[int], asize: int) -> list[int]:
+def symbcount(x: Sequence[int], asize: int) -> list[int]:
     "Count how often we see each character in the alphabet."
     # This is what collections.Counter does, but we need the
     # alphabet to be sorted integers, so we do it manually.
@@ -31,7 +32,7 @@ def symbcount(x: list[int], asize: int) -> list[int]:
     return counts
 
 
-def cumsum(counts: list[int]) -> list[int]:
+def cumsum(counts: Sequence[int]) -> list[int]:
     "Compute the cumulative sum from the character count."
     res, acc = [0] * len(counts), 0
     for i, k in enumerate(counts):
@@ -40,7 +41,7 @@ def cumsum(counts: list[int]) -> list[int]:
     return res
 
 
-def bucket_sort(x: list[int], asize: int,
+def bucket_sort(x: Sequence[int], asize: int,
                 idx: list[int], offset: int = 0) -> list[int]:
     "Sort indices in idx according to x[i + offset]."
     sort_symbs = [safe_idx(x, i + offset) for i in idx]
@@ -54,7 +55,7 @@ def bucket_sort(x: list[int], asize: int,
     return out
 
 
-def radix3(x: list[int], asize: int, idx: list[int]) -> list[int]:
+def radix3(x: Sequence[int], asize: int, idx: list[int]) -> list[int]:
     "Sort indices in idx according to their first three letters in x."
     idx = bucket_sort(x, asize, idx, 2)
     idx = bucket_sort(x, asize, idx, 1)
@@ -67,7 +68,7 @@ def triplet(x: Sequence[int], i: int) -> SkewTriplet:
     return (safe_idx(x, i), safe_idx(x, i + 1), safe_idx(x, i + 2))
 
 
-def collect_alphabet(x: list[int], idx: list[int]) -> SkewTripletDict:
+def collect_alphabet(x: Sequence[int], idx: list[int]) -> SkewTripletDict:
     "Map the triplets starting at idx to a new alphabet."
     # I'm using a dictionary for the alphabet, but you can build
     # it more efficiently by looking at the previous triplet in the
@@ -86,7 +87,7 @@ def collect_alphabet(x: list[int], idx: list[int]) -> SkewTripletDict:
     return alpha
 
 
-def less(x: list[int], i: int, j: int, ISA: dict[int, int]) -> bool:
+def less(x: Sequence[int], i: int, j: int, ISA: dict[int, int]) -> bool:
     "Check if x[i:] < x[j:] using the inverse suffix array for SA12."
     a, b = safe_idx(x, i), safe_idx(x, j)
     if a < b:
@@ -98,7 +99,7 @@ def less(x: list[int], i: int, j: int, ISA: dict[int, int]) -> bool:
     return less(x, i + 1, j + 1, ISA)
 
 
-def merge(x: list[int], SA12: list[int], SA3: list[int]) -> list[int]:
+def merge(x: Sequence[int], SA12: list[int], SA3: list[int]) -> list[int]:
     "Merge the suffixes in sorted SA12 and SA3."
     # I'm using a dict here, but you can use a list with a little
     # arithmetic
@@ -117,7 +118,7 @@ def merge(x: list[int], SA12: list[int], SA3: list[int]) -> list[int]:
     return SA
 
 
-def build_u(x: list[int], alpha: SkewTripletDict) -> list[int]:
+def build_u(x: Sequence[int], alpha: SkewTripletDict) -> list[int]:
     "Construct u string, using 1 as central sentinel."
     # I'm putting class [1] first. Then the sentinel will fall on
     # m//2 where m is the length of u. If you put class [2] first,
@@ -132,7 +133,7 @@ def u_idx(i: int, m: int) -> int:
     return 1 + 3 * i if i < m else 2 + 3 * (i - m - 1)
 
 
-def skew_rec(x: list[int], asize: int) -> list[int]:
+def skew_rec(x: Sequence[int], asize: int) -> list[int]:
     "Recursive skew SA construction algorithm."
 
     SA12 = [i for i in range(len(x)) if i % 3 != 0]
@@ -162,18 +163,6 @@ def skew_rec(x: list[int], asize: int) -> list[int]:
 
 def skew(x: str, include_sentinel: bool = True) -> list[int]:
     "Skew algorithm for a string."
-    # The skew_rec() function wants a list of integers,
-    # so we convert the string in the first call.
-    # It is only because of the safe_idx() hack that we
-    # need to convert the string; without it, we could work
-    # with both str and list[int], but the sentinel we generate
-    # is int, and we have to compare letters, so all letters must
-    # then be int.
-    # I am assuming that the alphabet size is 256 here, although
-    # of course it might not be. It is a simplification instead of
-    # remapping the string.
-    istring = [ord(y) for y in x]
-    # Build the sa without sentinel (we have it implicitly), and
-    # then add it afterwards if we want it
-    sa = skew_rec(istring, 256)
+    y = String(x, include_sentinel=True)
+    sa = skew_rec(y, len(y.alpha))
     return [len(x)] + sa if include_sentinel else sa
