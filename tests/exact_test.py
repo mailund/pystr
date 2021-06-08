@@ -1,6 +1,7 @@
 from typing import Callable, Iterator
 
 from pystr.exact import naive, border, kmp, bmh
+from pystr.exact import bmh_b as _bmh_b
 from pystr.bwt import bwt_search
 from pystr.suffixtree import mccreight_st_construction as mccreight
 
@@ -18,8 +19,15 @@ def suffix_tree_exact(x: str, p: str) -> Iterator[int]:
     yield from mccreight(x).search(p)
 
 
+# wrapper
+def bmh_b(x: str, p: str) -> Iterator[int]:
+    x_b = x.encode('ascii')
+    p_b = p.encode('ascii')
+    yield from _bmh_b(x_b, p_b)
+
+
 ALGOS: list[Algo] = [
-    naive, border, kmp, bmh,
+    naive, border, kmp, bmh, bmh_b,
     bwt_search,
     suffix_tree_exact,
 ]

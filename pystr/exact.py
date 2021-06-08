@@ -64,8 +64,28 @@ def bmh(x: str, p: str) -> Iterator[int]:
         yield from range(len(x) + 1)
         return
 
-    jump: dict[str, int] = \
-        defaultdict(lambda: len(p))
+    jump: dict[str, int] = defaultdict(lambda: len(p))
+    for j, a in enumerate(p[:-1]):  # skip last index!
+        jump[a] = len(p) - j - 1
+
+    i, j = 0, 0
+    while i < len(x) - len(p) + 1:
+        for j in reversed(range(len(p))):
+            if x[i + j] != p[j]:
+                break
+        else:
+            yield i
+
+        i += jump[x[i + len(p) - 1]]
+
+
+def bmh_b(x: bytes, p: bytes) -> Iterator[int]:
+    # Can't handle empty strings directly
+    if not p:
+        yield from range(len(x) + 1)
+        return
+
+    jump: list[int] = [len(p)] * 256  # 256 different bytes
     for j, a in enumerate(p[:-1]):  # skip last index!
         jump[a] = len(p) - j - 1
 
