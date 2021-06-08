@@ -17,7 +17,7 @@ class Ordered(Protocol[C]):
 
 
 # Then the functional stuff...
-class subseq(Generic[T]):
+class subseq(Generic[T], Sequence[T]):
     """This is a wrapper around lists and strings that lets us slice them
 without copying them.
 """
@@ -25,18 +25,38 @@ without copying them.
     _i: int
     _j: int
 
+    @staticmethod
+    def _fix_index(x: Sequence[T],
+                   start: Optional[int],
+                   stop: Optional[int]
+                   ) -> tuple[int, int]:
+        start = start if start is not None else 0
+        stop = stop if stop is not None else len(x)
+        if start < 0:
+            start += len(x)
+        if stop < 0:
+            stop += len(x)
+
+        assert start <= stop, "Start must come before end."
+        assert 0 <= start <= len(x), \
+            "Indices must be within the sequence's range."
+        assert 0 <= stop <= len(x), \
+            "Indices must be within the sequence's range."
+
+        return start, stop
+
+    # Mypy doesn't like me to access __init__() directly,
+    # so this is a hack to have init outside of __init__
+    def _init(self, x: Sequence[T],
+              start: Optional[int] = None,
+              stop: Optional[int] = None) -> None:
+        self._x = x
+        self._i, self._j = subseq._fix_index(x, start, stop)
+
     def __init__(self, x: Sequence[T],
                  start: Optional[int] = None,
-                 stop: Optional[int] = None):
-        self._x = x
-        self._i = start if start is not None else 0
-        self._j = stop if stop is not None else len(x)
-
-        assert self._i <= self._j, "Start must come before end."
-        assert 0 <= self._i <= len(self._x), \
-            "Indices must be within the sequence's range."
-        assert 0 <= self._j <= len(self._x), \
-            "Indices must be within the sequence's range."
+                 stop: Optional[int] = None) -> None:
+        self._init(x, start, stop)
 
     def __repr__(self) -> str:  # pragma: no cover
         cls_name = self.__class__.__name__
@@ -88,9 +108,21 @@ without copying them.
             return self._x[self._i + idx]
 
         if isinstance(idx, slice):
-            i: int = idx.start if idx.start is not None else 0
-            j: int = idx.stop if idx.stop is not None else len(self)
-            return self.__class__(self._x, self._i + i, self._i + j)
+            i, j = subseq._fix_index(self, idx.start, idx.stop)
+            new_subseq = self._new_object()
+            self.init_clone(new_subseq, self._x,
+                            self._i + i, self._i + j)
+            return new_subseq
+
+    def _new_object(self: S) -> S:
+        return self.__class__.__new__(self.__class__)
+
+    def init_clone(self: S, clone: S,
+                   x: Sequence[T], start: int, stop: int) -> None:
+        # This method just gives you a way to modify an object
+        # that is the result of a slice, instead of only calling
+        # the init method. Think of it as an alternative __init__.
+        clone._init(x, start, stop)
 
 
 class msubseq(subseq[T]):
@@ -108,8 +140,7 @@ class msubseq(subseq[T]):
         else:
             # I don't handle steps
             assert isinstance(idx, slice) and idx.step is None
-            start = idx.start if idx.start is not None else 0
-            stop = idx.stop if idx.stop is not None else len(self)
+            start, stop = subseq._fix_index(self, idx.start, idx.stop)
             for i in range(start, stop):
                 self._x[self._i + i] = val
 

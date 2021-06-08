@@ -2,28 +2,10 @@ from typing import Optional, Iterable, Callable, TypeVar
 from itertools import count
 from .subseq import subseq, msubseq
 from .bv import BitVector
-
+from .alphabet import String
 
 T = TypeVar('T')
 UNDEFINED = -1  # Undefined val in SA
-
-
-def map_string(x: str) -> tuple[subseq[int], int]:
-    # Get a set of the letters in x and number them (+1 for sentinel)
-    alphabet = {
-        a: i + 1 for i, a in enumerate(sorted(set(x)))
-    }
-
-    # Build a string and add the sentinel. Having an explicit sentinel
-    # simplifies the algorithm, and this is the only place we need to
-    # add it (it is automatically carried over in the recursion). Without
-    # the explicit sentinel, we would need to represent it implicitly
-    # several places in the code, to ensure that it is represented as
-    # an LMS string.
-    new_string = list(alphabet[a] for a in x)
-    new_string.append(0)  # add sentinel
-
-    return subseq[int](new_string), len(alphabet) + 1
 
 
 def classify_SL(is_S: BitVector, x: subseq[int]) -> None:
@@ -219,7 +201,8 @@ def sais_rec(x: subseq[int],
 
 
 def sais(x: str, include_sentinel: bool = True) -> list[int]:
-    s, asize = map_string(x)
+    s = String(x, append_sentinel=True)
+    asize = len(s.alpha)
     sa = [0] * len(s)
     is_S = BitVector(size=len(s))
     sais_rec(s, msubseq[int](sa), asize, is_S)

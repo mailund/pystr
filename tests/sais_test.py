@@ -1,25 +1,26 @@
-from pystr.sais import map_string, classify_SL, is_LMS
+from pystr.sais import classify_SL, is_LMS
 from pystr.sais import sais
 from pystr.bv import BitVector
+from pystr.alphabet import String
 from helpers import random_string, fibonacci_string, check_sorted
 
 
 def test_remap() -> None:
     x = "mississippi"
-    mapped, asize = map_string(x)
+    mapped = String(x, append_sentinel=True)
     assert mapped == [2, 1, 4, 4, 1, 4, 4, 1, 3, 3, 1, 0]
-    assert asize == 5
+    assert len(mapped.alpha) == 5
 
     for _ in range(10):
         x = random_string(1000)
-        mapped, asize = map_string(x)
-        assert set(mapped) == set(range(asize))
+        mapped = String(x)
+        assert set(mapped) == set(range(len(mapped.alpha)))
 
 
 def test_classify() -> None:
     # mississippi$
     # LSLLSLLSLLLS
-    x, _ = map_string("mississippi")
+    x = String("mississippi", append_sentinel=True)
     assert len(x) == len("mississippi") + 1
 
     is_S = BitVector(size=len(x))
@@ -38,7 +39,7 @@ def test_classify() -> None:
 
 
 def test_is_LMS() -> None:
-    x, _ = map_string("mississippi")
+    x = String("mississippi", append_sentinel=True)
     assert len(x) == len("mississippi") + 1
     is_S = BitVector(len(x))
     assert len(is_S) == len(x)
@@ -60,7 +61,7 @@ def test_is_LMS() -> None:
 
     for _ in range(10):
         z = random_string(20, "abcd")
-        y, _ = map_string(z)
+        y = String(z, append_sentinel=True)
         is_S = BitVector(len(y))
         classify_SL(is_S, y)
 

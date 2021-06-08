@@ -1,13 +1,23 @@
 import time
 from typing import Callable, Iterator
-from pystr.exact import bmh, bmh_b
+from pystr.alphabet import String
+from pystr.exact import bmh, bmh_b, bmh_alpha
 from helpers import random_string
 
 Algo = Callable[[str, str], Iterator[int]]
 
 
-def bmh_wrap(x: str, p: str) -> Iterator[int]:
+def bmh_b_wrap(x: str, p: str) -> Iterator[int]:
     yield from bmh_b(x.encode(), p.encode())
+
+
+def bmh_alpha_wrap(x: str, p: str) -> Iterator[int]:
+    xs = String(x)
+    try:
+        ps = String(p, xs.alpha)
+    except KeyError:
+        return
+    yield from bmh_alpha(xs, ps)
 
 
 def consume(iter: Iterator[int]) -> None:
@@ -26,5 +36,6 @@ def time_algo(algo: Algo, n: int, m: int, k: int) -> float:
     return total
 
 
-print("BMH:  ", time_algo(bmh,      50000, 200, 10))
-print("BMH-B:", time_algo(bmh_wrap, 50000, 200, 10))
+print("BMH:      ", time_algo(bmh,            50000, 200, 10))
+print("BMH-B:    ", time_algo(bmh_b_wrap,     50000, 200, 10))
+print("BMH-Alpha:", time_algo(bmh_alpha_wrap, 50000, 200, 10))

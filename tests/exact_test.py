@@ -1,7 +1,9 @@
 from typing import Callable, Iterator
 
+from pystr.alphabet import String
 from pystr.exact import naive, border, kmp, bmh
 from pystr.exact import bmh_b as _bmh_b
+from pystr.exact import bmh_alpha as _bmh_alpha
 from pystr.bwt import bwt_search
 from pystr.suffixtree import mccreight_st_construction as mccreight
 
@@ -25,9 +27,23 @@ def bmh_b(x: str, p: str) -> Iterator[int]:
     p_b = p.encode('ascii')
     yield from _bmh_b(x_b, p_b)
 
+# wrapper
+
+
+def bmh_alpha(x: str, p: str) -> Iterator[int]:
+    xs = String(x)
+    try:
+        ps = String(p, alpha=xs.alpha)
+        yield from _bmh_alpha(xs, ps)
+    except KeyError:
+        # We have a symbol in p that doesn't appear
+        # in x, so we report no matches
+        return
+
 
 ALGOS: list[Algo] = [
-    naive, border, kmp, bmh, bmh_b,
+    naive, border, kmp,
+    bmh, bmh_b, bmh_alpha,
     bwt_search,
     suffix_tree_exact,
 ]
@@ -53,6 +69,10 @@ def check_exact_matching(algo: Algo) -> _Test:
     def test(_: object) -> None:
         for _ in range(10):
             x = random_string(100, alpha="abcd")
+            for _ in range(10):
+                # allow characters not in x
+                p = random_string(10, alpha="abef")
+                check_matches(x, p, algo(x, p))
             for p in pick_random_patterns(x, 10):
                 check_matches(x, p, algo(x, p))
             for p in pick_random_patterns_len(x, 10, 3):

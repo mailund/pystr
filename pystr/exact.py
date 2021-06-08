@@ -2,6 +2,7 @@
 from typing import Iterator
 from collections import defaultdict
 from .border_array import strict_border_array
+from .alphabet import String
 
 
 def naive(x: str, p: str) -> Iterator[int]:
@@ -86,6 +87,33 @@ def bmh_b(x: bytes, p: bytes) -> Iterator[int]:
         return
 
     jump: list[int] = [len(p)] * 256  # 256 different bytes
+    for j, a in enumerate(p[:-1]):  # skip last index!
+        jump[a] = len(p) - j - 1
+
+    i, j = 0, 0
+    while i < len(x) - len(p) + 1:
+        for j in reversed(range(len(p))):
+            if x[i + j] != p[j]:
+                break
+        else:
+            yield i
+
+        i += jump[x[i + len(p) - 1]]
+
+
+def bmh_alpha(x: String, p: String) -> Iterator[int]:
+    if x.alpha != p.alpha:
+        # We *could* try to match if p's alphabet is included
+        # in x's, but we are just looking at educational code, so
+        # fuck it
+        return
+
+    # Can't handle empty strings directly
+    if not p:
+        yield from range(len(x) + 1)
+        return
+
+    jump: list[int] = [len(p)] * len(x.alpha)
     for j, a in enumerate(p[:-1]):  # skip last index!
         jump[a] = len(p) - j - 1
 

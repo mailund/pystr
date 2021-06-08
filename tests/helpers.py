@@ -89,6 +89,6 @@ def check_equal_matches(x: str, p: str,
     # We sort the search results since some algorithms do not automatically
     # give us sorted output
     iters: list[list[int]] = [sorted(algo(x, p)) for algo in algos]
-    print(iters)
+    print('Iters:', iters)
     for res in zip(*iters, strict=True):  # type: ignore
         assert all(res[i] == res[0] for i in range(1, len(res)))
