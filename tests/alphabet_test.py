@@ -8,7 +8,6 @@ def test_alphabet() -> None:
         assert len(y.alpha) == len(set(x)) + 1
         assert len(y.alpha) == len(set(x)) + 1
         assert str(y[:-1]) == x
-        assert x+"⇥" == str(y)
 
 
 if __name__ == '__main__':

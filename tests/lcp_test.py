@@ -1,5 +1,6 @@
 from helpers import random_string, fibonacci_string
-from pystr import mccreight_st_construction, sais
+from pystr.suffixtree import mccreight_st_construction
+from pystr.sais import sais
 from pystr.lcp import compare_lcp, sa_lcp_from_suffix_tree
 from pystr.lcp import inverse_sa, lcp_from_sa
 

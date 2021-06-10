@@ -59,8 +59,5 @@ def test_show_bwt_search(mocker: MockerFixture) -> None:
     p = 'ssi'
     check_bwt_search(x, p, mocker)
 
-    # Character that isn't there
-    check_bwt_search(x, 'x', mocker)
-
     # mismatch
     check_bwt_search(x, 'ssss', mocker)

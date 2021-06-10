@@ -201,9 +201,12 @@ def sais_rec(x: SubSeq[int],
         induce_S(x, sa, buckets, is_S)
 
 
-def sais(x: str) -> list[int]:
-    s = String(x)
-    sa = [0] * len(s)
-    is_S = BitVector(size=len(s))
-    sais_rec(s, MSubSeq[int](sa), len(s.alpha), is_S)
+def sais_string(x: String) -> list[int]:
+    sa = [0] * len(x)
+    is_S = BitVector(size=len(x))
+    sais_rec(x, MSubSeq[int](sa), len(x.alpha), is_S)
     return sa
+
+
+def sais(x: str) -> list[int]:
+    return sais_string(String(x))

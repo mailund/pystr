@@ -2,10 +2,10 @@ from typing import Callable, Iterator
 
 from pystr.suffixtree import SuffixTree
 from pystr.exact import bmh
-from pystr import naive_st_construction
-from pystr import mccreight_st_construction
-from pystr import lcp_st_construction
-from pystr import sais
+from pystr.suffixtree import naive_st_construction
+from pystr.suffixtree import mccreight_st_construction
+from pystr.suffixtree import lcp_st_construction
+from pystr.sais import sais
 from pystr.lcp import lcp_from_sa
 
 from helpers import fibonacci_string, random_string

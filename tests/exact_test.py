@@ -4,7 +4,7 @@ from pystr.alphabet import String
 from pystr.exact import naive, border, kmp, bmh
 from pystr.exact import bmh_b as _bmh_b
 from pystr.exact import bmh_alpha as _bmh_alpha
-from pystr.bwt import bwt_search
+from pystr.bwt import preprocess
 from pystr.suffixtree import mccreight_st_construction as mccreight
 
 from helpers import random_string, fibonacci_string
@@ -27,9 +27,8 @@ def bmh_b(x: str, p: str) -> Iterator[int]:
     p_b = p.encode('ascii')
     yield from _bmh_b(x_b, p_b)
 
+
 # wrapper
-
-
 def bmh_alpha(x: str, p: str) -> Iterator[int]:
     xs = String(x)
     try:
@@ -39,6 +38,11 @@ def bmh_alpha(x: str, p: str) -> Iterator[int]:
         # We have a symbol in p that doesn't appear
         # in x, so we report no matches
         return
+
+
+# wrapper
+def bwt_search(x: str, p: str) -> Iterator[int]:
+    yield from preprocess(x)(p)
 
 
 ALGOS: list[Algo] = [

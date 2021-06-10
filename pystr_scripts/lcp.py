@@ -155,5 +155,5 @@ def show_lcp_sa() -> None:
                         help='string to build the sa/lcp from.')
 
     args = parser.parse_args()
-    sa = sais(args.x)
+    sa = sais.sais(args.x)
     lcp_from_sa(args.x, sa, args.interactive)

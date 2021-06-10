@@ -2,8 +2,9 @@ import argparse
 
 from typing import Callable, Any
 
+from pystr.alphabet import String
 from pystr import sais
-from pystr.bwt import c_table, o_table
+from pystr import bwt
 
 from pystr_vis import colour, Table, ColSpec, Align, indent
 from pystr_vis.tables import Row
@@ -19,7 +20,7 @@ def hit_enter() -> None:
     input("Press ENTER to continue")
 
 
-def rotation_table(x: str, sa: list[int]) -> Table:
+def rotation_table(x: String, sa: list[int]) -> Table:
     tbl = Table(
         ColSpec("pointer", align=Align.RIGHT),
         ColSpec("prefix", right_pad=""),
@@ -28,7 +29,7 @@ def rotation_table(x: str, sa: list[int]) -> Table:
     )
     for j in sa:
         row = tbl.add_row()
-        row["rotation"] = x[j:]+'$'+x[:j]
+        row["rotation"] = str(x[j:])+str(x[:j])
     tbl.add_row()  # so we can index beyond the last
     return tbl
 
@@ -110,11 +111,13 @@ def show_bwt_transition() -> None:
         import sys
         sys.exit(1)
 
-    x, k, a = args.x, args.k, args.a
-
-    sa = sais(x)
-    ctab = c_table(x)
-    otab = o_table(x, sa, ctab.keys())
+    x_, k, a_ = args.x, args.k, args.a
+    x = String(x_)
+    a = String(a_, x.alpha)[:-1]  # remove sentinel again
+    abyte = a[0]  # The letter in x's alphabet
+    sa = sais.sais_string(x)
+    ctab = bwt.CTable(x)
+    otab = bwt.OTable(x, sa)
 
     print()
     print(bright_blue(f"{underline}String we want to jump from:"))
@@ -133,7 +136,7 @@ def show_bwt_transition() -> None:
     print()
     tbl = rotation_table(x, sa)
     tbl[k]["pointer"] = bold("k ->")
-    tbl[k]["prefix"] = bright_green(a)
+    tbl[k]["prefix"] = bright_green(str(a))
     tbl[k]["rotation"] = colour(tbl[k]["rotation"])[0:-1, underline][-1, black]
     print(tbl)
     print()
@@ -145,13 +148,13 @@ def show_bwt_transition() -> None:
     print()
     tbl = rotation_table(x, sa)
     tbl[k]["pointer"] = bold("k ->")
-    tbl[k]["prefix"] = bright_green(a)
+    tbl[k]["prefix"] = bright_green(str(a))
     tbl[k]["rotation"] = colour(tbl[k]["rotation"])[0:-1, underline][-1, black]
 
-    tbl[ctab[a]]["pointer"] = green(f"C[{a}] ->")
-    for i in range(ctab[a], len(sa)):
+    tbl[ctab[abyte]]["pointer"] = green(f"C[{a}] ->")
+    for i in range(ctab[abyte], len(sa)):
         row = tbl[i]
-        if not row["rotation"].startswith(a):
+        if not row["rotation"].startswith(str(a)):
             break
         row["rotation"] = green(row["rotation"])
     print(tbl)
@@ -163,10 +166,10 @@ def show_bwt_transition() -> None:
     print(bright_blue(f"{underline}Count offset:"))
     print()
     tbl = rotation_table(x, sa)
-    rot_rows(tbl, a, 0, k)
+    rot_rows(tbl, str(a), 0, k)
 
     tbl[k]["pointer"] = bold("k ->")
-    tbl[k]["prefix"] = bright_green(a)
+    tbl[k]["prefix"] = bright_green(str(a))
     tbl[k]["rotation"] = colour(tbl[k]["rotation"])[
         0:-1, blue & underline][-1, black]
 
@@ -179,17 +182,17 @@ def show_bwt_transition() -> None:
     print(bright_blue(f"{underline}Done:"))
     print()
     res_tbl = rotation_table(x, sa)
-    shift_rows(res_tbl, ctab[a], ctab[a] + otab[a][k])
+    shift_rows(res_tbl, ctab[abyte], ctab[abyte] + otab[abyte, k])
 
-    res_tbl[ctab[a]]["pointer"] = green(f"C[{a}] ->")
+    res_tbl[ctab[abyte]]["pointer"] = green(f"C[{a}] ->")
 
-    hit_idx = ctab[a]+otab[a][k]
+    hit_idx = ctab[abyte] + otab[abyte, k]
     if hit_idx < len(x):
         row = res_tbl[hit_idx]
         row["pointer"] = green(f"C[{a}]") + " + " + \
             magenta(f"O[{a},{k}]") + " ->"
 
-        target = a + strip_ansi(tbl[k]["rotation"])[:-1]
+        target = str(a) + strip_ansi(tbl[k]["rotation"])[:-1]
         hit = strip_ansi(tbl[hit_idx]["prefix"]) + \
             strip_ansi(tbl[hit_idx]["rotation"])
         match_col = green if target == hit else red
@@ -232,34 +235,34 @@ def show_bwt_search() -> None:
         import sys
         sys.exit(1)
 
-    x, p = args.x, args.p
-    sa = sais(x)
-    ctab = c_table(x)
-    otab = o_table(x, sa, ctab.keys())
+    x_, p_ = args.x, args.p
+    x = String(x_)
+    try:
+        p = String(p_, x.alpha)[:-1]
+    except KeyError:
+        print("We cannot translate p into the same alphabet as x.")
+        print("This means that there cannot be matches, so we stop here.")
+        import sys
+        sys.exit(1)
 
-    L = 0  # Starting at 0 (the sentinel) handles empty strings
-    R = len(x) + 1  # +1 because of the sentinel
-    for j, y in enumerate(p[::-1]):
+    sa = sais.sais_string(x)
+    ctab = bwt.CTable(x)
+    otab = bwt.OTable(x, sa)
+
+    L = 0
+    R = len(x)
+    for j, y in enumerate(reversed(p)):
 
         print()
         print(bright_blue(underline("Scanning...")))
         print(indent(len("p = ")+len(p)-j-1), "v", sep="")
         if j > 0:
-            print(f"p = {colour(p)[-j:, underline]}")
+            print(f"p = {colour(str(p))[-j:, underline]}")
         else:
             print(f"p = {p}")
         print()
-        print("Prepending:", green(y))
+        print("Prepending:", green(p.alpha.revmap(y)))
         print()
-
-        if y not in ctab:
-            print(
-                f"Character {bright_red(y)} is not in {x} so we don't have a match.")  # noqa: E501
-            if args.interactive:
-                hit_enter()
-            print()
-            L, R = 0, 0
-            break
 
         start_tbl = rotation_table(x, sa)
         start_tbl[L]["pointer"] = bold("L ->")
@@ -270,14 +273,14 @@ def show_bwt_search() -> None:
 
         L_tbl = rotation_table(x, sa)
         L_tbl[L]["pointer"] = bold("L ->")
-        rot_rows(L_tbl, y, 0, L, blue)
+        rot_rows(L_tbl, str(y), 0, L, blue)
 
         R_tbl = rotation_table(x, sa)
         R_tbl[R]["pointer"] = bold("R ->")
-        rot_rows(R_tbl, y, 0, R, yellow)
+        rot_rows(R_tbl, str(y), 0, R, yellow)
 
-        L = ctab[y] + otab[y][L]
-        R = ctab[y] + otab[y][R]
+        L = ctab[y] + otab[y, L]
+        R = ctab[y] + otab[y, R]
 
         res_tbl = rotation_table(x, sa)
         if L < R:

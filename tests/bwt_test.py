@@ -1,34 +1,41 @@
-from helpers import check_equal_matches, check_matches
-from collections.abc import Iterator
-from pystr import sais
-from pystr.bwt import CTAB, OTAB, c_table, o_table, bwt_search_tbls
-from pystr.bwt import bwt_search
-
-BWTPreproc = tuple[list[int], CTAB, OTAB]
+from helpers import check_matches
+from pystr import bwt
+from pystr.alphabet import String
+from pystr.sais import sais_string
 
 
-def preprocess(x: str, sa: list[int]) -> BWTPreproc:
-    ctab = c_table(x)
-    otab = o_table(x, sa, ctab.keys())
-    return sa, ctab, otab
+def test_ctable() -> None:
+    x = String("aabca")
+    ctab = bwt.CTable(x)
+    assert ctab[0] == 0, "Nothing is smaller than the sentinel"
+    assert ctab[1] == 1, "$ is smaller than 'a'"
+    assert ctab[2] == 4, "$ + three 'a'"
+    assert ctab[3] == 5, "$ + three 'a' + one 'b'"
 
 
-def search_tbls(x: str, p: str,
-                sa: list[int], ctab: CTAB, otab: OTAB) -> Iterator[int]:
-    L, R = bwt_search_tbls(x, p, ctab, otab)
-    for i in range(L, R):
-        yield sa[i]
+def test_otable() -> None:
+    x = String("aabca")
+    sa = sais_string(x)
+    transformed = [bwt.bwt(x, sa, i) for i in range(len(x))]
+    assert transformed == [1, 3, 0, 1, 1, 2]
+
+    otab = bwt.OTable(x, sa)
+    assert len(otab._tbl) == len(x.alpha) - 1
+    assert len(otab._tbl[0]) == len(x)
+    assert otab._tbl[0] == [1, 1, 1, 2, 3, 3], "a counts"
+    assert otab._tbl[1] == [0, 0, 0, 0, 0, 1], "b counts"
+    assert otab._tbl[2] == [0, 1, 1, 1, 1, 1], "c counts"
 
 
 def test_mississippi() -> None:
     x = "mississippi"
-    sa = sais(x)
-    prep = preprocess(x, sa)
-    for p in ("ssi", "ppi", "si", "pip", "x", ""):
-        matches = search_tbls(x, p, *prep)
+    sa = sais_string(String(x))
+    for j in sa:
+        print(x[j:])
+    search = bwt.preprocess(x)
+    for p in ("si", "ppi", "ssi", "pip", "x", ""):
+        matches = list(search(p))
+        print(matches)
         check_matches(x, p, matches)
-        check_equal_matches(x, p,
-                            lambda x, p: search_tbls(x, p, *prep),
-                            bwt_search)
-    # the empty string should give us the entire x + 1 (past the string)
-    assert len(set(search_tbls(x, "", *prep))) == len(x) + 1
+    # the empty string should give us the entire x includng sentinel
+    assert len(list(search(""))) == len(x) + 1

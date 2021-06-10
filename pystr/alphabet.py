@@ -19,7 +19,7 @@ class Alphabet:
         }
         # sentinel
         self._map[chr(0)] = 0
-        self._revmap[0] = "⇥"  # just a symbol unlikely to be in the string
+        self._revmap[0] = "✶"  # just a symbol unlikely to be in the string
 
         # We save some space by packing strings into bytearrays,
         # but that means that we must fit the entire alphabet
@@ -34,8 +34,11 @@ class Alphabet:
     def map(self, x: typing.Iterable[str]) -> bytearray:
         return bytearray(self._map[a] for a in x)
 
-    def revmap(self, x: typing.Iterable[int]) -> str:
-        return ''.join(self._revmap[i] for i in x)
+    def revmap(self, x: int | typing.Iterable[int]) -> str:
+        if isinstance(x, int):
+            return self._revmap[x]
+        else:
+            return ''.join(self._revmap[i] for i in x)
 
 
 class String(SubSeq[int]):
@@ -60,14 +63,13 @@ class String(SubSeq[int]):
     def __str__(self) -> str:
         return self.alpha.revmap(self)
 
-    def __repr__(self) -> str:
+    def __repr__(self) -> str:  # pragma: no cover
         cls_name = self.__class__.__name__
-        return f"{cls_name}({self.alpha.revmap(self)})"
+        return f"{cls_name}('{self.alpha.revmap(self)}')"
 
     # Hooking into the subseq's slicing here to add the
     # alphabet to sub-strings.
-    def init_slice(self: S,
-                   clone: S,
+    def init_slice(self: S, clone: S,
                    x: typing.Sequence[int], start: int, stop: int
                    ) -> None:
         super().init_slice(clone, x, start, stop)

@@ -99,6 +99,8 @@ without copying them.
             return self._x[self._i + idx]
 
         if isinstance(idx, slice):
+            assert idx.step is None, \
+                "Subsequences do not handle steps in slices"
             i, j = SubSeq._fix_index(self, idx.start, idx.stop)
             new_subseq = self._new_object()
             self.init_slice(new_subseq,
