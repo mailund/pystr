@@ -3,7 +3,7 @@ import itertools
 
 from .subseq import SubSeq, MSubSeq
 from .bv import BitVector
-from .alphabet import String
+from .alphabet_string import String
 
 T = typing.TypeVar('T')
 UNDEFINED = -1  # Undefined val in SA

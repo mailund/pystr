@@ -2,7 +2,7 @@ import argparse
 
 from typing import Callable, Any
 
-from pystr.alphabet import String
+from pystr.alphabet_string import String
 from pystr import sais
 from pystr import bwt
 

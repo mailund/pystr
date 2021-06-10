@@ -3,7 +3,7 @@ import typing
 import collections
 
 from .border_array import strict_border_array
-from .alphabet import String
+from .alphabet_string import String
 
 
 def naive(x: str, p: str) -> typing.Iterator[int]:

@@ -1,6 +1,6 @@
 from helpers import check_matches
 from pystr import bwt
-from pystr.alphabet import String
+from pystr.alphabet_string import String
 from pystr.sais import sais_string
 
 

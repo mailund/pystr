@@ -1,4 +1,4 @@
-from pystr.alphabet import String
+from pystr.alphabet_string import String
 
 
 def test_alphabet() -> None:

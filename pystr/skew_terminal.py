@@ -7,7 +7,7 @@ Straightforward implementation of the skew/DC3 algorithm
 
 import typing
 
-from .alphabet import String
+from .alphabet_string import String
 from .skew_common import SkewTripletDict, \
     triplet, radix3, bucket_sort, merge
 

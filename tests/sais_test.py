@@ -1,7 +1,7 @@
 from pystr.sais import classify_SL, is_LMS
 from pystr.sais import sais
 from pystr.bv import BitVector
-from pystr.alphabet import String
+from pystr.alphabet_string import String
 from helpers import random_string, fibonacci_string, check_sorted
 
 

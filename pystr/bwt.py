@@ -1,6 +1,6 @@
 import typing
 
-from .alphabet import String
+from .alphabet_string import String
 from .sais import sais_string  # For the search function
 
 SENTINEL = 0

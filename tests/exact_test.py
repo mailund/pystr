@@ -1,6 +1,6 @@
 from typing import Callable, Iterator
 
-from pystr.alphabet import String
+from pystr.alphabet_string import String
 from pystr.exact import naive, border, kmp, bmh
 from pystr.exact import bmh_b as _bmh_b
 from pystr.exact import bmh_alpha as _bmh_alpha
