@@ -112,7 +112,7 @@ def show_bwt_transition() -> None:
 
     x, k, a = args.x, args.k, args.a
 
-    sa = sais(x, include_sentinel=True)
+    sa = sais(x)
     ctab = c_table(x)
     otab = o_table(x, sa, ctab.keys())
 
@@ -233,7 +233,7 @@ def show_bwt_search() -> None:
         sys.exit(1)
 
     x, p = args.x, args.p
-    sa = sais(x, include_sentinel=True)
+    sa = sais(x)
     ctab = c_table(x)
     otab = o_table(x, sa, ctab.keys())
 

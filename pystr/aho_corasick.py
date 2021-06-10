@@ -1,8 +1,8 @@
+import typing
 from .trie import TrieNode, depth_first_trie
-from typing import Iterator, cast
 
 
-def occurrences(n: TrieNode) -> Iterator[int]:
+def occurrences(n: TrieNode) -> typing.Iterator[int]:
     if n.label is not None:
         yield n.label
 
@@ -23,7 +23,8 @@ but that works fine with the out list reporting."""
     return n[a] if a in n else n
 
 
-def aho_corasick(x: str, *p: str) -> Iterator[tuple[int, int]]:
+def aho_corasick(x: str, *p: str
+                 ) -> typing.Iterator[tuple[int, int]]:
     trie = depth_first_trie(*p)
     n = trie.root
 

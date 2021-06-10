@@ -1,26 +1,25 @@
 from __future__ import annotations
-from typing import Optional, Sequence, Iterable, TypeVar
-from .subseq import subseq
+import typing
+from .subseq import SubSeq
 
-S = TypeVar('S', bound="String")
+S = typing.TypeVar('S', bound="String")
 
 
 class Alphabet:
     _map: dict[str, int]
     _revmap: dict[int, str]
 
-    def __init__(self, reference: str,
-                 include_sentinel: bool = False) -> None:
+    def __init__(self, reference: str) -> None:
         self._map = {
-            a: i+include_sentinel
+            a: i+1  # reserve space for sentinel
             for i, a in enumerate(sorted(set(reference)))
         }
         self._revmap = {
             i: a for a, i in self._map.items()
         }
-        if include_sentinel:
-            self._map[chr(0)] = 0
-            self._revmap[0] = chr(0)
+        # sentinel
+        self._map[chr(0)] = 0
+        self._revmap[0] = "⇥"  # just a symbol unlikely to be in the string
 
         # We save some space by packing strings into bytearrays,
         # but that means that we must fit the entire alphabet
@@ -32,40 +31,27 @@ class Alphabet:
     def __len__(self) -> int:
         return len(self._map)
 
-    def map(self, x: Iterable[str]) -> bytearray:
+    def map(self, x: typing.Iterable[str]) -> bytearray:
         return bytearray(self._map[a] for a in x)
 
-    def revmap(self, x: Iterable[int]) -> str:
+    def revmap(self, x: typing.Iterable[int]) -> str:
         return ''.join(self._revmap[i] for i in x)
 
 
-class String(subseq[int]):
+class String(SubSeq[int]):
     alpha: Alphabet
 
     def __init__(self,
                  x: str,
-                 alpha: Optional[Alphabet] = None,
-                 include_sentinel: bool = False,
-                 append_sentinel: bool = False
+                 alpha: typing.Optional[Alphabet] = None
                  ) -> None:
 
-        # If we append the sentinel character, then
-        # the alphabet must also have it
-        include_sentinel |= append_sentinel
-
         # Handle the alphabet
-        if alpha is None:
-            self.alpha = Alphabet(x, include_sentinel)
-        else:
-            if append_sentinel:
-                assert 0 in self.alpha._revmap, \
-                    "Alphabet must have sentinel for us to append it."
-            self.alpha = alpha
+        self.alpha = alpha or Alphabet(x)
 
         # Generate the underlying bytes.
         underlying = self.alpha.map(x)
-        if append_sentinel:
-            underlying.append(0)
+        underlying.append(0)  # add sentinel
 
         # Use the underlying bytes as a Sequence[int]
         # that we hold as a subseq[int].
@@ -74,10 +60,15 @@ class String(subseq[int]):
     def __str__(self) -> str:
         return self.alpha.revmap(self)
 
+    def __repr__(self) -> str:
+        cls_name = self.__class__.__name__
+        return f"{cls_name}({self.alpha.revmap(self)})"
+
     # Hooking into the subseq's slicing here to add the
     # alphabet to sub-strings.
-    def init_clone(self: S, clone: S,
-                   x: Sequence[int], start: int, stop: int
+    def init_slice(self: S,
+                   clone: S,
+                   x: typing.Sequence[int], start: int, stop: int
                    ) -> None:
-        super().init_clone(clone, x, start, stop)
+        super().init_slice(clone, x, start, stop)
         clone.alpha = self.alpha

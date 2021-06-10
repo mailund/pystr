@@ -1,34 +1,30 @@
 from __future__ import annotations
-from collections.abc import Iterator
-from typing import Generic, TypeVar, Protocol
-from typing import Optional, Sequence, MutableSequence
-from typing import overload, cast
+import typing
 
 # Type specifications...
-T = TypeVar('T')
-S = TypeVar('S', bound="subseq")
+T = typing.TypeVar('T')
+S = typing.TypeVar('S', bound="SubSeq")
+C = typing.TypeVar('C', covariant=True)
 
-C = TypeVar('C', covariant=True)
 
-
-class Ordered(Protocol[C]):
+class Ordered(typing.Protocol[C]):
     def __lt__(self, other: object) -> bool: ...
     def __gt__(self, other: object) -> bool: ...
 
 
 # Then the functional stuff...
-class subseq(Generic[T], Sequence[T]):
+class SubSeq(typing.Generic[T], typing.Sequence[T]):
     """This is a wrapper around lists and strings that lets us slice them
 without copying them.
 """
-    _x: Sequence[T]
+    _x: typing.Sequence[T]
     _i: int
     _j: int
 
     @staticmethod
-    def _fix_index(x: Sequence[T],
-                   start: Optional[int],
-                   stop: Optional[int]
+    def _fix_index(x: typing.Sequence[T],
+                   start: typing.Optional[int],
+                   stop: typing.Optional[int]
                    ) -> tuple[int, int]:
         start = start if start is not None else 0
         stop = stop if stop is not None else len(x)
@@ -45,24 +41,19 @@ without copying them.
 
         return start, stop
 
-    # Mypy doesn't like me to access __init__() directly,
-    # so this is a hack to have init outside of __init__
-    def _init(self, x: Sequence[T],
-              start: Optional[int] = None,
-              stop: Optional[int] = None) -> None:
+    def __init__(self,
+                 x: typing.Sequence[T],
+                 start: typing.Optional[int] = None,
+                 stop: typing.Optional[int] = None
+                 ) -> None:
         self._x = x
-        self._i, self._j = subseq._fix_index(x, start, stop)
-
-    def __init__(self, x: Sequence[T],
-                 start: Optional[int] = None,
-                 stop: Optional[int] = None) -> None:
-        self._init(x, start, stop)
+        self._i, self._j = SubSeq._fix_index(x, start, stop)
 
     def __repr__(self) -> str:  # pragma: no cover
         cls_name = self.__class__.__name__
         return f"{cls_name}(x={repr(self._x)}, start={self._i}, stop={self._j})"  # noqa: E501
 
-    def __iter__(self) -> Iterator[T]:
+    def __iter__(self) -> typing.Iterator[T]:
         return (self._x[i] for i in range(self._i, self._j))
 
     def __len__(self) -> int:
@@ -79,7 +70,7 @@ without copying them.
         # but we can only handle sequences.
         # FIXME: Unfortunately, I haven't figured out how to runtime check
         # if an object implements a generic protocol...
-        other = cast(Sequence[T], other)
+        other = typing.cast(typing.Sequence[T], other)
         return len(self) == len(other) and \
             all(a == b for a, b in zip(self, other))
 
@@ -90,7 +81,7 @@ without copying them.
         # but we can only handle sequences.
         # FIXME: Unfortunately, I haven't figured out how to runtime check
         # if an object implements a generic protocol...
-        other = cast(Sequence[Ordered[T]], other)
+        other = typing.cast(typing.Sequence[Ordered[T]], other)
         for a, b in zip(self, other):
             if a < b:
                 return True    # noqal
@@ -98,9 +89,9 @@ without copying them.
                 return False   # noqal
         return len(self) < len(other)
 
-    @overload
+    @typing.overload
     def __getitem__(self: S, idx: int) -> T: ...
-    @overload
+    @typing.overload
     def __getitem__(self: S, idx: slice) -> S: ...
 
     def __getitem__(self: S, idx: int | slice) -> T | S:
@@ -108,30 +99,30 @@ without copying them.
             return self._x[self._i + idx]
 
         if isinstance(idx, slice):
-            i, j = subseq._fix_index(self, idx.start, idx.stop)
+            i, j = SubSeq._fix_index(self, idx.start, idx.stop)
             new_subseq = self._new_object()
-            self.init_clone(new_subseq, self._x,
-                            self._i + i, self._i + j)
+            self.init_slice(new_subseq,
+                            self._x, self._i + i, self._i + j)
             return new_subseq
 
     def _new_object(self: S) -> S:
         return self.__class__.__new__(self.__class__)
 
-    def init_clone(self: S, clone: S,
-                   x: Sequence[T], start: int, stop: int) -> None:
-        # This method just gives you a way to modify an object
-        # that is the result of a slice, instead of only calling
-        # the init method. Think of it as an alternative __init__.
-        clone._init(x, start, stop)
+    def init_slice(self: S, clone: S,
+                   x: typing.Sequence[T], start: int, stop: int
+                   ) -> None:
+        clone._x = x
+        clone._i = start
+        clone._j = stop
 
 
-class msubseq(subseq[T]):
-    _x: MutableSequence[T]  # Make x mutable now...
+class MSubSeq(SubSeq[T]):
+    _x: typing.MutableSequence[T]  # Make x mutable now...
 
     # Override init for the type checker...
-    def __init__(self, x: MutableSequence[T],
-                 start: Optional[int] = None,
-                 stop: Optional[int] = None):
+    def __init__(self, x: typing.MutableSequence[T],
+                 start: typing.Optional[int] = None,
+                 stop: typing.Optional[int] = None):
         super().__init__(x, start, stop)
 
     def __setitem__(self, idx: int | slice, val: T) -> None:
@@ -140,14 +131,6 @@ class msubseq(subseq[T]):
         else:
             # I don't handle steps
             assert isinstance(idx, slice) and idx.step is None
-            start, stop = subseq._fix_index(self, idx.start, idx.stop)
+            start, stop = SubSeq._fix_index(self, idx.start, idx.stop)
             for i in range(start, stop):
                 self._x[self._i + i] = val
-
-
-# Frequently used subsequences... The inheritance pattern here
-# reflects that a mutable version over a type should be castable
-# to an immutable.
-substr = subseq[str]
-isseq = subseq[int]
-misseq = msubseq[int]

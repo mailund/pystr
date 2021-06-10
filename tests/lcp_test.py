@@ -6,10 +6,9 @@ from pystr.lcp import inverse_sa, lcp_from_sa
 
 def check_lcp(x: str,
               sa: list[int],
-              lcp: list[int],
-              include_sentinel: bool
+              lcp: list[int]
               ) -> None:
-    assert len(sa) == len(x) + include_sentinel
+    assert len(sa) == len(x) + 1
     assert len(sa) == len(lcp)
     assert lcp[0] == 0            # first lcp is always zero
     for i in range(1, len(lcp)):
@@ -22,16 +21,10 @@ def test_st_construction() -> None:
         x = random_string(50, alpha="abc")
 
         # Including sentinel
-        st = mccreight_st_construction(x, include_sentinel=True)
+        st = mccreight_st_construction(x)
         sa, lcp = sa_lcp_from_suffix_tree(st)
         assert sa == sais(x)
-        check_lcp(x, sa, lcp, include_sentinel=True)
-
-        # Excluding sentinel
-        st = mccreight_st_construction(x, include_sentinel=False)
-        sa, lcp = sa_lcp_from_suffix_tree(st)
-        assert sa == sais(x)[1:]
-        check_lcp(x, sa, lcp, include_sentinel=False)
+        check_lcp(x, sa, lcp)
 
 
 def test_inverse() -> None:
@@ -49,24 +42,16 @@ def test_sa_construction() -> None:
     for _ in range(20):
         # smaller alpha for more branches...
         x = random_string(50, alpha="abc")
-        sa = sais(x, include_sentinel=True)
+        sa = sais(x)
         lcp = lcp_from_sa(x, sa)
-        check_lcp(x, sa, lcp, include_sentinel=True)
-
-        sa = sais(x, include_sentinel=False)
-        lcp = lcp_from_sa(x, sa)
-        check_lcp(x, sa, lcp, include_sentinel=False)
+        check_lcp(x, sa, lcp)
 
     for n in range(10, 15):
         x = fibonacci_string(n)
 
-        sa = sais(x, include_sentinel=True)
+        sa = sais(x)
         lcp = lcp_from_sa(x, sa)
-        check_lcp(x, sa, lcp, include_sentinel=True)
-
-        sa = sais(x, include_sentinel=False)
-        lcp = lcp_from_sa(x, sa)
-        check_lcp(x, sa, lcp, include_sentinel=False)
+        check_lcp(x, sa, lcp)
 
 
 if __name__ == '__main__':

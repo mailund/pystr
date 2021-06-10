@@ -22,7 +22,7 @@ def search_tbls(x: str, p: str,
 
 def test_mississippi() -> None:
     x = "mississippi"
-    sa = sais(x, include_sentinel=True)
+    sa = sais(x)
     prep = preprocess(x, sa)
     for p in ("ssi", "ppi", "si", "pip", "x", ""):
         matches = search_tbls(x, p, *prep)

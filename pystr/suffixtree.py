@@ -1,9 +1,9 @@
 from __future__ import annotations
-from collections.abc import Iterator, Iterable
-from dataclasses import dataclass, field
-from typing import Optional
+import typing
+import dataclasses
 
-from .subseq import subseq
+
+from .subseq import SubSeq
 
 # SECTION Suffix Tree representation
 
@@ -12,31 +12,31 @@ from .subseq import subseq
 # not having all the attributes in a combined class.
 
 
-@dataclass
+@dataclasses.dataclass
 class Node:  # Should be abc ABC, but doesn't work with type checker
-    edge_label: subseq[str]  # Gives me constant time slicing
-    parent: Optional[Inner] = \
-        field(default=None, init=False, repr=False)
+    edge_label: SubSeq[str]  # Gives me constant time slicing
+    parent: typing.Optional[Inner] = \
+        dataclasses.field(default=None, init=False, repr=False)
 
     # These methods are only here for the type checker.
     # They will never be used because we never have Node objects.
-    def __iter__(self) -> Iterator[int]: ...
+    def __iter__(self) -> typing.Iterator[int]: ...
     def to_dot(self, res: list[str]) -> list[str]: ...
 
 
-@dataclass
+@dataclasses.dataclass
 class Inner(Node):
-    suffix_link: Optional[Inner] = \
-        field(default=None, init=False, repr=False)
+    suffix_link: typing.Optional[Inner] = \
+        dataclasses.field(default=None, init=False, repr=False)
     children: dict[str, Node] = \
-        field(default_factory=dict, init=False, repr=False)
+        dataclasses.field(default_factory=dict, init=False, repr=False)
 
     def add_children(self, *children: Node) -> None:
         for child in children:
             self.children[child.edge_label[0]] = child
             child.parent = self
 
-    def out_child(self, edge: str | subseq[str]) -> Node:
+    def out_child(self, edge: str | SubSeq[str]) -> Node:
         return self.children[edge[0]]
 
     def to_dot(self, res: list[str]) -> list[str]:
@@ -55,7 +55,7 @@ class Inner(Node):
 
         return res  # Just for convinience
 
-    def __iter__(self) -> Iterator[int]:
+    def __iter__(self) -> typing.Iterator[int]:
         # You could make it more efficient by sorting once
         # and keeping the table sorted, but for experimenting
         # this if fine...
@@ -79,13 +79,13 @@ class Inner(Node):
         )
 
 
-@dataclass(init=False)
+@dataclasses.dataclass(init=False)
 class Leaf(Node):
     leaf_label: int
 
     # Explicit __init__ because I prefer to have the
     # leaf_label before the edge_label
-    def __init__(self, leaf_label: int, edge_label: subseq[str]):
+    def __init__(self, leaf_label: int, edge_label: SubSeq[str]):
         super().__init__(edge_label)
         self.leaf_label = leaf_label
 
@@ -96,7 +96,7 @@ class Leaf(Node):
         res.append(f'{id(self.parent)} -> {id(self)}[label="{edge_label}"]')
         return res
 
-    def __iter__(self) -> Iterator[int]:
+    def __iter__(self) -> typing.Iterator[int]:
         yield self.leaf_label
 
     def __eq__(self, other: object) -> bool:
@@ -106,12 +106,12 @@ class Leaf(Node):
             self.leaf_label == other.leaf_label
 
 
-@dataclass
+@dataclasses.dataclass
 class SuffixTree:
     root: Inner
 
-    def search(self, p: str) -> Iterator[int]:
-        n, j, y = tree_search(self.root, subseq[str](p))
+    def search(self, p: str) -> typing.Iterator[int]:
+        n, j, y = tree_search(self.root, SubSeq[str](p))
         if j == len(y):
             # We search all the way through the last string,
             # so we have a match
@@ -120,7 +120,7 @@ class SuffixTree:
             return iter(())
 
     def __contains__(self, p: str) -> bool:
-        _, j, y = tree_search(self.root, subseq[str](p))
+        _, j, y = tree_search(self.root, SubSeq[str](p))
         return j == len(y)
 
     def to_dot(self) -> str:
@@ -136,7 +136,8 @@ class SuffixTree:
 # SECTION Searching in a suffix tree
 
 
-def first_mismatch(x: Iterable[str], y: Iterable[str]) -> int:
+def first_mismatch(x: typing.Iterable[str],
+                   y: typing.Iterable[str]) -> int:
     """Returns how far along x and y we can match.
 Return index of first mismatch."""
     i = -1  # Handle special case with empty string
@@ -147,13 +148,13 @@ Return index of first mismatch."""
 
 
 # FIXME: I think this would be nicer with classes and pattern matching...
-SearchResult = tuple[Node, int, subseq[str]]
+SearchResult = tuple[Node, int, SubSeq[str]]
 # This is the node we last searched on, how far down
 # the edge we got (or zero if we couldn't leave the
 # node), and the last string we searched.
 
 
-def tree_search(n: Inner, p: subseq[str]) -> SearchResult:
+def tree_search(n: Inner, p: SubSeq[str]) -> SearchResult:
     # In the special case that p is empty (which we guarantee
     # that it isn't after this point), we match the entire
     # local tree, so we have to report that.
@@ -174,7 +175,7 @@ def tree_search(n: Inner, p: subseq[str]) -> SearchResult:
         n, p = child, p[i:]
 
 
-def tree_fastsearch(n: Inner, p: subseq[str]) -> SearchResult:
+def tree_fastsearch(n: Inner, p: SubSeq[str]) -> SearchResult:
     # In the special case that x is empty (which we guarantee
     # that it isn't after this point), we match the entire
     # local tree, so we have to report that.
@@ -196,7 +197,7 @@ def tree_fastsearch(n: Inner, p: subseq[str]) -> SearchResult:
     assert False, "We should never get here"
 
 
-def break_edge(leaf_label: int, n: Node, k: int, z: subseq[str]) -> Leaf:
+def break_edge(leaf_label: int, n: Node, k: int, z: SubSeq[str]) -> Leaf:
     """Break the edge to node `n`, `k` characters down, adding a new leaf
 with label `label` with edge `z`. Returns the new leaf."""
 
@@ -215,17 +216,15 @@ with label `label` with edge `z`. Returns the new leaf."""
 
 # SECTION Naive construction algorithm
 
-def naive_st_construction(s: str, include_sentinel: bool = True) -> SuffixTree:
+def naive_st_construction(s: str) -> SuffixTree:
     """Construct a suffix tree by searching from the root
 down to the insertion point for each suffix in `s`."""
 
-    x = subseq[str](s + '\x00')  # Adding sentinel to the string.
+    x = SubSeq[str](s + '\x00')  # Adding sentinel to the string.
     root = Inner(x[0:0])
 
     # Insert suffixes one at a time...
-    # The expression (not include_sentinel) removes the
-    # last suffix (the sentinel) if we do not want it
-    for i in range(len(x) - (not include_sentinel)):
+    for i in range(len(x)):
         n, j, y = tree_search(root, x[i:])
         if j == 0:
             # We couldn't get out of the node
@@ -246,22 +245,18 @@ down to the insertion point for each suffix in `s`."""
 # SECTION McCreights construction algorithm
 
 
-def mccreight_st_construction(s: str,
-                              include_sentinel: bool = True
-                              ) -> SuffixTree:
+def mccreight_st_construction(s: str) -> SuffixTree:
     """Construct a suffix tree by searching from the root
 down to the insertion point for each suffix in `s`."""
 
-    x = subseq[str](s + '\x00')  # Adding sentinel to the string
+    x = SubSeq[str](s + '\x00')  # Adding sentinel to the string
     root = Inner(x[0:0])
     v = Leaf(0, x)
     root.add_children(v)
     root.suffix_link = root
 
     # Insert suffixes one at a time...
-    # The expression (not include_sentinel) removes the
-    # last suffix (the sentinel) if we do not want it
-    for i in range(1, len(x) - (not include_sentinel)):
+    for i in range(1, len(x)):
         # Idea: split x[i:] into a+y+z where we jump
         # past a, then fast-scan through y, and then
         # slow-scan through z.
@@ -351,7 +346,7 @@ def lcp_st_construction(s: str, sa: list[int], lcp: list[int]) -> SuffixTree:
     # Add the sentinel character. We always need it.
     # The sa/lcp arrays determine if it is included in the
     # topology
-    x = subseq[str](s + '\x00')
+    x = SubSeq[str](s + '\x00')
 
     root = Inner(x[0:0])
     v = Leaf(sa[0], x[sa[0]:])

@@ -1,13 +1,13 @@
-from pystr.subseq import subseq, msubseq, substr, isseq, misseq
+from pystr import subseq
 
 
 def test_substr() -> None:
     underlying = "mississippi"
-    assert substr(underlying) == underlying
-    assert substr(underlying, 1) == underlying[1:]
-    assert substr(underlying, 1, 5) == underlying[1:5]
+    assert subseq.SubSeq[str](underlying) == underlying
+    assert subseq.SubSeq[str](underlying, 1) == underlying[1:]
+    assert subseq.SubSeq[str](underlying, 1, 5) == underlying[1:5]
 
-    x: substr = substr(underlying, 1, 6)
+    x: subseq.SubSeq[str] = subseq.SubSeq[str](underlying, 1, 6)
     assert x == underlying[1:6]
     for i, a in enumerate(x):
         assert underlying[1 + i] == a
@@ -19,18 +19,18 @@ def test_substr() -> None:
         assert x[i] == y[i]
         assert x[i:] == y[i:]
 
-    z: substr = substr(underlying)
+    z: subseq.SubSeq[str] = subseq.SubSeq[str](underlying)
     assert z[:] == underlying
     assert z[:] == z
 
 
 def test_int_subseq() -> None:
     underlying = [2, 1, 4, 4, 1, 4, 4, 1, 3, 3, 1, 0]
-    assert subseq(underlying) == underlying
-    assert subseq(underlying, 1) == underlying[1:]
-    assert subseq(underlying, 1, 5) == underlying[1:5]
+    assert subseq.SubSeq[int](underlying) == underlying
+    assert subseq.SubSeq[int](underlying, 1) == underlying[1:]
+    assert subseq.SubSeq[int](underlying, 1, 5) == underlying[1:5]
 
-    x: subseq[int] = subseq(underlying, 1, 6)
+    x: subseq.SubSeq[int] = subseq.SubSeq[int](underlying, 1, 6)
     assert x == underlying[1:6]
     for i, a in enumerate(x):
         assert underlying[1 + i] == a
@@ -41,14 +41,14 @@ def test_int_subseq() -> None:
         assert x[i] == y[i]
         assert x[i:] == y[i:]
 
-    z: subseq[int] = subseq(underlying)
+    z: subseq.SubSeq[int] = subseq.SubSeq[int](underlying)
     assert z[:] == underlying
     assert z[:] == z
 
 
 def test_mutable() -> None:
     underlying = [2, 1, 4, 4, 1, 4, 4, 1, 3, 3, 1, 0]
-    x: msubseq[int] = msubseq(underlying, 1)
+    x: subseq.MSubSeq[int] = subseq.MSubSeq[int](underlying, 1)
     x[1] = 42
     assert x[1] == 42
     y = x[2:]
@@ -59,7 +59,9 @@ def test_mutable() -> None:
 
 
 def test_compare() -> None:
-    x, y, z = isseq([1, 2, 3]), isseq([1, 2, 3, 4]), isseq([1, 3])
+    x = subseq.SubSeq[int]([1, 2, 3])
+    y = subseq.SubSeq[int]([1, 2, 3, 4])
+    z = subseq.SubSeq[int]([1, 3])
     assert x < y and y > x and not y < x
     assert x < z and z > x and not z < x
     assert y < z and z > y and not z < y
@@ -67,7 +69,7 @@ def test_compare() -> None:
 
 def test_assigments() -> None:
     x = [1, 2, 3, 4]
-    ss: misseq = misseq(x)
+    ss: subseq.MSubSeq[int] = subseq.MSubSeq[int](x)
     assert x == ss
     ss[:] = -1
     assert ss == [-1, -1, -1, -1]

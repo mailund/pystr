@@ -1,8 +1,9 @@
 import argparse
 from typing import Callable, Sequence
 
-from pystr.skew import bucket_sort, u_idx, safe_idx, \
+from pystr.skew_common import bucket_sort, safe_idx, \
     SkewTriplet, SkewTripletDict, triplet
+from pystr.skew_central import u_idx
 
 from pystr_vis import colour, Table, ColSpec, L, R, Align
 from pystr_vis.cols import Colour, \

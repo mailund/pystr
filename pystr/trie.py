@@ -1,26 +1,30 @@
 from __future__ import annotations
-from dataclasses import dataclass, field
-from collections import defaultdict, deque
-from typing import Optional, TypeVar, NamedTuple
-from typing import cast
-from .subseq import subseq
+import dataclasses
+import collections
+import typing
+
+from .subseq import SubSeq
 
 
-T = TypeVar("T")
-S = TypeVar("S")
-LS = NamedTuple('LS', [('label', int), ('x', subseq[str])])
+T = typing.TypeVar("T")
+S = typing.TypeVar("S")
+LS = typing.NamedTuple('LS', [('label', int), ('x', SubSeq[str])])
 
 
-@dataclass(eq=False)
+@dataclasses.dataclass(eq=False)
 class TrieNode:
-    label: Optional[int] = None
-    children: dict[str, TrieNode] = field(default_factory=dict)
+    label: typing.Optional[int] = None
+    children: dict[str, TrieNode] = \
+        dataclasses.field(default_factory=dict)
 
     # These are only needed for the Aho-Corasick algorithm, not for
     # basic use of a trie.
-    parent: Optional[TrieNode] = field(default=None, repr=False)
-    suffix_link: Optional[TrieNode] = field(default=None, repr=False)
-    out_list: Optional[TrieNode] = field(default=None, repr=False)
+    parent: typing.Optional[TrieNode] = \
+        dataclasses.field(default=None, repr=False)
+    suffix_link: typing.Optional[TrieNode] = \
+        dataclasses.field(default=None, repr=False)
+    out_list: typing.Optional[TrieNode] = \
+        dataclasses.field(default=None, repr=False)
 
     @property
     def is_root(self) -> bool:
@@ -65,9 +69,10 @@ class TrieNode:
             all(self[k] == other[k] for k in self.children)
 
 
-@dataclass(eq=False)
+@dataclasses.dataclass(eq=False)
 class Trie:
-    root: TrieNode = field(default_factory=TrieNode)
+    root: TrieNode = \
+        dataclasses.field(default_factory=TrieNode)
 
     def insert(self, x: str, label: int) -> None:
         n = self.root
@@ -105,7 +110,7 @@ def depth_first_trie(*strings: str) -> Trie:
 
     # If we want the suffix link and out list as well,
     # we need a breadth first traversal for that.
-    queue = deque[TrieNode]([trie.root])
+    queue = collections.deque[TrieNode]([trie.root])
     while queue:
         n = queue.popleft()
         for out_edge, child in n.children.items():
@@ -119,13 +124,13 @@ def set_suffix_link(node: TrieNode, in_edge: str) -> None:
     # We get the suffix link by running up the links from the
     # parent and trying to extend them. Casts are for the type
     # checker, telling them that nodes are not None
-    parent = cast(TrieNode, node.parent)
+    parent = typing.cast(TrieNode, node.parent)
     if parent.is_root:
         node.suffix_link = parent
     else:
-        slink = cast(TrieNode, parent.suffix_link)
+        slink = typing.cast(TrieNode, parent.suffix_link)
         while in_edge not in slink and not slink.is_root:
-            slink = cast(TrieNode, slink.suffix_link)
+            slink = typing.cast(TrieNode, slink.suffix_link)
         # If we can extend, we do. Otherwise, we will
         # be in the root, and then that is what we want.
         node.suffix_link = slink[in_edge] if in_edge in slink else slink
@@ -141,12 +146,12 @@ def set_suffix_link(node: TrieNode, in_edge: str) -> None:
 
 
 def breadth_first_trie(*strings: str) -> Trie:
-    labelled = list(LS(i, subseq[str](x)) for i, x in enumerate(strings))
+    labelled = list(LS(i, SubSeq[str](x)) for i, x in enumerate(strings))
 
     root_lab, root_groups = group_strings(labelled)
     root = TrieNode(label=root_lab)
 
-    queue = deque[tuple[TrieNode, dict[str, list[LS]]]]()
+    queue = collections.deque[tuple[TrieNode, dict[str, list[LS]]]]()
     queue.append((root, root_groups))
 
     while queue:
@@ -160,8 +165,9 @@ def breadth_first_trie(*strings: str) -> Trie:
     return Trie(root)
 
 
-def group_strings(strings: list[LS]) -> \
-        tuple[Optional[int], dict[str, list[LS]]]:
+def group_strings(
+    strings: list[LS]
+) -> tuple[typing.Optional[int], dict[str, list[LS]]]:
     """Split input into groups according to first character.
 If there is an empty string in the input, get its label.
 Returns the label (or None) and the groups in a dict."""
@@ -173,7 +179,7 @@ Returns the label (or None) and the groups in a dict."""
     assert(len(empty) <= 1)
     label = empty[0].label if len(empty) == 1 else None
 
-    out_groups = defaultdict[str, list[LS]](list)
+    out_groups = collections.defaultdict[str, list[LS]](list)
     for lab, x in non_empty:
         # In the groups, slice off the first character for
         # the next level... (subseq makes this O(1)).

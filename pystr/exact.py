@@ -1,11 +1,12 @@
 # Simple exact matching algorithms
-from typing import Iterator
-from collections import defaultdict
+import typing
+import collections
+
 from .border_array import strict_border_array
 from .alphabet import String
 
 
-def naive(x: str, p: str) -> Iterator[int]:
+def naive(x: str, p: str) -> typing.Iterator[int]:
     for i in range(len(x) - len(p) + 1):
         for j in range(len(p)):
             if x[i + j] != p[j]:
@@ -14,7 +15,7 @@ def naive(x: str, p: str) -> Iterator[int]:
             yield i
 
 
-def border(x: str, p: str) -> Iterator[int]:
+def border(x: str, p: str) -> typing.Iterator[int]:
     # Doesn't handle empty patterns directly...
     # (There would be several special cases to handle)
     if not p:
@@ -36,7 +37,7 @@ def border(x: str, p: str) -> Iterator[int]:
             b = ba[b - 1]
 
 
-def kmp(x: str, p: str) -> Iterator[int]:
+def kmp(x: str, p: str) -> typing.Iterator[int]:
     ba = strict_border_array(p)
     i, j = 0, 0
     while i < len(x):
@@ -59,13 +60,13 @@ def kmp(x: str, p: str) -> Iterator[int]:
         yield len(x)
 
 
-def bmh(x: str, p: str) -> Iterator[int]:
+def bmh(x: str, p: str) -> typing.Iterator[int]:
     # Can't handle empty strings directly
     if not p:
         yield from range(len(x) + 1)
         return
 
-    jump: dict[str, int] = defaultdict(lambda: len(p))
+    jump: dict[str, int] = collections.defaultdict(lambda: len(p))
     for j, a in enumerate(p[:-1]):  # skip last index!
         jump[a] = len(p) - j - 1
 
@@ -80,7 +81,7 @@ def bmh(x: str, p: str) -> Iterator[int]:
         i += jump[x[i + len(p) - 1]]
 
 
-def bmh_b(x: bytes, p: bytes) -> Iterator[int]:
+def bmh_b(x: bytes, p: bytes) -> typing.Iterator[int]:
     # Can't handle empty strings directly
     if not p:
         yield from range(len(x) + 1)
@@ -101,20 +102,21 @@ def bmh_b(x: bytes, p: bytes) -> Iterator[int]:
         i += jump[x[i + len(p) - 1]]
 
 
-def bmh_alpha(x: String, p: String) -> Iterator[int]:
+def bmh_alpha(x: String, p: String) -> typing.Iterator[int]:
     if x.alpha != p.alpha:
-        # We *could* try to match if p's alphabet is included
-        # in x's, but we are just looking at educational code, so
-        # fuck it
         return
 
     # Can't handle empty strings directly
-    if not p:
-        yield from range(len(x) + 1)
+    if len(p) == 1:  # only sentinel
+        yield from range(len(x))
         return
 
+    # Don't include the sentinel in the lengths here
+    x = x[:-1]
+    p = p[:-1]
+
     jump: list[int] = [len(p)] * len(x.alpha)
-    for j, a in enumerate(p[:-1]):  # skip last index!
+    for j, a in enumerate(p[:-1]):  # skip sentinel and last index!
         jump[a] = len(p) - j - 1
 
     i, j = 0, 0

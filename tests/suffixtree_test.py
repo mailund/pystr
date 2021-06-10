@@ -14,13 +14,11 @@ from helpers import pick_random_patterns, pick_random_prefix,\
 from helpers import check_sorted, check_matches, check_equal_matches
 from helpers import _Test, collect_tests
 
-STConstructor = Callable[[str, bool], SuffixTree]
+STConstructor = Callable[[str], SuffixTree]
 
 
-def lcp_construction_wrapper(x: str,
-                             include_sentinel: bool = False
-                             ) -> SuffixTree:
-    sa = sais(x, include_sentinel=include_sentinel)
+def lcp_construction_wrapper(x: str) -> SuffixTree:
+    sa = sais(x)
     lcp = lcp_from_sa(x, sa)
     return lcp_st_construction(x, sa, lcp)
 
@@ -38,7 +36,7 @@ def strip_algo_name(name: str) -> str:
 
 def check_to_dot(x: str, algo: STConstructor) -> _Test:
     def test(_: object) -> None:
-        algo(x, False).to_dot()
+        algo(x).to_dot()
     return test
 
 
@@ -53,16 +51,13 @@ def check_st_sorted(algo: STConstructor) -> _Test:
         for _ in range(10):
             x = random_string(20, alpha="abc")
             # using the leaf iterator
-            check_sorted(x, list(algo(x, False).root))
-            check_sorted(x, list(algo(x, True).root))
+            check_sorted(x, list(algo(x).root))
         for f in range(5, 10):
             x = fibonacci_string(f)
-            check_sorted(x, list(algo(x, False).root))
-            check_sorted(x, list(algo(x, True).root))
+            check_sorted(x, list(algo(x).root))
         for n in range(5, 50):
             x = 'a' * n
-            check_sorted(x, list(algo(x, False).root))
-            check_sorted(x, list(algo(x, True).root))
+            check_sorted(x, list(algo(x).root))
     return test
 
 
@@ -76,16 +71,13 @@ def check_equal_mccreight(algo: STConstructor) -> _Test:
     def test(_: object) -> None:
         for _ in range(10):
             x = random_string(20, alpha="abc")
-            assert mccreight_st_construction(x, False) == algo(x, False)
-            assert mccreight_st_construction(x, True) == algo(x, True)
+            assert mccreight_st_construction(x) == algo(x)
         for f in range(5, 10):
             x = fibonacci_string(f)
-            assert mccreight_st_construction(x, False) == algo(x, False)
-            assert mccreight_st_construction(x, True) == algo(x, True)
+            assert mccreight_st_construction(x) == algo(x)
         for n in range(5, 50):
             x = 'a' * n
-            assert mccreight_st_construction(x, False) == algo(x, False)
-            assert mccreight_st_construction(x, True) == algo(x, True)
+            assert mccreight_st_construction(x) == algo(x)
     return test
 
 
@@ -97,7 +89,7 @@ TestEqualMcCreight = collect_tests(
 
 def check_occurrences(algo: STConstructor) -> _Test:
     def st_search(x: str, p: str) -> Iterator[int]:
-        return algo(x, True).search(p)
+        return algo(x).search(p)
 
     def test(_: object) -> None:
         for _ in range(10):
@@ -121,9 +113,9 @@ TestMatches = collect_tests(
 
 def check_against_bmh(algo: STConstructor) -> _Test:
     def st_search(x: str, p: str) -> Iterator[int]:
-        print(algo(x, True).search(p))
-        print(list(algo(x, True).search(p)))
-        return algo(x, True).search(p)
+        print(algo(x).search(p))
+        print(list(algo(x).search(p)))
+        return algo(x).search(p)
 
     def test(_: object) -> None:
         for _ in range(10):

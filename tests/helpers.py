@@ -1,7 +1,9 @@
 import random
 import string
 from collections.abc import Iterable, Iterator, Callable
-from pystr.subseq import substr
+from pystr.subseq import SubSeq
+
+substr = SubSeq[str]
 
 # I'm not sure about the prototype here. I think I want
 # to allow any number of paramters, if pytest can add

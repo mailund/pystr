@@ -1,14 +1,15 @@
-from typing import Optional, Iterable, Callable, TypeVar
-from itertools import count
-from .subseq import subseq, msubseq
+import typing
+import itertools
+
+from .subseq import SubSeq, MSubSeq
 from .bv import BitVector
 from .alphabet import String
 
-T = TypeVar('T')
+T = typing.TypeVar('T')
 UNDEFINED = -1  # Undefined val in SA
 
 
-def classify_SL(is_S: BitVector, x: subseq[int]) -> None:
+def classify_SL(is_S: BitVector, x: SubSeq[int]) -> None:
     last = len(x) - 1
     is_S[last] = True
     for i in reversed(range(last)):
@@ -22,12 +23,12 @@ def is_LMS(is_S: BitVector, i: int) -> bool:
 class Buckets:
     buckets: list[int]
 
-    def __init__(self, x: subseq[int], asize: int):
+    def __init__(self, x: SubSeq[int], asize: int):
         self.buckets = [0] * asize
         for a in x:
             self.buckets[a] += 1
 
-    def calc_fronts(self) -> Callable[[int], int]:
+    def calc_fronts(self) -> typing.Callable[[int], int]:
         fronts = [0] * len(self.buckets)
         s = 0
         for i, b in enumerate(self.buckets):
@@ -40,7 +41,7 @@ class Buckets:
 
         return next_bucket
 
-    def calc_ends(self) -> Callable[[int], int]:
+    def calc_ends(self) -> typing.Callable[[int], int]:
         ends = [0] * len(self.buckets)
         s = 0
         for i, b in enumerate(self.buckets):
@@ -54,7 +55,7 @@ class Buckets:
         return next_bucket
 
 
-def bucket_LMS(x: subseq[int], sa: msubseq[int],
+def bucket_LMS(x: SubSeq[int], sa: MSubSeq[int],
                buckets: Buckets, is_S: BitVector
                ) -> None:
     next_end = buckets.calc_ends()
@@ -64,7 +65,7 @@ def bucket_LMS(x: subseq[int], sa: msubseq[int],
             sa[next_end(x[i])] = i
 
 
-def induce_L(x: subseq[int], sa: msubseq[int],
+def induce_L(x: SubSeq[int], sa: MSubSeq[int],
              buckets: Buckets, is_S: BitVector
              ) -> None:
     next_front = buckets.calc_fronts()
@@ -77,7 +78,7 @@ def induce_L(x: subseq[int], sa: msubseq[int],
         sa[next_front(x[j])] = j
 
 
-def induce_S(x: subseq[int], sa: msubseq[int],
+def induce_S(x: SubSeq[int], sa: MSubSeq[int],
              buckets: Buckets, is_S: BitVector
              ) -> None:
     next_end = buckets.calc_ends()
@@ -90,12 +91,12 @@ def induce_S(x: subseq[int], sa: msubseq[int],
         sa[next_end(x[j])] = j
 
 
-def equal_LMS(x: subseq[int], is_S: BitVector, i: int, j: int) -> bool:
+def equal_LMS(x: SubSeq[int], is_S: BitVector, i: int, j: int) -> bool:
     if i == j:
         # This happens as a special case in the beginning of placing them.
         return True
 
-    for k in count():  # k goes from 0 to infinity
+    for k in itertools.count():  # k goes from 0 to infinity
         iLMS = is_LMS(is_S, i + k)
         jLMS = is_LMS(is_S, j + k)
         if k > 0 and iLMS and jLMS:
@@ -108,9 +109,9 @@ def equal_LMS(x: subseq[int], is_S: BitVector, i: int, j: int) -> bool:
     assert False, "We only leave the loop with a return."  # pragma: no cover
 
 
-def compact_seq(x: msubseq[T],
-                p: Callable[[T], bool],
-                y: Optional[Iterable[T]] = None) -> int:
+def compact_seq(x: MSubSeq[T],
+                p: typing.Callable[[T], bool],
+                y: typing.Optional[typing.Iterable[T]] = None) -> int:
     """Compacts elements in y satisfying p into x.
 If y is None, do it from x to x."""
     y = y if y is not None else x
@@ -122,8 +123,8 @@ If y is None, do it from x to x."""
     return k
 
 
-def reduce_LMS(x: subseq[int], sa: msubseq[int], is_S: BitVector) \
-        -> tuple[msubseq[int], msubseq[int], int]:
+def reduce_LMS(x: SubSeq[int], sa: MSubSeq[int], is_S: BitVector) \
+        -> tuple[MSubSeq[int], MSubSeq[int], int]:
     # Compact all the LMS indices in the first
     # part of the suffix array...
     k = compact_seq(sa, lambda j: is_LMS(is_S, j))
@@ -145,8 +146,8 @@ def reduce_LMS(x: subseq[int], sa: msubseq[int], is_S: BitVector) \
     return buffer[:k], compact, letter + 1
 
 
-def reverse_reduction(x: subseq[int], sa: msubseq[int],
-                      offsets: msubseq[int], red_sa: msubseq[int],
+def reverse_reduction(x: SubSeq[int], sa: MSubSeq[int],
+                      offsets: MSubSeq[int], red_sa: MSubSeq[int],
                       buckets: Buckets,
                       is_S: BitVector
                       ) -> None:
@@ -169,8 +170,8 @@ def reverse_reduction(x: subseq[int], sa: msubseq[int],
         sa[next_end(x[j])] = j
 
 
-def sais_rec(x: subseq[int],
-             sa: msubseq[int],
+def sais_rec(x: SubSeq[int],
+             sa: MSubSeq[int],
              asize: int,
              is_S: BitVector
              ) -> None:
@@ -200,10 +201,9 @@ def sais_rec(x: subseq[int],
         induce_S(x, sa, buckets, is_S)
 
 
-def sais(x: str, include_sentinel: bool = True) -> list[int]:
-    s = String(x, append_sentinel=True)
-    asize = len(s.alpha)
+def sais(x: str) -> list[int]:
+    s = String(x)
     sa = [0] * len(s)
     is_S = BitVector(size=len(s))
-    sais_rec(s, msubseq[int](sa), asize, is_S)
-    return sa if include_sentinel else sa[1:]
+    sais_rec(s, MSubSeq[int](sa), len(s.alpha), is_S)
+    return sa

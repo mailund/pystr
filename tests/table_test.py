@@ -34,7 +34,7 @@ def rotation_table(x: str, sa: list[int]) -> Table:
 def test_bwt() -> None:
     k, a = 3, "s"
     x = "mississippi"
-    sa = sais(x, include_sentinel=True)
+    sa = sais(x)
     ctab = c_table(x)
     otab = o_table(x, sa, ctab.keys())
 

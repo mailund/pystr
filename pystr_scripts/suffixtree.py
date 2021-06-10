@@ -15,7 +15,7 @@ STConstructor = Callable[[str], SuffixTree]
 
 
 def lcp_construction_wrapper(x: str) -> SuffixTree:
-    sa = sais(x, include_sentinel=True)
+    sa = sais(x)
     lcp = lcp_from_sa(x, sa)
     return lcp_st_construction(x, sa, lcp)
 

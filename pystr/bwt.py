@@ -1,5 +1,5 @@
-from collections import Counter
-from collections.abc import Iterable, Iterator
+import collections
+import typing
 from .sais import sais  # For the search function
 
 CTAB = dict[str, int]
@@ -12,7 +12,7 @@ def bw_transform(x: str, sa: list[int]) -> str:
 
 
 def c_table(x: str) -> CTAB:
-    counts = Counter(x)
+    counts = collections.Counter(x)
     res, acc = {}, 1  # Start at one to skip sentinel
     for char in sorted(counts):
         res[char] = acc
@@ -20,7 +20,10 @@ def c_table(x: str) -> CTAB:
     return res
 
 
-def o_table(x: str, sa: list[int], alpha: Iterable[str]) -> OTAB:
+def o_table(x: str,
+            sa: list[int],
+            alpha: typing.Iterable[str]
+            ) -> OTAB:
     bwt = bw_transform(x, sa)
     res = {char: [0] * (len(bwt) + 1) for char in alpha}
     for z in alpha:
@@ -30,11 +33,7 @@ def o_table(x: str, sa: list[int], alpha: Iterable[str]) -> OTAB:
 
 
 def bwt_preprocess(x: str) -> tuple[list[int], CTAB, OTAB]:
-    # The BWT search needs to include the sentinel
-    # since it will count the character at the end
-    # of x incorrectly otherwise (we need it at
-    # first line, $x, where we need to count x[-1]).
-    sa = sais(x, include_sentinel=True)
+    sa = sais(x)
     ctab = c_table(x)
     otab = o_table(x, sa, ctab.keys())
     return sa, ctab, otab
@@ -54,7 +53,7 @@ def bwt_search_tbls(x: str, p: str,
     return L, R
 
 
-def bwt_search(x: str, p: str) -> Iterator[int]:
+def bwt_search(x: str, p: str) -> typing.Iterator[int]:
     sa, ctab, otab = bwt_preprocess(x)
     L, R = bwt_search_tbls(x, p, ctab, otab)
     assert L <= R, "R should never be smaller than L."
