@@ -30,9 +30,9 @@ def bmh_b(x: str, p: str) -> Iterator[int]:
 
 # wrapper
 def bmh_alpha(x: str, p: str) -> Iterator[int]:
-    xs = String(x)
+    xs = String(x, add_sentinel=False)
     try:
-        ps = String(p, alpha=xs.alpha)
+        ps = String(p, alpha=xs.alpha, add_sentinel=False)
         yield from _bmh_alpha(xs, ps)
     except KeyError:
         # We have a symbol in p that doesn't appear
@@ -72,27 +72,27 @@ TestEmptyPatterns = collect_tests(
 def check_exact_matching(algo: Algo) -> _Test:
     def test(_: object) -> None:
         for _ in range(10):
-            x = random_string(100, alpha="abcd")
-            for _ in range(10):
+            x = random_string(20, alpha="abcd")
+            for _ in range(5):
                 # allow characters not in x
                 p = random_string(10, alpha="abef")
                 check_matches(x, p, algo(x, p))
-            for p in pick_random_patterns(x, 10):
+            for p in pick_random_patterns(x, 5):
                 check_matches(x, p, algo(x, p))
-            for p in pick_random_patterns_len(x, 10, 3):
+            for p in pick_random_patterns_len(x, 5, 3):
                 check_matches(x, p, algo(x, p))
-            for p in pick_random_prefix(x, 10):
+            for p in pick_random_prefix(x, 5):
                 check_matches(x, p, algo(x, p))
-            for p in pick_random_suffix(x, 10):
+            for p in pick_random_suffix(x, 5):
                 check_matches(x, p, algo(x, p))
 
-        for n in range(10, 15):
+        for n in range(5, 10):
             x = fibonacci_string(n)
-            for p in pick_random_patterns(x, 10):
+            for p in pick_random_patterns(x, 5):
                 check_matches(x, p, algo(x, p))
-            for p in pick_random_prefix(x, 10):
+            for p in pick_random_prefix(x, 5):
                 check_matches(x, p, algo(x, p))
-            for p in pick_random_suffix(x, 10):
+            for p in pick_random_suffix(x, 5):
                 check_matches(x, p, algo(x, p))
 
     return test
@@ -107,14 +107,14 @@ TestExactMatching = collect_tests(
 def check_against_naive(algo: Algo) -> _Test:
     def test(_: object) -> None:
         for _ in range(10):
-            x = random_string(50, alpha="abcd")
-            for p in pick_random_patterns(x, 10):
+            x = random_string(20, alpha="abc")
+            for p in pick_random_patterns(x, 5):
                 check_equal_matches(x, p, naive, algo)
-            for p in pick_random_patterns_len(x, 10, 3):
+            for p in pick_random_patterns_len(x, 5, 3):
                 check_equal_matches(x, p, naive, algo)
-            for p in pick_random_prefix(x, 10):
+            for p in pick_random_prefix(x, 5):
                 check_equal_matches(x, p, naive, algo)
-            for p in pick_random_suffix(x, 10):
+            for p in pick_random_suffix(x, 5):
                 check_equal_matches(x, p, naive, algo)
     return test
 

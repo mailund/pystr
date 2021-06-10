@@ -94,13 +94,13 @@ def check_occurrences(algo: STConstructor) -> _Test:
     def test(_: object) -> None:
         for _ in range(10):
             x = random_string(50, alpha="abcd")
-            for p in pick_random_patterns(x, 10):
+            for p in pick_random_patterns(x, 5):
                 check_matches(x, p, st_search(x, p))
-            for p in pick_random_patterns_len(x, 10, 3):
+            for p in pick_random_patterns_len(x, 5, 3):
                 check_matches(x, p, st_search(x, p))
-            for p in pick_random_prefix(x, 10):
+            for p in pick_random_prefix(x, 5):
                 check_matches(x, p, st_search(x, p))
-            for p in pick_random_suffix(x, 10):
+            for p in pick_random_suffix(x, 5):
                 check_matches(x, p, st_search(x, p))
     return test
 
@@ -120,13 +120,13 @@ def check_against_bmh(algo: STConstructor) -> _Test:
     def test(_: object) -> None:
         for _ in range(10):
             x = random_string(50, alpha="abcd")
-            for p in pick_random_patterns(x, 10):
+            for p in pick_random_patterns(x, 5):
                 check_equal_matches(x, p, bmh, st_search)
-            for p in pick_random_patterns_len(x, 10, 3):
+            for p in pick_random_patterns_len(x, 5, 3):
                 check_equal_matches(x, p, bmh, st_search)
-            for p in pick_random_prefix(x, 10):
+            for p in pick_random_prefix(x, 5):
                 check_equal_matches(x, p, bmh, st_search)
-            for p in pick_random_suffix(x, 10):
+            for p in pick_random_suffix(x, 5):
                 check_equal_matches(x, p, bmh, st_search)
     return test
 

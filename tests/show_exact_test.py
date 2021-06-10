@@ -12,7 +12,7 @@ from helpers import random_string, \
 
 def run_alg(mocker: MockerFixture, algo: str) -> None:
     for _ in range(10):
-        x = random_string(100, alpha="abcd")
+        x = random_string(20, alpha="abcd")
         for p in pick_random_patterns(x, 10):
             mocker.patch(
                 'argparse.ArgumentParser.parse_args',
@@ -22,7 +22,7 @@ def run_alg(mocker: MockerFixture, algo: str) -> None:
                     x=x, p=p)
             )
             exact.main()
-        for p in pick_random_patterns_len(x, 10, 3):
+        for p in pick_random_patterns_len(x, 5, 3):
             mocker.patch(
                 'argparse.ArgumentParser.parse_args',
                 return_value=argparse.Namespace(

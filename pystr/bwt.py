@@ -81,10 +81,7 @@ def preprocess(
 
     def search(p_: str) -> typing.Iterator[int]:
         try:
-            # Just use the alphabet's map. We don't
-            # want the sentinel appended to p, and
-            # we don't need to drag its alphabet around
-            p = x.alpha.map(p_)
+            p = String(p_, x.alpha, add_sentinel=False)
         except KeyError:
             return  # can't map, so no matches
 

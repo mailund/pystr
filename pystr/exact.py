@@ -102,22 +102,25 @@ def bmh_b(x: bytes, p: bytes) -> typing.Iterator[int]:
         i += jump[x[i + len(p) - 1]]
 
 
+# If p has the sentinel, it can only match the end of x.
+# The function assumes that you don't have sentinels you do not
+# want.
 def bmh_alpha(x: String, p: String) -> typing.Iterator[int]:
     if x.alpha != p.alpha:
         return
 
     # Can't handle empty strings directly
-    if len(p) == 1:  # only sentinel
-        yield from range(len(x))
+    if not p:
+        yield from range(len(x) + 1)
         return
 
-    # Don't include the sentinel in the lengths here
-    x = x[:-1]
-    p = p[:-1]
-
     jump: list[int] = [len(p)] * len(x.alpha)
-    for j, a in enumerate(p[:-1]):  # skip sentinel and last index!
-        jump[a] = len(p) - j - 1
+    # Strings don't alow slicing outside the valid range
+    # so the p[:-1] trick isn't safe if len(p) == 1.
+    # It's a design choice; I'd rather have errors than
+    # silent unexpected behaviour.
+    for j in range(len(p) - 1):
+        jump[p[j]] = len(p) - j - 1
 
     i, j = 0, 0
     while i < len(x) - len(p) + 1:

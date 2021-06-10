@@ -1,6 +1,6 @@
 import time
 from typing import Callable, Iterator
-from pystr.alphabet import String
+from pystr.alphabet_string import String
 from pystr.exact import bmh, bmh_b, bmh_alpha
 from helpers import random_string
 
