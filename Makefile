@@ -22,22 +22,13 @@ install:
 idot=dot -Tpng -Gbgcolor=black -Nfontcolor=white -Efontcolor=white -Efontsize=26 -Nfontsize=26 -Ncolor=white -Ecolor=white | kitty +kitten icat --align=left
 display:
 	@echo "Naive suffix tree construction, mississippi"
-	@cd tests && python3 -c "from suffixtree_test import *; test_naive_to_dot()" | $(idot)
+	@show-suffixtree --algo naive mississippi | $(idot)
 
 	@echo "McCreight suffix tree construction, mississippi"
-	@cd tests && python3 -c "from suffixtree_test import *; test_mccreight_to_dot()" | $(idot)
+	@show-suffixtree --algo mccreight mississippi | $(idot)
 
-	@echo "Simple trie (foo, bar, foobar, baz, barfoo) depth first"
-	@cd tests && python3 -c "from trie_test import *; test_simple_to_dot(depth_first_trie)" | $(idot)
-
-	@echo "Simple trie (foo, bar, foobar, baz, barfoo) breadth first"
-	@cd tests && python3 -c "from trie_test import *; test_simple_to_dot(breadth_first_trie)" | $(idot)
-
-	@echo "Simple trie (mississippi suffixes) depth first"
-	@cd tests && python3 -c "from trie_test import *; test_mississippi_suffixes(depth_first_trie)" | $(idot)
-
-	@echo "Simple trie (mississippi suffixes) breadth first"
-	@cd tests && python3 -c "from trie_test import *; test_mississippi_suffixes(breadth_first_trie)" | $(idot)
+	@echo "Simple (foo, bar, foobar, baz, barfoo) depth first"
+	@show-trie foo bar foobar baz barfoo | $(idot)
 
 
 .PHONY: init check test build install display
