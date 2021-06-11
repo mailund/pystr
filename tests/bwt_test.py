@@ -7,9 +7,6 @@ from pystr.sais import sais_string
 def test_bw_transform() -> None:
     x = "mississippi"
     b = bwt.bw_transform(x)
-    print(b)
-    y = bwt.bw_reverse(b)
-    print(y)
 
 
 def test_ctable() -> None:
