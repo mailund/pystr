@@ -1,9 +1,18 @@
 import typing
 
 from .alphabet_string import String
-from .sais import sais_string  # For the search function
+from .sais import sais, sais_string
 
 SENTINEL = 0
+
+
+def bwt(x: String, sa: list[int], i: int) -> int:
+    return SENTINEL if sa[i] == 0 else x[sa[i] - 1]
+
+
+def bw_transform(x: str) -> str:
+    sa = sais(x)
+    return "".join('$' if sa[i] == 0 else x[sa[i]-1] for i in range(len(x)+1))
 
 
 class CTable:
@@ -27,10 +36,6 @@ class CTable:
 
     def __getitem__(self, a: int) -> int:
         return self._cumsum[a]
-
-
-def bwt(x: String, sa: list[int], i: int) -> int:
-    return SENTINEL if sa[i] == 0 else x[sa[i] - 1]
 
 
 class OTable:
