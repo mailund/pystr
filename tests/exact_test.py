@@ -1,9 +1,8 @@
 from typing import Callable, Iterator
 
-from pystr.alphabet_string import String
 from pystr.exact import naive, border, kmp, bmh
 from pystr.exact import bmh_b as _bmh_b
-from pystr.exact import bmh_alpha as _bmh_alpha
+from pystr.exact import bmh_alpha
 from pystr.bwt import preprocess
 from pystr.suffixtree import mccreight_st_construction as mccreight
 
@@ -26,18 +25,6 @@ def bmh_b(x: str, p: str) -> Iterator[int]:
     x_b = x.encode('ascii')
     p_b = p.encode('ascii')
     yield from _bmh_b(x_b, p_b)
-
-
-# wrapper
-def bmh_alpha(x: str, p: str) -> Iterator[int]:
-    xs = String(x, add_sentinel=False)
-    try:
-        ps = String(p, alpha=xs.alpha, add_sentinel=False)
-        yield from _bmh_alpha(xs, ps)
-    except KeyError:
-        # We have a symbol in p that doesn't appear
-        # in x, so we report no matches
-        return
 
 
 # wrapper

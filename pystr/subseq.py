@@ -102,20 +102,7 @@ without copying them.
             assert idx.step is None, \
                 "Subsequences do not handle steps in slices"
             i, j = SubSeq._fix_index(self, idx.start, idx.stop)
-            new_subseq = self._new_object()
-            self.init_slice(new_subseq,
-                            self._x, self._i + i, self._i + j)
-            return new_subseq
-
-    def _new_object(self: S) -> S:
-        return self.__class__.__new__(self.__class__)
-
-    def init_slice(self: S, clone: S,
-                   x: typing.Sequence[T], start: int, stop: int
-                   ) -> None:
-        clone._x = x
-        clone._i = start
-        clone._j = stop
+            return self.__class__(self._x, self._i + i, self._i + j)
 
 
 class MSubSeq(SubSeq[T]):

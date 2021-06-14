@@ -1,27 +1,51 @@
 import typing
 
-from .alphabet_string import String
-from .sais import sais, sais_string
+from .subseq import SubSeq
+from .alphabet import Alphabet
+from .sais import sais_alphabet
 
 SENTINEL = 0
 
 
-def bwt(x: String, sa: list[int], i: int) -> int:
-    return SENTINEL if sa[i] == 0 else x[sa[i] - 1]
+def burrows_wheeler_transform_bytes(
+    x: bytearray, alpha: Alphabet
+) -> tuple[bytearray, list[int]]:
+    sa = sais_alphabet(SubSeq[int](x), alpha)
+    bwt = bytearray(x[j - 1] for j in sa)
+    return bwt, sa
 
 
-def bw_transform(x: str) -> str:
-    sa = sais(x)
-    return "".join('$' if sa[i] == 0 else x[sa[i]-1] for i in range(len(x)+1))
+def burrows_wheeler_transform(
+    x: str
+) -> tuple[bytearray, Alphabet, list[int]]:
+    x_, alpha = Alphabet.mapped_string_with_sentinel(x)
+    sa = sais_alphabet(SubSeq[int](x_), alpha)
+    bwt = bytearray(x_[j - 1] for j in sa)
+    return bwt, alpha, sa
+
+
+def reverse_burrows_wheeler_transform(
+    bwt: bytearray
+) -> bytearray:
+    asize = max(bwt) + 1
+    ctab = CTable(bwt, asize)
+    otab = OTable(bwt, asize)
+
+    i, x = 0, bytearray(len(bwt))
+    for j in reversed(range(len(x)-1)):
+        a = x[j] = bwt[i]
+        i = ctab[a] + otab[a, i]
+
+    return x
 
 
 class CTable:
     _cumsum: list[int]
 
-    def __init__(self, x: String):
-        # Count occurrences of characters in x
-        counts = [0] * len(x.alpha)
-        for a in x:
+    def __init__(self, bwt: bytearray, asize: int) -> None:
+        # Count occurrences of characters in bwt
+        counts = [0] * asize
+        for a in bwt:
             counts[a] += 1
         # Get the cumulative sum
         n = 0
@@ -41,13 +65,13 @@ class CTable:
 class OTable:
     _tbl: list[list[int]]
 
-    def __init__(self, x: String, sa: list[int]) -> None:
-        # We exclude $ from lookups, so there are this manh
+    def __init__(self, bwt: bytearray, asize: int) -> None:
+        # We exclude $ from lookups, so there are this many
         # rows.
-        nrow = len(x.alpha) - 1
-        # We need to index to len(x), but we don't represent first column
-        # so there are len(x) columns.
-        ncol = len(x)
+        nrow = asize - 1
+        # We need to index to len(bwt), but we don't represent first column
+        # so there are len(bwt) columns.
+        ncol = len(bwt)
 
         self._tbl = [[0] * ncol for _ in range(nrow)]
 
@@ -55,15 +79,14 @@ class OTable:
         # should hold a 1 in the row that has character
         # bwt[0]. The we b-1 because of the sentinel and
         # we use column 0 for the first real column.
-        b = bwt(x, sa, 0)
-        self._tbl[b-1][0] = 1
+        self._tbl[bwt[0]-1][0] = 1
 
         # We already have cols 0 and 1. Now we need to
-        # go up to (and including) len(x).
-        for i in range(2, len(x)+1):
-            b = bwt(x, sa, i-1)
+        # go up to (and including) len(bwt).
+        for i in range(2, len(bwt)+1):
+            b = bwt[i-1]
             # Characters, except for sentinel
-            for a in range(1, len(x.alpha)):
+            for a in range(1, asize):
                 self._tbl[a-1][i-1] = self._tbl[a-1][i-2] + (a == b)
 
     def __getitem__(self, idx: tuple[int, int]) -> int:
@@ -76,23 +99,22 @@ class OTable:
 
 
 def preprocess(
-    x_: str
+    x: str
 ) -> typing.Callable[[str], typing.Iterator[int]]:
 
-    x = String(x_)
-    sa = sais_string(x)
-    ctab = CTable(x)
-    otab = OTable(x, sa)
+    bwt, alpha, sa = burrows_wheeler_transform(x)
+    ctab = CTable(bwt, len(alpha))
+    otab = OTable(bwt, len(alpha))
 
     def search(p_: str) -> typing.Iterator[int]:
         try:
-            p = String(p_, x.alpha, add_sentinel=False)
+            p = alpha.map(p_)
         except KeyError:
             return  # can't map, so no matches
 
         # Find interval of matches...
         L = 0       # Starting at 0 (the sentinel) handles empty strings
-        R = len(x)  # len(x) include sentinel
+        R = len(bwt)  # len(bwt) include sentinel
         for a in reversed(p):
             L = ctab[a] + otab[a, L]
             R = ctab[a] + otab[a, R]

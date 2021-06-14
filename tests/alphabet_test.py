@@ -1,13 +1,13 @@
-from pystr.alphabet_string import String
+from pystr.alphabet import Alphabet
 
 
 def test_alphabet() -> None:
     for x in ["foo", "bar", "baz", "foobar", "bazfoo"]:
-        y = String(x)
+        y, alpha = Alphabet.mapped_string_with_sentinel(x)
         assert len(x) == len(y) - 1
-        assert len(y.alpha) == len(set(x)) + 1
-        assert len(y.alpha) == len(set(x)) + 1
-        assert str(y[:-1]) == x
+        assert len(alpha) == len(set(x)) + 1
+        assert len(alpha) == len(set(x)) + 1
+        assert alpha.revmap(y[:-1]) == x
 
 
 if __name__ == '__main__':

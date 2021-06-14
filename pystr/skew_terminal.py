@@ -7,7 +7,7 @@ Straightforward implementation of the skew/DC3 algorithm
 
 import typing
 
-from .alphabet_string import String
+from .alphabet import Alphabet
 from .skew_common import SkewTripletDict, \
     triplet, radix3, bucket_sort, merge
 
@@ -73,5 +73,9 @@ def skew_rec(x: typing.Sequence[int], asize: int) -> list[int]:
 
 def skew(x: str) -> list[int]:
     "Skew algorithm for a string."
-    y = String(x)
-    return skew_rec(y, len(y.alpha))
+    # When we use the central sentinel, we don't include the terminal
+    # sentinel, so we don't use a String. We have to explicitly add
+    # the first suffix, though, to match the interface of the other
+    # constructions.
+    x_, alpha = Alphabet.mapped_string_with_sentinel(x)
+    return skew_rec(x_, len(alpha))

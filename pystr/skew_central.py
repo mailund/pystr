@@ -81,5 +81,5 @@ def skew(x: str) -> list[int]:
     # sentinel, so we don't use a String. We have to explicitly add
     # the first suffix, though, to match the interface of the other
     # constructions.
-    alpha = Alphabet(x)
-    return [len(x)] + skew_rec(alpha.map(x), len(alpha))
+    x_, alpha = Alphabet.mapped_string(x)
+    return [len(x_)] + skew_rec(x_, len(alpha))

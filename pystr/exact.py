@@ -2,8 +2,8 @@
 import typing
 import collections
 
+from .alphabet import Alphabet
 from .border_array import strict_border_array
-from .alphabet_string import String
 
 
 def naive(x: str, p: str) -> typing.Iterator[int]:
@@ -105,8 +105,12 @@ def bmh_b(x: bytes, p: bytes) -> typing.Iterator[int]:
 # If p has the sentinel, it can only match the end of x.
 # The function assumes that you don't have sentinels you do not
 # want.
-def bmh_alpha(x: String, p: String) -> typing.Iterator[int]:
-    if x.alpha != p.alpha:
+def bmh_alpha(x_: str, p_: str) -> typing.Iterator[int]:
+    x, alpha = Alphabet.mapped_string(x_)
+    try:
+        p = alpha.map(p_)
+    except KeyError:
+        # If we can't map, we can't have a hit
         return
 
     # Can't handle empty strings directly
@@ -114,7 +118,7 @@ def bmh_alpha(x: String, p: String) -> typing.Iterator[int]:
         yield from range(len(x) + 1)
         return
 
-    jump: list[int] = [len(p)] * len(x.alpha)
+    jump: list[int] = [len(p)] * len(alpha)
     # Strings don't alow slicing outside the valid range
     # so the p[:-1] trick isn't safe if len(p) == 1.
     # It's a design choice; I'd rather have errors than

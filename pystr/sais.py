@@ -3,7 +3,7 @@ import itertools
 
 from .subseq import SubSeq, MSubSeq
 from .bv import BitVector
-from .alphabet_string import String
+from .alphabet import Alphabet
 
 T = typing.TypeVar('T')
 UNDEFINED = -1  # Undefined val in SA
@@ -201,12 +201,13 @@ def sais_rec(x: SubSeq[int],
         induce_S(x, sa, buckets, is_S)
 
 
-def sais_string(x: String) -> list[int]:
+def sais_alphabet(x: SubSeq[int], alpha: Alphabet) -> list[int]:
     sa = [0] * len(x)
     is_S = BitVector(size=len(x))
-    sais_rec(x, MSubSeq[int](sa), len(x.alpha), is_S)
+    sais_rec(x, MSubSeq[int](sa), len(alpha), is_S)
     return sa
 
 
 def sais(x: str) -> list[int]:
-    return sais_string(String(x))
+    x_, alpha = Alphabet.mapped_subseq_with_sentinel(x)
+    return sais_alphabet(x_, alpha)
