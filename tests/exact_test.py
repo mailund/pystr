@@ -3,7 +3,7 @@ from typing import Callable, Iterator
 from pystr.exact import naive, border, kmp, bmh
 from pystr.exact import bmh_b as _bmh_b
 from pystr.exact import bmh_alpha
-from pystr.bwt import preprocess
+from pystr.bwt import exact_preprocess
 from pystr.suffixtree import mccreight_st_construction as mccreight
 
 from helpers import random_string, fibonacci_string
@@ -29,7 +29,7 @@ def bmh_b(x: str, p: str) -> Iterator[int]:
 
 # wrapper
 def bwt_search(x: str, p: str) -> Iterator[int]:
-    yield from preprocess(x)(p)
+    yield from exact_preprocess(x)(p)
 
 
 ALGOS: list[Algo] = [

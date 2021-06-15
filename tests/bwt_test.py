@@ -40,10 +40,19 @@ def test_mississippi() -> None:
     sa = sais.sais(x)
     for j in sa:
         print(x[j:])
-    search = bwt.preprocess(x)
+    search = bwt.exact_preprocess(x)
     for p in ("si", "ppi", "ssi", "pip", "x", ""):
         matches = list(search(p))
-        print(matches)
+        print(p, matches)
         check_matches(x, p, matches)
     # the empty string should give us the entire x includng sentinel
     assert len(list(search(""))) == len(x) + 1
+
+
+def test_mississippi_aprox() -> None:
+    x = "mississippi"
+    search = bwt.approx_preprocess(x)
+    for p in ("si", "ppi", "ssi", "pip", "x"):
+        matches = list(search(p, 0))
+        print(p, matches)
+        check_matches(x, p, [idx for idx, _ in matches])

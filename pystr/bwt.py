@@ -3,6 +3,17 @@ import typing
 from .subseq import SubSeq
 from .alphabet import Alphabet
 from .sais import sais_alphabet
+from .approx import Edit, edits_to_cigar
+
+ExactSearchFunc = typing.Callable[
+    [str],
+    typing.Iterator[int]
+]
+ApproxSearchFunc = typing.Callable[
+    [str,
+     int],
+    typing.Iterator[tuple[int, str]]
+]
 
 
 def burrows_wheeler_transform_bytes(
@@ -90,12 +101,18 @@ class OTable:
         return 0 if i == 0 else self._tbl[a-1][i-1]
 
 
-def searcher_from_tables(
-    alpha: Alphabet,
-    sa: list[int],
-    ctab: CTable,
-    otab: OTable
-) -> typing.Callable[[str], typing.Iterator[int]]:
+def preprocess(x: str) -> tuple[Alphabet, list[int], CTable, OTable]:
+    bwt, alpha, sa = burrows_wheeler_transform(x)
+    ctab = CTable(bwt, len(alpha))
+    otab = OTable(bwt, len(alpha))
+    return alpha, sa, ctab, otab
+
+
+def exact_searcher_from_tables(
+        alpha: Alphabet,
+        sa: list[int],
+        ctab: CTable,
+        otab: OTable) -> ExactSearchFunc:
 
     def search(p_: str) -> typing.Iterator[int]:
         try:
@@ -118,10 +135,82 @@ def searcher_from_tables(
     return search
 
 
-def preprocess(
-    x: str
-) -> typing.Callable[[str], typing.Iterator[int]]:
-    bwt, alpha, sa = burrows_wheeler_transform(x)
-    ctab = CTable(bwt, len(alpha))
-    otab = OTable(bwt, len(alpha))
-    return searcher_from_tables(alpha, sa, ctab, otab)
+def exact_preprocess(x: str) -> ExactSearchFunc:
+    return exact_searcher_from_tables(*preprocess(x))
+
+
+def approx_searcher_from_tables(
+        alpha: Alphabet,
+        sa: list[int],
+        ctab: CTable,
+        otab: OTable) -> ApproxSearchFunc:
+
+    edit_operations: list[Edit] = []
+
+    def do_M(p: bytearray,
+             i: int, L: int, R: int,
+             edits: int) -> typing.Iterator[tuple[int, str]]:
+        edit_operations.append(Edit.M)
+        for a in range(1, len(alpha)):
+            next_L = ctab[a] + otab[a, L]
+            next_R = ctab[a] + otab[a, R]
+            if next_L >= next_R:
+                continue
+            yield from rec_search(p, i-1, next_L, next_R, edits-(a != p[i]))
+        edit_operations.pop()
+
+    def do_I(p: bytearray,
+             i: int, L: int, R: int,
+             edits: int) -> typing.Iterator[tuple[int, str]]:
+        edit_operations.append(Edit.I)
+        yield from rec_search(p, L, R, i - 1, edits - 1)
+        edit_operations.pop()
+
+    def do_D(p: bytearray,
+             i: int, L: int, R: int,
+             edits: int) -> typing.Iterator[tuple[int, str]]:
+        edit_operations.append(Edit.D)
+        for a in range(1, len(alpha)):
+            next_L = ctab[a] + otab[a, L]
+            next_R = ctab[a] + otab[a, R]
+            if next_L >= next_R:
+                continue
+            yield from rec_search(p, i, next_L, next_R, edits-1)
+        edit_operations.pop()
+
+    def rec_search(p: bytearray,
+                   i: int, L: int, R: int,
+                   edits: int
+                   ) -> typing.Iterator[tuple[int, str]]:
+
+        if edits < 0:
+            return
+
+        if i < 0:
+            cigar = edits_to_cigar(edit_operations)
+            for j in range(L, R):
+                yield sa[j], cigar
+            return
+
+        yield from do_M(p, i, L, R, edits)
+        yield from do_I(p, i, L, R, edits)
+        yield from do_D(p, i, L, R, edits)
+
+    def search(p_: str, edits: int) -> typing.Iterator[tuple[int, str]]:
+        assert p_, "We can't do approx search with an empty pattern!"
+        try:
+            p = alpha.map(p_)
+        except KeyError:
+            return  # can't map, so no matches
+
+        # Do the first operation in this function to avoid
+        # deletions in the beginning (end) of the search
+        L, R, i = 0, len(sa), len(p) - 1
+        yield from do_M(p, i, L, R, edits)
+        yield from do_I(p, i, L, R, edits)
+
+    return search
+
+
+def approx_preprocess(x: str) -> ApproxSearchFunc:
+    return approx_searcher_from_tables(*preprocess(x))
