@@ -4,8 +4,6 @@ from .subseq import SubSeq
 from .alphabet import Alphabet
 from .sais import sais_alphabet
 
-SENTINEL = 0
-
 
 def burrows_wheeler_transform_bytes(
     x: bytearray, alpha: Alphabet
@@ -55,9 +53,6 @@ class CTable:
         # That is all we need...
         self._cumsum = counts
 
-    def __str__(self) -> str:  # pragma: no cover
-        return f"CTable[{self._cumsum}]"
-
     def __getitem__(self, a: int) -> int:
         return self._cumsum[a]
 
@@ -92,19 +87,15 @@ class OTable:
     def __getitem__(self, idx: tuple[int, int]) -> int:
         a, i = idx
         assert a > 0, "Don't look up the sentinel"
-        if i == 0:
-            return 0  # column 0 is contant zero
-        else:
-            return self._tbl[a-1][i-1]
+        return 0 if i == 0 else self._tbl[a-1][i-1]
 
 
-def preprocess(
-    x: str
+def searcher_from_tables(
+    alpha: Alphabet,
+    sa: list[int],
+    ctab: CTable,
+    otab: OTable
 ) -> typing.Callable[[str], typing.Iterator[int]]:
-
-    bwt, alpha, sa = burrows_wheeler_transform(x)
-    ctab = CTable(bwt, len(alpha))
-    otab = OTable(bwt, len(alpha))
 
     def search(p_: str) -> typing.Iterator[int]:
         try:
@@ -113,8 +104,7 @@ def preprocess(
             return  # can't map, so no matches
 
         # Find interval of matches...
-        L = 0       # Starting at 0 (the sentinel) handles empty strings
-        R = len(bwt)  # len(bwt) include sentinel
+        L, R = 0, len(sa)
         for a in reversed(p):
             L = ctab[a] + otab[a, L]
             R = ctab[a] + otab[a, R]
@@ -126,3 +116,12 @@ def preprocess(
             yield sa[i]
 
     return search
+
+
+def preprocess(
+    x: str
+) -> typing.Callable[[str], typing.Iterator[int]]:
+    bwt, alpha, sa = burrows_wheeler_transform(x)
+    ctab = CTable(bwt, len(alpha))
+    otab = OTable(bwt, len(alpha))
+    return searcher_from_tables(alpha, sa, ctab, otab)
