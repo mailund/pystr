@@ -3,6 +3,7 @@ from helpers import check_matches
 from pystr import bwt
 from pystr import alphabet
 from pystr import sais
+from pystr import approx
 
 
 def test_bw_transform() -> None:
@@ -49,10 +50,23 @@ def test_mississippi() -> None:
     assert len(list(search(""))) == len(x) + 1
 
 
-def test_mississippi_aprox() -> None:
+def test_mississippi_aprox_0() -> None:
     x = "mississippi"
     search = bwt.approx_preprocess(x)
     for p in ("si", "ppi", "ssi", "pip", "x"):
         matches = list(search(p, 0))
         print(p, matches)
         check_matches(x, p, [idx for idx, _ in matches])
+
+
+def test_mississippi_aprox_edit() -> None:
+    x = "mississippi"
+    search = bwt.approx_preprocess(x)
+    for edits in [1, 2, 3]:
+        for p in ("si", "ppi", "ssi", "pip", "x"):
+            for pos, cigar in search(p, edits):
+                align = approx.extract_alignment(x, p, pos, cigar)
+                assert approx.count_edits(align) <= edits
+
+
+test_mississippi_aprox_edit()

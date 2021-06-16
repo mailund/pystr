@@ -7,6 +7,7 @@ from .border_array import strict_border_array
 
 
 def naive(x: str, p: str) -> typing.Iterator[int]:
+    """Naive squared-time exact search algorithm."""
     for i in range(len(x) - len(p) + 1):
         for j in range(len(p)):
             if x[i + j] != p[j]:
@@ -16,6 +17,7 @@ def naive(x: str, p: str) -> typing.Iterator[int]:
 
 
 def border(x: str, p: str) -> typing.Iterator[int]:
+    """Search algorithm based on the border array."""
     # Doesn't handle empty patterns directly...
     # (There would be several special cases to handle)
     if not p:
@@ -38,6 +40,7 @@ def border(x: str, p: str) -> typing.Iterator[int]:
 
 
 def kmp(x: str, p: str) -> typing.Iterator[int]:
+    """The Knuth-Morris-Pratt algorithm."""
     ba = strict_border_array(p)
     i, j = 0, 0
     while i < len(x):
@@ -61,6 +64,7 @@ def kmp(x: str, p: str) -> typing.Iterator[int]:
 
 
 def bmh(x: str, p: str) -> typing.Iterator[int]:
+    """The Boyer-Moore-Horspool algorithm."""
     # Can't handle empty strings directly
     if not p:
         yield from range(len(x) + 1)
@@ -82,6 +86,7 @@ def bmh(x: str, p: str) -> typing.Iterator[int]:
 
 
 def bmh_b(x: bytes, p: bytes) -> typing.Iterator[int]:
+    """The Boyer-Moore-Horspool algorithm."""
     # Can't handle empty strings directly
     if not p:
         yield from range(len(x) + 1)
@@ -106,6 +111,7 @@ def bmh_b(x: bytes, p: bytes) -> typing.Iterator[int]:
 # The function assumes that you don't have sentinels you do not
 # want.
 def bmh_alpha(x_: str, p_: str) -> typing.Iterator[int]:
+    """The Boyer-Moore-Horspool algorithm."""
     x, alpha = Alphabet.mapped_string(x_)
     try:
         p = alpha.map(p_)

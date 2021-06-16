@@ -30,3 +30,27 @@ def cigar_to_edits(cigar: str) -> list[Edit]:
         n, e = int(n), Edit[e]
         res.extend([e] * n)
     return res
+
+
+def extract_alignment(x: str, p: str, pos: int, cigar: str) -> tuple[str, str]:
+    i, j = pos, 0
+    x_, p_ = [], []
+    for edit in cigar_to_edits(cigar):
+        if edit == Edit.M:
+            x_.append(x[i])
+            i += 1
+            p_.append(p[j])
+            j += 1
+        if edit == Edit.I:
+            x_.append('-')
+            p_.append(p[j])
+            j += 1
+        if edit == Edit.D:
+            x_.append(x[i])
+            i += 1
+            p_.append('-')
+    return ''.join(x_), ''.join(p_)
+
+
+def count_edits(alignment: tuple[str, str]) -> int:
+    return sum(a != b for a, b in zip(*alignment))

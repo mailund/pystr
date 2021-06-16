@@ -163,7 +163,7 @@ def approx_searcher_from_tables(
              i: int, L: int, R: int,
              edits: int) -> typing.Iterator[tuple[int, str]]:
         edit_operations.append(Edit.I)
-        yield from rec_search(p, L, R, i - 1, edits - 1)
+        yield from rec_search(p, i - 1, L, R, edits - 1)
         edit_operations.pop()
 
     def do_D(p: bytearray,
@@ -187,7 +187,9 @@ def approx_searcher_from_tables(
             return
 
         if i < 0:
-            cigar = edits_to_cigar(edit_operations)
+            # Remember to reverse the operations, since
+            # we did the backwards in the bwt search
+            cigar = edits_to_cigar(edit_operations[::-1])
             for j in range(L, R):
                 yield sa[j], cigar
             return
