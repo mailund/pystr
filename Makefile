@@ -5,12 +5,10 @@ init:
 
 check:
 	mypy --disallow-untyped-calls --disallow-untyped-defs --disallow-incomplete-defs -p pystr
-	mypy --disallow-untyped-calls --disallow-untyped-defs --disallow-incomplete-defs -p pystr_vis
-	mypy --disallow-untyped-calls --disallow-untyped-defs --disallow-incomplete-defs -p pystr_scripts
 	mypy --disallow-untyped-calls --disallow-untyped-defs --disallow-incomplete-defs tests/*.py
 
 test: check
-	pytest --cov-report term-missing --cov=pystr --cov=pystr_vis --cov=pystr_scripts tests
+	pytest --cov-report term-missing --cov=pystr tests
 
 build:
 	python3 -m build
