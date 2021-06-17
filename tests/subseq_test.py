@@ -45,6 +45,9 @@ def test_int_subseq() -> None:
     assert z[:] == underlying
     assert z[:] == z
 
+    w: subseq.SubSeq[int] = z[-4:-2]
+    assert w[:] == underlying[-4:-2]
+
 
 def test_mutable() -> None:
     underlying = [2, 1, 4, 4, 1, 4, 4, 1, 3, 3, 1, 0]

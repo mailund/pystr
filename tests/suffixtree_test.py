@@ -1,6 +1,7 @@
 from typing import Callable, Iterator
 
-from pystr.suffixtree import SuffixTree
+from pystr.alphabet import Alphabet
+from pystr.suffixtree import SuffixTree, Inner, Leaf
 from pystr.exact import bmh
 from pystr.suffixtree import naive_st_construction
 from pystr.suffixtree import mccreight_st_construction
@@ -46,6 +47,14 @@ TestMississippiToDo = collect_tests(
 )
 
 
+def test_contains() -> None:
+    st = mccreight_st_construction("mississippi")
+    assert "iss" in st
+    assert "sss" not in st
+    assert "ip" in st
+    assert "x" not in st
+
+
 def check_st_sorted(algo: STConstructor) -> _Test:
     def test(_: object) -> None:
         for _ in range(10):
@@ -65,6 +74,25 @@ TestSorted = collect_tests(
     (strip_algo_name(algo.__name__), check_st_sorted(algo))
     for algo in ALGOS
 )
+
+
+def test_node_comparison() -> None:
+    foo, _ = Alphabet.mapped_subseq("foo")
+    bar, _ = Alphabet.mapped_subseq("bar")
+    assert Leaf(0, foo) == Leaf(0, foo)
+    assert Leaf(0, foo) != Leaf(1, foo)
+    assert Leaf(0, foo) != Leaf(0, bar)
+
+    assert Inner(foo) == Inner(foo)
+    assert Inner(foo) != Inner(bar)
+
+    i1 = Inner(foo)
+    i2 = Inner(foo)
+    assert i1 == i2
+    i1.add_children(Leaf(0, bar))
+    assert i1 != i2
+    i2.add_children(Leaf(0, bar))
+    assert i1 == i2
 
 
 def check_equal_mccreight(algo: STConstructor) -> _Test:

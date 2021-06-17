@@ -60,7 +60,7 @@ class Inner(Node):
             yield from self.children[x]
 
     def __eq__(self, other: object) -> bool:
-        if not isinstance(other, Inner):
+        if not isinstance(other, Inner):  # pragma: no cover
             return False
         assert isinstance(other, Inner)  # For the type checker
 
@@ -68,11 +68,13 @@ class Inner(Node):
             return False
 
         # Equal if sorted children are equal.
-        my_children = sorted(self.children.items())
-        others_children = sorted(other.children.items())
+        my_children = list(sorted(self.children.items()))
+        others_children = list(sorted(other.children.items()))
+        if len(my_children) != len(others_children):
+            return False
         return all(
             a == b for a, b
-            in zip(my_children, others_children, strict=True)  # type: ignore
+            in zip(my_children, others_children)
         )
 
 
@@ -95,7 +97,7 @@ class Leaf(Node):
         yield self.leaf_label
 
     def __eq__(self, other: object) -> bool:
-        if not isinstance(other, Leaf):
+        if not isinstance(other, Leaf):  # pragma: no cover
             return False
         return self.edge_label == other.edge_label and \
             self.leaf_label == other.leaf_label
@@ -133,7 +135,7 @@ class SuffixTree:
         return "digraph { rankdir=\"LR\" " + '\n'.join(self.root.to_dot(self.alpha)) + "}"  # noqa
 
     def __eq__(self, other: object) -> bool:
-        if not isinstance(other, SuffixTree):
+        if not isinstance(other, SuffixTree):  # pragma: no cover
             return False
         return self.root == other.root
 

@@ -8,6 +8,12 @@ def test_alphabet() -> None:
         assert len(alpha) == len(set(x)) + 1
         assert len(alpha) == len(set(x)) + 1
         assert alpha.revmap(y[:-1]) == x
+        assert ''.join(alpha.revmap(z) for z in y[:-1]) == x
+
+    for x in ["foo", "bar", "baz", "foobar", "bazfoo"]:
+        ss, alpha = Alphabet.mapped_subseq(x)
+        assert len(ss) == len(x)
+        assert alpha.revmap(ss) == x
 
 
 if __name__ == '__main__':
