@@ -4,8 +4,8 @@ init:
 	pip3 install --editable .
 
 check:
-	mypy --disallow-untyped-calls --disallow-untyped-defs --disallow-incomplete-defs -p pystr
-	mypy --disallow-untyped-calls --disallow-untyped-defs --disallow-incomplete-defs tests/*.py
+	mypy --strict -p pystr
+	mypy --strict tests/*.py
 
 test: check
 	pytest --cov-report term-missing --cov=pystr tests

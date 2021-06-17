@@ -3,7 +3,8 @@ import typing
 
 # Type specifications...
 T = typing.TypeVar('T')
-S = typing.TypeVar('S', bound="SubSeq")
+# FIXME: I don't know how to make a bound generic
+S = typing.TypeVar('S', bound='SubSeq')  # type: ignore
 C = typing.TypeVar('C', covariant=True)
 
 
@@ -96,7 +97,10 @@ without copying them.
 
     def __getitem__(self: S, idx: int | slice) -> T | S:
         if isinstance(idx, int):
-            return self._x[self._i + idx]
+            # FIXME: the cast is needed here because mypy can't
+            # figure out generic bound vars, so it doesn't know
+            # what type of SubSeq S is.
+            return typing.cast(T, self._x[self._i + idx])
 
         if isinstance(idx, slice):
             assert idx.step is None, \
