@@ -7,6 +7,9 @@ setup(
     author="Thomas Mailund",
     author_email="thomas@mailund.dk",
     packages=find_packages(),
+    package_data={
+        'pystr': ['py.typed'],
+    },
     entry_points={
         'console_scripts': [
             'show-exact=pystr_scripts.exact:main',
