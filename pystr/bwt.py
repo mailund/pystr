@@ -16,6 +16,14 @@ ApproxSearchFunc = typing.Callable[
 ]
 
 
+def burrows_wheeler_transform_bytes(
+    x: bytearray, alpha: Alphabet
+) -> tuple[bytearray, list[int]]:
+    sa = sais_alphabet(SubSeq[int](x), alpha)
+    bwt = bytearray(x[j - 1] for j in sa)
+    return bwt, sa
+
+
 def burrows_wheeler_transform(
     x: str
 ) -> tuple[bytearray, Alphabet, list[int]]:
