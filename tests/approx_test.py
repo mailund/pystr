@@ -8,7 +8,9 @@ from pystr.approx import (
 def test_cigar_mapping() -> None:
     edits = [Edit.M, Edit.M, Edit.I, Edit.M, Edit.D]
     cigar = edits_to_cigar(edits)
+    print(cigar)
     edits2 = cigar_to_edits(cigar)
+    print(edits2)
     assert edits == edits2
 
 
