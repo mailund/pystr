@@ -5,8 +5,8 @@ python:
 
 install:
   - make init
-  - pip install --user codecov
-  - pip install --user coveralls
+  - pip install codecov
+  - pip install coveralls
 
 script:
   - make test
