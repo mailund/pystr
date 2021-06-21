@@ -20,12 +20,6 @@ def edits_to_cigar(edits: list[Edit]) -> str:
     return ''.join(res)
 
 
-# This should not be necessary. Edit[e] should do exactly this, but that
-# fails on Travis, and I am just not in the mood of debugging through Travis
-# today!
-_edits = Edit._member_map_
-
-
 def cigar_to_edits(cigar: str) -> list[Edit]:
     res: list[Edit] = []
     groups = re.findall(r"\d+\D", cigar, flags=re.ASCII)
@@ -33,8 +27,7 @@ def cigar_to_edits(cigar: str) -> list[Edit]:
         match = re.match(r"(\d+)(\D)", group)
         assert match is not None
         n, e = match.groups()
-        #res.extend([Edit[e]] * int(n))
-        res.extend([_edits[e]] * int(n))
+        res.extend([Edit[e]] * int(n))
     return res
 
 
