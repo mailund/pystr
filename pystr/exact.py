@@ -9,8 +9,8 @@ from .border_array import strict_border_array
 def naive(x: str, p: str) -> typing.Iterator[int]:
     """Naive squared-time exact search algorithm."""
     for i in range(len(x) - len(p) + 1):
-        for j in range(len(p)):
-            if x[i + j] != p[j]:
+        for j, a in enumerate(p):
+            if x[i + j] != a:
                 break
         else:
             yield i
@@ -29,11 +29,10 @@ def border(x: str, p: str) -> typing.Iterator[int]:
 
     # Now search...
     b = 0
-    for i in range(len(x)):
-        while b > 0 and p[b] != x[i]:
+    for i, a in enumerate(x):
+        while b > 0 and p[b] != a:
             b = ba[b - 1]
-        b = b + 1 if p[b] == x[i] else 0
-
+        b = b + 1 if p[b] == a else 0
         if b == len(p):
             yield i - len(p) + 1
             b = ba[b - 1]

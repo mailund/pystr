@@ -48,8 +48,7 @@ def compare_lcp(x: str, i: int, j: int) -> int:
     for k in range(m):
         if x[i+k] != x[j+k]:
             return k
-    else:
-        return m
+    return m
 
 
 def lcp_from_sa(x: str, sa: list[int]) -> list[int]:

@@ -60,7 +60,7 @@ def bucket_LMS(x: SubSeq[int], sa: MSubSeq[int],
                ) -> None:
     next_end = buckets.calc_ends()
     sa[:] = UNDEFINED
-    for i in range(len(x)):
+    for i, _ in enumerate(x):
         if is_LMS(is_S, i):
             sa[next_end(x[i])] = i
 

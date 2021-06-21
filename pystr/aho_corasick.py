@@ -33,7 +33,7 @@ def aho_corasick(x: str, *p: str
     if n.label is not None:
         yield (n.label, 0)
 
-    for i in range(len(x)):
-        n = find_out(n, x[i])
+    for i, a in enumerate(x):
+        n = find_out(n, a)
         for label in occurrences(n):
             yield (label, i - len(p[label]) + 1)

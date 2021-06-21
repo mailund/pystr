@@ -10,8 +10,8 @@ def bmh_b_wrap(x: str, p: str) -> Iterator[int]:
     yield from bmh_b(x.encode(), p.encode())
 
 
-def consume(iter: Iterator[int]) -> None:
-    for _ in iter:
+def consume(itr: Iterator[int]) -> None:
+    for _ in itr:
         pass
 
 
