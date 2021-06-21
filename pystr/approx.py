@@ -15,7 +15,7 @@ def edits_to_cigar(edits: list[Edit]) -> str:
         j = i + 1
         while j < len(edits) and edits[i] == edits[j]:
             j += 1
-        res.append(f"{j-i}{edits[i]}")
+        res.append(f"{j-i}{edits[i]!s}")
         i = j
     return ''.join(res)
 
