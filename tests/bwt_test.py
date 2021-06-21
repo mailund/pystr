@@ -67,6 +67,3 @@ def test_mississippi_aprox_edit() -> None:
             for pos, cigar in search(p, edits):
                 align = approx.extract_alignment(x, p, pos, cigar)
                 assert approx.count_edits(align) <= edits
-
-
-test_mississippi_aprox_edit()

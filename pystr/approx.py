@@ -27,8 +27,8 @@ def cigar_to_edits(cigar: str) -> list[Edit]:
         match = re.match(r"(\d+)(\D)", group)
         assert match is not None
         n, e = match.groups()
-        n, e = int(n), Edit[e]
-        res.extend([e] * n)
+        assert e in Edit, "SHOULD NEVER FAIL!!! (Travis says it does)"
+        res.extend([Edit[e]] * int(n))
     return res
 
 
