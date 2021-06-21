@@ -5,6 +5,13 @@ python:
 
 install:
   - make init
+  - pip install --user codecov
+  - pip install --user coveralls
 
 script:
   - make test
+
+after_success:
+  - codecov
+  - coverage run --source=pystr -m pytest tests/*
+  - coveralls
