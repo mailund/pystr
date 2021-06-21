@@ -14,6 +14,15 @@ def test_bw_transform() -> None:
     assert alpha.revmap(r[:-1]) == x
 
 
+def test_bw_transform_bytes() -> None:
+    x_ = "mississippi"
+    x, alpha = alphabet.Alphabet.mapped_string_with_sentinel(x_)
+    b, _ = bwt.burrows_wheeler_transform_bytes(x, alpha)
+    r = bwt.reverse_burrows_wheeler_transform(b)
+    assert r[-1] == 0  # last symbol is sentinel
+    assert alpha.revmap(r[:-1]) == x_
+
+
 def test_ctable() -> None:
     x, alpha = alphabet.Alphabet.mapped_string_with_sentinel("aabca")
     ctab = bwt.CTable(x, len(alpha))
