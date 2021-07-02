@@ -10,6 +10,7 @@ class Alphabet:
 
     def __init__(self, reference: str) -> None:
         """Creates an alphabet with the letters found in reference.
+
         An alphabet always has a sentinel symbol, byte zero, regardless of whether
         it is found in reference."""
         self._map = {
@@ -36,13 +37,17 @@ class Alphabet:
 
     def map(self, x: typing.Iterable[str]) -> bytearray:
         """Maps the characters in x to their corresponding letters in the alphabet,
-        and returns the result as a bytearray. If x contains a letter not in the alphabet,
+        and returns the result as a bytearray.
+
+        If x contains a letter not in the alphabet,
         map raises a KeyError."""
         return bytearray(self._map[a] for a in x)
 
     def map_with_sentinel(self, x: typing.Iterable[str]) -> bytearray:
         """Maps the characters in x to their corresponding letters in the alphabet,
-        and returns the result as a bytearray. If x contains a letter not in the alphabet,
+        and returns the result as a bytearray.
+
+        If x contains a letter not in the alphabet,
         map raises a KeyError. The result has the sentinel added to it, so the last
         character in the result is the zero byte."""
         b = self.map(x)
@@ -68,6 +73,7 @@ class Alphabet:
     def mapped_subseq(x: str) -> tuple[SubSeq[int], Alphabet]:
         """Creates an alphabet from x, maps x to theh alphabet,
         then returns the mapped string and the alphabet.
+
         The resulting string is a SubSeq[int], unlike mapped_string(x) which
         returns a bytearray for the mapped string."""
         x_, alpha = Alphabet.mapped_string(x)
@@ -78,16 +84,18 @@ class Alphabet:
         x: str
     ) -> tuple[bytearray, Alphabet]:
         """Creates an alphabet from x, maps x to theh alphabet,
-        then returns the mapped string and the alphabet. The mapped
-        string is terminated by the sentinel (zero) byte."""
+        then returns the mapped string and the alphabet.
+
+        The mapped string is terminated by the sentinel (zero) byte."""
         alpha = Alphabet(x)
         return alpha.map_with_sentinel(x), alpha
 
     @staticmethod
     def mapped_subseq_with_sentinel(x: str) -> tuple[SubSeq[int], Alphabet]:
         """Creates an alphabet from x, maps x to theh alphabet,
-        then returns the mapped string and the alphabet. The mapped
-        string is terminated by the sentinel (zero) byte.
+        then returns the mapped string and the alphabet.
+
+        The mapped string is terminated by the sentinel (zero) byte.
         The resulting string is a SubSeq[int], unlike
         mapped_string_with_sentinel(x) which
         returns a bytearray for the mapped string."""

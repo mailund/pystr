@@ -15,9 +15,10 @@ class Ordered(typing.Protocol[C]):
 
 # Then the functional stuff...
 class SubSeq(typing.Generic[T], typing.Sequence[T]):
+
     """This is a wrapper around lists and strings that lets us slice them
-without copying them.
-"""
+    without copying them.
+    """
     _x: typing.Sequence[T]
     _i: int
     _j: int
@@ -96,8 +97,8 @@ without copying them.
     def __getitem__(self: S, idx: slice) -> S: ...
 
     def __getitem__(self: S, idx: int | slice) -> T | S:
-        """Get the value at an index, or a new subseq (of the current kind) if you index
-        with a slice."""
+        """Get the value at an index, or a new subseq (of the current kind) if you index with a slice."""
+
         if isinstance(idx, int):
             # FIXME: the cast is needed here because mypy can't
             # figure out generic bound vars, so it doesn't know

@@ -1,12 +1,13 @@
 
 class BitVector:
+
     """A bit vector."""
 
     bytes: bytearray
     size: int
 
     def __init__(self, size: int):
-        """Creates a BitVector that can hold size bits"""
+        """Creates a BitVector that can hold size bits."""
         self.size = size
         self.bytes = bytearray((size+8-1)//8)
 
