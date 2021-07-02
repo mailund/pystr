@@ -34,7 +34,7 @@ def test_ctable() -> None:
 
 def test_otable() -> None:
     x = "aabca"
-    transformed, alpha, sa = bwt.burrows_wheeler_transform(x)
+    transformed, alpha, _ = bwt.burrows_wheeler_transform(x)
     assert transformed == bytearray([1, 3, 0, 1, 1, 2])
 
     otab = bwt.OTable(transformed, len(alpha))

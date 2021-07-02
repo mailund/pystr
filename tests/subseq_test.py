@@ -15,7 +15,7 @@ def test_substr() -> None:
     y: str = underlying[1:6]
     assert x == y
     assert str(x) == str(y)
-    for i in range(len(x)):
+    for i, _ in enumerate(x):
         assert x[i] == y[i]
         assert x[i:] == y[i:]
 

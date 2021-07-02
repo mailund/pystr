@@ -76,10 +76,10 @@ class Trie:
 
     def insert(self, x: str, label: int) -> None:
         n = self.root
-        for i in range(len(x)):
-            if x[i] not in n:
-                n[x[i]] = TrieNode(parent=n)
-            n = n[x[i]]
+        for a in x:
+            if a not in n:
+                n[a] = TrieNode(parent=n)
+            n = n[a]
         n.label = label
 
     def __contains__(self, x: str) -> bool:

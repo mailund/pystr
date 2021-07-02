@@ -15,7 +15,7 @@ from .skew_common import SkewTripletDict, \
 def collect_alphabet(x: typing.Sequence[int],
                      idx: list[int]
                      ) -> SkewTripletDict:
-    "Map the triplets starting at idx to a new alphabet."
+    """Map the triplets starting at idx to a new alphabet."""
     # When we start with a terminal sentinel, we don't need to
     # explicitly add the central one, so we don't...
     alpha: SkewTripletDict = {}
@@ -27,7 +27,7 @@ def collect_alphabet(x: typing.Sequence[int],
 
 
 def build_u(x: typing.Sequence[int], alpha: SkewTripletDict) -> list[int]:
-    "Construct u string, using 1 as central sentinel."
+    """Construct u string, using 1 as central sentinel."""
     # I'm putting class [1] first. Then will end at (m+1)//2
     # where m is the length of u.
     return [*(alpha[triplet(x, i)] for i in range(1, len(x), 3)),
@@ -36,14 +36,14 @@ def build_u(x: typing.Sequence[int], alpha: SkewTripletDict) -> list[int]:
 
 
 def u_idx(i: int, m: int) -> int:
-    "Map indices in u back to indices in the original string."
+    """Map indices in u back to indices in the original string."""
     # The mapping for i >= m is different when we don't have the
     # central terminal
     return 1 + 3 * i if i < m else 2 + 3 * (i - m)
 
 
 def skew_rec(x: typing.Sequence[int], asize: int) -> list[int]:
-    "Recursive skew SA construction algorithm."
+    """Recursive skew SA construction algorithm."""
 
     SA12 = [i for i in range(len(x)) if i % 3 != 0]
     SA12 = radix3(x, asize, SA12)
@@ -72,7 +72,7 @@ def skew_rec(x: typing.Sequence[int], asize: int) -> list[int]:
 
 
 def skew(x: str) -> list[int]:
-    "Skew algorithm for a string."
+    """Skew algorithm for a string."""
     # When we use the central sentinel, we don't include the terminal
     # sentinel, so we don't use a String. We have to explicitly add
     # the first suffix, though, to match the interface of the other
