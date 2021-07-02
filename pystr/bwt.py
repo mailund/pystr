@@ -52,6 +52,10 @@ class CTable:
     _cumsum: list[int]
 
     def __init__(self, bwt: bytearray, asize: int) -> None:
+        """Construct a C-table.
+
+        Compute the C-table from the bwt transformed string and
+        the alphabet size."""
         # Count occurrences of characters in bwt
         counts = [0] * asize
         for a in bwt:
@@ -65,6 +69,7 @@ class CTable:
         self._cumsum = counts
 
     def __getitem__(self, a: int) -> int:
+        """Get the number of occurrences of letters in the bwt less than a."""
         return self._cumsum[a]
 
 
@@ -72,6 +77,10 @@ class OTable:
     _tbl: list[list[int]]
 
     def __init__(self, bwt: bytearray, asize: int) -> None:
+        """Create O-table.
+
+        Compute the O-table from the bwt transformed string and the size
+        of the alphabet the bwt string is over."""
         # We exclude $ from lookups, so there are this many
         # rows.
         nrow = asize - 1
@@ -96,6 +105,9 @@ class OTable:
                 self._tbl[a-1][i-1] = self._tbl[a-1][i-2] + (a == b)
 
     def __getitem__(self, idx: tuple[int, int]) -> int:
+        """Get rank of character a at index i.e
+
+        a is the first and i the second value in the idx tuple."""
         a, i = idx
         assert a > 0, "Don't look up the sentinel"
         return 0 if i == 0 else self._tbl[a-1][i-1]

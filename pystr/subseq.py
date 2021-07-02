@@ -97,8 +97,7 @@ class SubSeq(typing.Generic[T], typing.Sequence[T]):
     def __getitem__(self: S, idx: slice) -> S: ...
 
     def __getitem__(self: S, idx: int | slice) -> T | S:
-        """Get the value at an index, or a new subseq (of the current kind) if you index with a slice."""
-
+        """Get the value at an index, or a new subseq for a slice."""
         if isinstance(idx, int):
             # FIXME: the cast is needed here because mypy can't
             # figure out generic bound vars, so it doesn't know

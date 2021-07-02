@@ -3,6 +3,7 @@ from .trie import TrieNode, depth_first_trie
 
 
 def occurrences(n: TrieNode) -> typing.Iterator[int]:
+    """Iterate over all occurrances in the out-list of a node."""
     if n.label is not None:
         yield n.label
 
@@ -15,8 +16,9 @@ def occurrences(n: TrieNode) -> typing.Iterator[int]:
 
 def find_out(n: TrieNode, a: str) -> TrieNode:
     """Find the node we get to with an a move.
-We will end up in the node if we cannot make one,
-but that works fine with the out list reporting."""
+
+    We will end up in the node if we cannot make one,
+    but that works fine with the out list reporting."""
     while not n.is_root and a not in n:
         assert n.suffix_link is not None
         n = n.suffix_link
@@ -25,6 +27,7 @@ but that works fine with the out list reporting."""
 
 def aho_corasick(x: str, *p: str
                  ) -> typing.Iterator[tuple[int, int]]:
+    """Exact pattern matching with the Aho-Corasick algorithm."""
     trie = depth_first_trie(*p)
     n = trie.root
 
