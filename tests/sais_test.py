@@ -1,4 +1,6 @@
-from pystr.sais import classify_SL, is_LMS
+"""Test of sais algorithm."""
+
+from pystr.sais import classify_sl, is_lms
 from pystr.sais import sais
 from pystr.bv import BitVector
 from pystr.alphabet import Alphabet
@@ -6,6 +8,7 @@ from helpers import random_string, fibonacci_string, check_sorted
 
 
 def test_remap() -> None:
+    """Test that remapping works."""
     x = "mississippi"
     mapped, alpha = Alphabet.mapped_string_with_sentinel(x)
     assert mapped == bytearray([2, 1, 4, 4, 1, 4, 4, 1, 3, 3, 1, 0])
@@ -18,15 +21,16 @@ def test_remap() -> None:
 
 
 def test_classify() -> None:
+    """Test that the SL classification works."""
     # mississippi$
     # LSLLSLLSLLLS
     x, _ = Alphabet.mapped_subseq_with_sentinel("mississippi")
     assert len(x) == len("mississippi") + 1
 
-    is_S = BitVector(size=len(x))
-    assert len(is_S) == len(x)
+    is_s = BitVector(size=len(x))
+    assert len(is_s) == len(x)
 
-    classify_SL(is_S, x)
+    classify_sl(is_s, x)
 
     expected = [
         # L    S     L      L      S     L      L
@@ -34,16 +38,17 @@ def test_classify() -> None:
         # S   L      L      L      S
         True, False, False, False, True
     ]
-    for i in range(len(is_S)):
-        assert is_S[i] == expected[i]
+    for i in range(len(is_s)):
+        assert is_s[i] == expected[i]
 
 
-def test_is_LMS() -> None:
+def test_is_lms() -> None:
+    """Test that is_lms works."""
     x, _ = Alphabet.mapped_subseq_with_sentinel("mississippi")
     assert len(x) == len("mississippi") + 1
-    is_S = BitVector(len(x))
-    assert len(is_S) == len(x)
-    classify_SL(is_S, x)
+    is_s = BitVector(len(x))
+    assert len(is_s) == len(x)
+    classify_sl(is_s, x)
     # mississippi$
     # LSLLSLLSLLLS
     # -*--*--*---*
@@ -55,42 +60,37 @@ def test_is_LMS() -> None:
         # -    -      -      *
         False, False, False, True
     ]
-    assert len(is_S) == len(expected)
+    assert len(is_s) == len(expected)
     for i, _ in enumerate(expected):
-        assert is_LMS(is_S, i) == expected[i]
+        assert is_lms(is_s, i) == expected[i]
 
     for _ in range(10):
         z = random_string(20, "abcd")
         y, _ = Alphabet.mapped_subseq_with_sentinel(z)
-        is_S = BitVector(len(y))
-        classify_SL(is_S, y)
+        is_s = BitVector(len(y))
+        classify_sl(is_s, y)
 
-        assert is_S[len(y) - 1]
-        assert is_LMS(is_S, len(y) - 1)
+        assert is_s[len(y) - 1]
+        assert is_lms(is_s, len(y) - 1)
 
 
 def test_base_case() -> None:
+    """Test that we can sort base cases."""
     assert sais("abc") == [3, 0, 1, 2]
     assert sais("cba") == [3, 2, 1, 0]
     assert sais("acb") == [3, 0, 2, 1]
 
 
 def test_mississippi() -> None:
+    """Test on mississippi."""
     x = "mississippi"
     sa = sais(x)
     assert len(x) == len(sa) - 1
     check_sorted(x, sa)
 
 
-def test_adccacacbbccdccdbccb() -> None:
-    x = "adccacacbbccdccdbccb"
-    sa = sais(x)
-    assert len(x) == len(sa) - 1
-    assert sa[0] == len(x)
-    check_sorted(x, sa)
-
-
 def test_sais_sorted() -> None:
+    """Test that the sais suffix array is sorted."""
     for _ in range(10):
         x = random_string(1000)
         sa = sais(x)

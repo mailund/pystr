@@ -1,3 +1,5 @@
+"""Implementation of tries."""
+
 from __future__ import annotations
 import dataclasses
 import collections
@@ -13,6 +15,8 @@ LS = typing.NamedTuple('LS', [('label', int), ('x', SubSeq[str])])
 
 @dataclasses.dataclass(eq=False)
 class TrieNode:
+    """Representation of a node in a trie."""
+
     label: typing.Optional[int] = None
     children: dict[str, TrieNode] = \
         dataclasses.field(default_factory=dict)
@@ -28,20 +32,25 @@ class TrieNode:
 
     @property
     def is_root(self) -> bool:
+        """Tell if this node is the root of its trie."""
         return self.parent is None
 
     def __getitem__(self, a: str) -> TrieNode:
+        """Get the child of this node by following edge a."""
         # This just makes the code a little nicer
         # to look at, avoiding the .children[].
         return self.children[a]
 
     def __setitem__(self, a: str, n: TrieNode) -> None:
+        """Set out-edge a to point to n."""
         self.children[a] = n
 
     def __contains__(self, a: str) -> bool:
+        """Return True if there is a child with label a, False otherwise."""
         return a in self.children
 
     def to_dot(self, res: list[str]) -> list[str]:
+        """Make a dot representation of the trie."""
         if self.label is None:
             res.append(f'{id(self)}[label="", shape=point]')
         else:
@@ -62,6 +71,7 @@ class TrieNode:
         return res
 
     def __eq__(self, other: object) -> bool:
+        """Test of self is equivalent to other."""
         if not isinstance(other, TrieNode):  # pragma: no cover
             raise NotImplementedError()
         return \
@@ -71,10 +81,13 @@ class TrieNode:
 
 @dataclasses.dataclass(eq=False)
 class Trie:
+    """Representation of a trie."""
+
     root: TrieNode = \
         dataclasses.field(default_factory=TrieNode)
 
     def insert(self, x: str, label: int) -> None:
+        """Insert a new string x, with label, into the trie."""
         n = self.root
         for a in x:
             if a not in n:
@@ -83,6 +96,7 @@ class Trie:
         n.label = label
 
     def __contains__(self, x: str) -> bool:
+        """Test if x is in the trie."""
         n = self.root
         for i in range(len(x)):
             if x[i] not in n:
@@ -91,18 +105,20 @@ class Trie:
         return n.label is not None
 
     def to_dot(self) -> str:
+        """Create a dot representation of the trie."""
         return 'digraph { rankdir="LR" ' + \
             '\n'.join(self.root.to_dot([])) + \
             '}'
 
     def __eq__(self, other: object) -> bool:
+        """Test if self and other are equivalent."""
         if not isinstance(other, Trie):  # pragma: no cover
             raise NotImplementedError()
         return type(other) == type(self) and self.root == other.root
 
 
 def depth_first_trie(*strings: str) -> Trie:
-    """The simplest construction just insert one string at a time."""
+    """Build a trie in a depth-first manner."""
     # This is all it takes to build the trie.
     trie = Trie()
     for i, x in enumerate(strings):
@@ -121,6 +137,7 @@ def depth_first_trie(*strings: str) -> Trie:
 
 
 def set_suffix_link(node: TrieNode, in_edge: str) -> None:
+    """Traverse trie to set up suffix-links and out-lists."""
     # We get the suffix link by running up the links from the
     # parent and trying to extend them. Casts are for the type
     # checker, telling them that nodes are not None
@@ -146,6 +163,7 @@ def set_suffix_link(node: TrieNode, in_edge: str) -> None:
 
 
 def breadth_first_trie(*strings: str) -> Trie:
+    """Build a trie in a breadth-first manner."""
     labelled = list(LS(i, SubSeq[str](x)) for i, x in enumerate(strings))
 
     root_lab, root_groups = group_strings(labelled)
@@ -168,10 +186,12 @@ def breadth_first_trie(*strings: str) -> Trie:
 def group_strings(
     strings: list[LS]
 ) -> tuple[typing.Optional[int], dict[str, list[LS]]]:
-    """Split input into groups according to first character.
-If there is an empty string in the input, get its label.
-Returns the label (or None) and the groups in a dict."""
+    """
+    Split input into groups according to first character.
 
+    If there is an empty string in the input, get its label.
+    Returns the label (or None) and the groups in a dict.
+    """
     empty, non_empty = list[LS](), list[LS]()
     for ls in strings:
         (non_empty, empty)[len(ls.x) == 0].append(ls)

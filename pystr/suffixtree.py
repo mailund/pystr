@@ -1,3 +1,5 @@
+"""Constructing and using suffix trees."""
+
 from __future__ import annotations
 import typing
 import dataclasses
@@ -15,32 +17,48 @@ from .alphabet import Alphabet
 
 @dataclasses.dataclass
 class Node:  # Should be abc ABC, but doesn't work with type checker
+    """
+    Representation of a node in a suffix tree.
+
+    This is an abstract class. Concrete nodes are either Inner of Leaf.
+    """
+
     edge_label: SubSeq[int]  # slice of underlying bytearray
     parent: typing.Optional[Inner] = \
         dataclasses.field(default=None, init=False, repr=False)
 
     # These methods are only here for the type checker.
     # They will never be used because we never have Node objects.
-    def __iter__(self) -> typing.Iterator[int]: ...
-    def to_dot(self, alpha: Alphabet) -> typing.Iterator[str]: ...
+    def __iter__(self) -> typing.Iterator[int]:
+        """Iterate through all the leaves in the tree rooted in this node."""
+        ...  # pragma no cover
+
+    def to_dot(self, alpha: Alphabet) -> typing.Iterator[str]:
+        """Represent the tree rooted in this node as dot."""
+        ...  # pragma no cover
 
 
 @dataclasses.dataclass
 class Inner(Node):
+    """An inner node."""
+
     suffix_link: typing.Optional[Inner] = \
         dataclasses.field(default=None, init=False, repr=False)
     children: dict[int, Node] = \
         dataclasses.field(default_factory=dict, init=False, repr=False)
 
     def add_children(self, *children: Node) -> None:
+        """Add children to this inner node."""
         for child in children:
             self.children[child.edge_label[0]] = child
             child.parent = self
 
     def out_child(self, edge: SubSeq[int]) -> Node:
+        """Find the child we go to if we follow the first letter in edge."""
         return self.children[edge[0]]
 
     def to_dot(self, alpha: Alphabet) -> typing.Iterator[str]:
+        """Get a dot representation for the tree rooted here."""
         if self.parent is None:  # Root node
             yield f'{id(self)}[label="", shape=circle, style=filled, fillcolor=grey]'  # noqa: E501
         else:
@@ -53,6 +71,7 @@ class Inner(Node):
             yield from child.to_dot(alpha)
 
     def __iter__(self) -> typing.Iterator[int]:
+        """Iterate through all leaves in the tree rooted here."""
         # You could make it more efficient by sorting once
         # and keeping the table sorted, but for experimenting
         # this if fine...
@@ -60,6 +79,7 @@ class Inner(Node):
             yield from self.children[x]
 
     def __eq__(self, other: object) -> bool:
+        """Test if two nodes are equivalent."""
         if not isinstance(other, Inner):  # pragma: no cover
             return False
         assert isinstance(other, Inner)  # For the type checker
@@ -80,23 +100,29 @@ class Inner(Node):
 
 @dataclasses.dataclass(init=False)
 class Leaf(Node):
+    """A leaf in a suffix tree."""
+
     leaf_label: int
 
     # Explicit __init__ because I prefer to have the
     # leaf_label before the edge_label
     def __init__(self, leaf_label: int, edge_label: SubSeq[int]):
+        """Create a leaf."""
         super().__init__(edge_label)
         self.leaf_label = leaf_label
 
     def to_dot(self, alpha: Alphabet) -> typing.Iterator[str]:
+        """Get the dot representation of the leaf."""
         lab = alpha.revmap(self.edge_label)
         yield f'{id(self)}[label={self.leaf_label}, shape=circle]'
         yield f'{id(self.parent)} -> {id(self)}[label="{lab}"]'
 
     def __iter__(self) -> typing.Iterator[int]:
+        """Iterate through all the leaves rooted in this node."""
         yield self.leaf_label
 
     def __eq__(self, other: object) -> bool:
+        """Test if two nodes are equivalent."""
         if not isinstance(other, Leaf):  # pragma: no cover
             return False
         return self.edge_label == other.edge_label and \
@@ -105,10 +131,13 @@ class Leaf(Node):
 
 @ dataclasses.dataclass
 class SuffixTree:
+    """A suffix tree."""
+
     alpha: Alphabet
     root: Inner
 
     def search(self, p: str) -> typing.Iterator[int]:
+        """Find all occurences of p in the suffix tree."""
         try:
             p_ = SubSeq[int](self.alpha.map(p))
         except KeyError:
@@ -122,6 +151,7 @@ class SuffixTree:
             yield from iter(n)
 
     def __contains__(self, p: str) -> bool:
+        """Test if string p is in the tree."""
         try:
             p_ = SubSeq[int](self.alpha.map(p))
         except KeyError:
@@ -132,9 +162,11 @@ class SuffixTree:
         return j == len(y)
 
     def to_dot(self) -> str:
+        """Get a dot representation of a tree."""
         return "digraph { rankdir=\"LR\" " + '\n'.join(self.root.to_dot(self.alpha)) + "}"  # noqa
 
     def __eq__(self, other: object) -> bool:
+        """Test if two trees are equivalent."""
         if not isinstance(other, SuffixTree):  # pragma: no cover
             return False
         return self.root == other.root
@@ -145,8 +177,11 @@ class SuffixTree:
 
 
 def first_mismatch(x: SubSeq[int], y: SubSeq[int]) -> int:
-    """Returns how far along x and y we can match.
-Return index of first mismatch."""
+    """
+    Return how far along x and y we can match.
+
+    Return index of first mismatch.
+    """
     i = -1  # Handle special case with empty string
     for i, (a, b) in enumerate(zip(x, y)):
         if a != b:
@@ -162,6 +197,7 @@ SearchResult = tuple[Node, int, SubSeq[int]]
 
 
 def tree_search(n: Inner, p: SubSeq[int]) -> SearchResult:
+    """Search for p down the tree rooted in n."""
     # In the special case that p is empty (which we guarantee
     # that it isn't after this point), we match the entire
     # local tree, so we have to report that.
@@ -183,6 +219,7 @@ def tree_search(n: Inner, p: SubSeq[int]) -> SearchResult:
 
 
 def tree_fastsearch(n: Inner, p: SubSeq[int]) -> SearchResult:
+    """Do a fast scan after p starting at n."""
     # In the special case that x is empty (which we guarantee
     # that it isn't after this point), we match the entire
     # local tree, so we have to report that.
@@ -205,9 +242,12 @@ def tree_fastsearch(n: Inner, p: SubSeq[int]) -> SearchResult:
 
 
 def break_edge(leaf_label: int, n: Node, k: int, z: SubSeq[int]) -> Leaf:
-    """Break the edge to node `n`, `k` characters down, adding a new leaf
-with label `label` with edge `z`. Returns the new leaf."""
+    """
+    Break an edge in two.
 
+    Break the edge to node `n`, `k` characters down, adding a new leaf
+    with label `label` with edge `z`. Returns the new leaf.
+    """
     new_n = Inner(n.edge_label[:k])  # The node that splits the edge
     new_leaf = Leaf(leaf_label, z)   # Remaining bit of other path
     n.edge_label = n.edge_label[k:]  # Move start of n forward
@@ -224,9 +264,12 @@ with label `label` with edge `z`. Returns the new leaf."""
 # SECTION Naive construction algorithm
 
 def naive_st_construction(s: str) -> SuffixTree:
-    """Construct a suffix tree by searching from the root
-down to the insertion point for each suffix in `s`."""
+    """
+    Naive construction algorithm.
 
+    Construct a suffix tree by searching from the root
+    down to the insertion point for each suffix in `s`.
+    """
     x_, alpha = Alphabet.mapped_string_with_sentinel(s)
     x = SubSeq[int](x_)
     root = Inner(x[0:0])
@@ -254,9 +297,13 @@ down to the insertion point for each suffix in `s`."""
 
 
 def mccreight_st_construction(s: str) -> SuffixTree:
-    """Construct a suffix tree by searching from the root
-down to the insertion point for each suffix in `s`."""
+    """
+    Construct a suffix tree with McCreight's algorithm.
 
+    Construct a suffix tree by searching from the root
+    down to the insertion point for each suffix in `s`,
+    but exploiting suffix links and fast scan along the way.
+    """
     x_, alpha = Alphabet.mapped_string_with_sentinel(s)
     x = SubSeq[int](x_)
     root = Inner(x[0:0])
@@ -342,6 +389,7 @@ down to the insertion point for each suffix in `s`."""
 
 
 def search_up(n: Node, length: int) -> tuple[Node, int]:
+    """Move length up the tree starting at node n."""
     while length and len(n.edge_label) <= length:
         assert n.parent is not None  # This is mostly for the type checker...
         length -= len(n.edge_label)
@@ -352,6 +400,7 @@ def search_up(n: Node, length: int) -> tuple[Node, int]:
 
 
 def lcp_st_construction(s: str, sa: list[int], lcp: list[int]) -> SuffixTree:
+    """Construct a suffix tree from the suffix and lcp arrays."""
     x_, alpha = Alphabet.mapped_string_with_sentinel(s)
     x = SubSeq[int](x_)
     root = Inner(x[0:0])

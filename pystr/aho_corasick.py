@@ -1,3 +1,5 @@
+"""Implementation of the Aho-Corasick algorithm."""
+
 import typing
 from .trie import TrieNode, depth_first_trie
 
@@ -15,10 +17,12 @@ def occurrences(n: TrieNode) -> typing.Iterator[int]:
 
 
 def find_out(n: TrieNode, a: str) -> TrieNode:
-    """Find the node we get to with an a move.
+    """
+    Find the node we get to with an a move.
 
     We will end up in the node if we cannot make one,
-    but that works fine with the out list reporting."""
+    but that works fine with the out list reporting.
+    """
     while not n.is_root and a not in n:
         assert n.suffix_link is not None
         n = n.suffix_link

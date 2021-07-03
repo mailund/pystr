@@ -1,3 +1,5 @@
+"""Longest common prefix arrays."""
+
 from .suffixtree import SuffixTree, Node, Leaf, Inner
 
 # SECTION Building lcp from suffix tree
@@ -6,7 +8,7 @@ from .suffixtree import SuffixTree, Node, Leaf, Inner
 def suf_tree_traversal(lcp: int, depth: int, n: Node,
                        sa: list[int], lcp_arr: list[int]
                        ) -> tuple[list[int], list[int]]:
-
+    """Construct suffix array and lcp array from a suffix tree."""
     # A closure might be better for this function, but creating
     # closures come at a runtime cost...
 
@@ -29,6 +31,7 @@ def suf_tree_traversal(lcp: int, depth: int, n: Node,
 
 
 def sa_lcp_from_suffix_tree(st: SuffixTree) -> tuple[list[int], list[int]]:
+    """Construct suffix array and lcp array from a suffix tree."""
     return suf_tree_traversal(0, 0, st.root, [], [])
 
 # !SECTION
@@ -37,6 +40,7 @@ def sa_lcp_from_suffix_tree(st: SuffixTree) -> tuple[list[int], list[int]]:
 
 
 def inverse_sa(sa: list[int]) -> list[int]:
+    """Construct the reverse suffix array for sa."""
     isa = [0] * len(sa)
     for i, j in enumerate(sa):
         isa[j] = i
@@ -44,6 +48,7 @@ def inverse_sa(sa: list[int]) -> list[int]:
 
 
 def compare_lcp(x: str, i: int, j: int) -> int:
+    """Check how long a prefix is shared between suffix i and j."""
     m = min(len(x) - i, len(x) - j)
     for k in range(m):
         if x[i+k] != x[j+k]:
@@ -52,6 +57,7 @@ def compare_lcp(x: str, i: int, j: int) -> int:
 
 
 def lcp_from_sa(x: str, sa: list[int]) -> list[int]:
+    """Build the lcp array from the suffix array."""
     lcp = [-1] * len(sa)
     isa = inverse_sa(sa)
 

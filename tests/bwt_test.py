@@ -1,3 +1,5 @@
+"""Test bwt."""
+
 from helpers import check_matches
 
 from pystr import bwt
@@ -7,6 +9,7 @@ from pystr import approx
 
 
 def test_bw_transform() -> None:
+    """Test transformation."""
     x = "mississippi"
     b, alpha, _ = bwt.burrows_wheeler_transform(x)
     r = bwt.reverse_burrows_wheeler_transform(b)
@@ -15,6 +18,7 @@ def test_bw_transform() -> None:
 
 
 def test_bw_transform_bytes() -> None:
+    """Test transformation to bytearray."""
     x_ = "mississippi"
     x, alpha = alphabet.Alphabet.mapped_string_with_sentinel(x_)
     b, _ = bwt.burrows_wheeler_transform_bytes(x, alpha)
@@ -24,6 +28,7 @@ def test_bw_transform_bytes() -> None:
 
 
 def test_ctable() -> None:
+    """Test C-table."""
     x, alpha = alphabet.Alphabet.mapped_string_with_sentinel("aabca")
     ctab = bwt.CTable(x, len(alpha))
     assert ctab[0] == 0, "Nothing is smaller than the sentinel"
@@ -33,6 +38,7 @@ def test_ctable() -> None:
 
 
 def test_otable() -> None:
+    """Test O-table."""
     x = "aabca"
     transformed, alpha, _ = bwt.burrows_wheeler_transform(x)
     assert transformed == bytearray([1, 3, 0, 1, 1, 2])
@@ -46,6 +52,7 @@ def test_otable() -> None:
 
 
 def test_mississippi() -> None:
+    """Test on mississippi."""
     x = "mississippi"
     sa = sais.sais(x)
     for j in sa:
@@ -60,6 +67,7 @@ def test_mississippi() -> None:
 
 
 def test_mississippi_aprox_0() -> None:
+    """Test approximative algorithm with edit 0."""
     x = "mississippi"
     search = bwt.approx_preprocess(x)
     for p in ("si", "ppi", "ssi", "pip", "x"):
@@ -69,6 +77,7 @@ def test_mississippi_aprox_0() -> None:
 
 
 def test_mississippi_aprox_edit() -> None:
+    """Test approximative matching."""
     x = "mississippi"
     search = bwt.approx_preprocess(x)
     for edits in [1, 2, 3]:

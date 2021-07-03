@@ -1,5 +1,5 @@
 """
-Straightforward implementation of the skew/DC3 algorithm
+Straightforward implementation of the skew/DC3 algorithm.
 
     - https://www.cs.helsinki.fi/u/tpkarkka/publications/jacm05-revised.pdf
 
@@ -54,19 +54,19 @@ def bucket_sort(x: typing.Sequence[int], asize: int,
 
 
 def radix3(x: typing.Sequence[int], asize: int, idx: list[int]) -> list[int]:
-    """Sort indices in idx according to their first three letters in x."""
+    """Sort indices in idx according to first three letters in x."""
     idx = bucket_sort(x, asize, idx, 2)
     idx = bucket_sort(x, asize, idx, 1)
     return bucket_sort(x, asize, idx)
 
 
 def triplet(x: typing.Sequence[int], i: int) -> SkewTriplet:
-    """Extract the triplet (x[i],x[i+1],x[i+2])."""
+    """Extract the triplet x[i:i+3] safely."""
     assert i < len(x), "Don't create empty triplets!"
     return (safe_idx(x, i), safe_idx(x, i + 1), safe_idx(x, i + 2))
 
 
-def less(x: typing.Sequence[int], i: int, j: int, ISA: dict[int, int]) -> bool:
+def less(x: typing.Sequence[int], i: int, j: int, isa: dict[int, int]) -> bool:
     """Check if x[i:] < x[j:] using the inverse suffix array for SA12."""
     a, b = safe_idx(x, i), safe_idx(x, j)
     if a < b:
@@ -74,26 +74,26 @@ def less(x: typing.Sequence[int], i: int, j: int, ISA: dict[int, int]) -> bool:
     if a > b:
         return False
     if i % 3 != 0 and j % 3 != 0:
-        return ISA[i] < ISA[j]
-    return less(x, i + 1, j + 1, ISA)
+        return isa[i] < isa[j]
+    return less(x, i + 1, j + 1, isa)
 
 
 def merge(x: typing.Sequence[int],
-          SA12: list[int], SA3: list[int]
+          sa12: list[int], sa3: list[int]
           ) -> list[int]:
-    """Merge the suffixes in sorted SA12 and SA3."""
+    """Merge the suffixes in sorted sa12 and sa3."""
     # I'm using a dict here, but you can use a list with a little
     # arithmetic
-    ISA = {SA12[i]: i for i in range(len(SA12))}
-    SA = []
+    isa = {sa12[i]: i for i in range(len(sa12))}
+    sa = []
     i, j = 0, 0
-    while i < len(SA12) and j < len(SA3):
-        if less(x, SA12[i], SA3[j], ISA):
-            SA.append(SA12[i])
+    while i < len(sa12) and j < len(sa3):
+        if less(x, sa12[i], sa3[j], isa):
+            sa.append(sa12[i])
             i += 1
         else:
-            SA.append(SA3[j])
+            sa.append(sa3[j])
             j += 1
-    SA.extend(SA12[i:])
-    SA.extend(SA3[j:])
-    return SA
+    sa.extend(sa12[i:])
+    sa.extend(sa3[j:])
+    return sa

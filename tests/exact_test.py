@@ -1,3 +1,5 @@
+"""Test exact matching algorithms."""
+
 from typing import Callable, Iterator
 
 from pystr.exact import naive, border, kmp, bmh
@@ -17,11 +19,13 @@ Algo = Callable[[str, str], Iterator[int]]
 
 # wrapper
 def suffix_tree_exact(x: str, p: str) -> Iterator[int]:
+    """Exact search using a suffix tree."""
     yield from mccreight(x).search(p)
 
 
 # wrapper
 def bmh_b(x: str, p: str) -> Iterator[int]:
+    """Search using the bmh_b algorithm."""
     x_b = x.encode('ascii')
     p_b = p.encode('ascii')
     yield from _bmh_b(x_b, p_b)
@@ -29,6 +33,7 @@ def bmh_b(x: str, p: str) -> Iterator[int]:
 
 # wrapper
 def bwt_search(x: str, p: str) -> Iterator[int]:
+    """Search using the bwt/fmindex algorithm."""
     yield from exact_preprocess(x)(p)
 
 
@@ -41,6 +46,7 @@ ALGOS: list[Algo] = [
 
 
 def check_empty(algo: Algo) -> _Test:
+    """Test if we can search for the empty string."""
     def test(_: object) -> None:
         for _ in range(10):
             x = random_string(10)
@@ -56,7 +62,7 @@ TestEmptyPatterns = collect_tests(
 )
 
 
-def check_exact_matching(algo: Algo) -> _Test:
+def check_exact_matching(algo: Algo) -> _Test:  # noqa C901
     def test(_: object) -> None:
         for _ in range(10):
             x = random_string(20, alpha="abcd")
@@ -92,6 +98,7 @@ TestExactMatching = collect_tests(
 
 
 def check_against_naive(algo: Algo) -> _Test:
+    """Test if we get the same results as the naive algorithm."""
     def test(_: object) -> None:
         for _ in range(10):
             x = random_string(20, alpha="abc")

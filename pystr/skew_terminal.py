@@ -1,5 +1,5 @@
 """
-Straightforward implementation of the skew/DC3 algorithm
+Straightforward implementation of the skew/DC3 algorithm.
 
     - https://www.cs.helsinki.fi/u/tpkarkka/publications/jacm05-revised.pdf
 
@@ -44,14 +44,13 @@ def u_idx(i: int, m: int) -> int:
 
 def skew_rec(x: typing.Sequence[int], asize: int) -> list[int]:
     """Recursive skew SA construction algorithm."""
-
-    SA12 = [i for i in range(len(x)) if i % 3 != 0]
-    SA12 = radix3(x, asize, SA12)
-    new_alpha = collect_alphabet(x, SA12)
+    sa12 = [i for i in range(len(x)) if i % 3 != 0]
+    sa12 = radix3(x, asize, sa12)
+    new_alpha = collect_alphabet(x, sa12)
 
     # Now both strings and alphabets only have implicit
     # sentinels, so the <= from central is now <
-    if len(new_alpha) < len(SA12):
+    if len(new_alpha) < len(sa12):
         # Recursively sort SA12.
         # Construct the u string and compute its suffix array,
         # then map the suffix array back to SA12 indices
@@ -60,15 +59,15 @@ def skew_rec(x: typing.Sequence[int], asize: int) -> list[int]:
         # there's a plus one now for m, because we don't have the
         # central sentinel
         m = (len(sa_u)+1) // 2
-        SA12 = [u_idx(i, m) for i in sa_u]  # we don't exclude m now
+        sa12 = [u_idx(i, m) for i in sa_u]  # we don't exclude m now
 
     # Special case if the last index is class 0. Then the
     # following class 1 isn't there, but we should treat it
     # as the smallest string in the class.
-    SA3 = ([len(x) - 1] if len(x) % 3 == 1 else []) + \
-        [i - 1 for i in SA12 if i % 3 == 1]
-    SA3 = bucket_sort(x, asize, SA3)
-    return merge(x, SA12, SA3)
+    sa3 = ([len(x) - 1] if len(x) % 3 == 1 else []) + \
+        [i - 1 for i in sa12 if i % 3 == 1]
+    sa3 = bucket_sort(x, asize, sa3)
+    return merge(x, sa12, sa3)
 
 
 def skew(x: str) -> list[int]:

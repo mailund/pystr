@@ -1,7 +1,10 @@
+"""Test subseq class."""
+
 from pystr import subseq
 
 
 def test_substr() -> None:
+    """Test that we can work with substrings."""
     underlying = "mississippi"
     assert subseq.SubSeq[str](underlying) == underlying
     assert subseq.SubSeq[str](underlying, 1) == underlying[1:]
@@ -25,6 +28,7 @@ def test_substr() -> None:
 
 
 def test_int_subseq() -> None:
+    """Test that we can make subseqs of int lists."""
     underlying = [2, 1, 4, 4, 1, 4, 4, 1, 3, 3, 1, 0]
     assert subseq.SubSeq[int](underlying) == underlying
     assert subseq.SubSeq[int](underlying, 1) == underlying[1:]
@@ -50,6 +54,7 @@ def test_int_subseq() -> None:
 
 
 def test_mutable() -> None:
+    """Test mutable subseqs."""
     underlying = [2, 1, 4, 4, 1, 4, 4, 1, 3, 3, 1, 0]
     x: subseq.MSubSeq[int] = subseq.MSubSeq[int](underlying, 1)
     x[1] = 42
@@ -62,6 +67,7 @@ def test_mutable() -> None:
 
 
 def test_compare() -> None:
+    """Test that we can compare subseqs."""
     x = subseq.SubSeq[int]([1, 2, 3])
     y = subseq.SubSeq[int]([1, 2, 3, 4])
     z = subseq.SubSeq[int]([1, 3])
@@ -71,6 +77,7 @@ def test_compare() -> None:
 
 
 def test_assigments() -> None:
+    """Test that we can assign to subseqs."""
     x = [1, 2, 3, 4]
     ss: subseq.MSubSeq[int] = subseq.MSubSeq[int](x)
     assert x == ss
