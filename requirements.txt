@@ -1,3 +1,7 @@
+pycodestyle
+pydocstyle
+pylama
+bandit
 mypy
 pytest
 pytest-mock
