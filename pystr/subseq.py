@@ -130,6 +130,9 @@ class SubSeq(typing.Generic[T], typing.Sequence[T]):
             i, j = SubSeq._fix_index(self, idx.start, idx.stop)
             return self.__class__(self._x, self._i + i, self._i + j)
 
+        assert False, "idx of invalid type"
+        return None  # just for the stupid linter...
+
 
 class MSubSeq(SubSeq[T]):
     """A subsequence over mutable sequences."""

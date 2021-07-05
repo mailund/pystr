@@ -57,9 +57,9 @@ class TrieNode:
             res.append(f'{id(self)}[label="{self.label}", shape=circle]')
 
         if self.suffix_link is not None and not self.suffix_link.is_root:
-            res.append(f"{id(self)} -> {id(self.suffix_link)}[style=dotted, color=red]")  # noqa: E501
+            res.append(f"{id(self)} -> {id(self.suffix_link)}[style=dotted, color=red]")  # noqa: E501 pylint:disable=line-too-long
         if self.out_list is not None:
-            res.append(f"{id(self)} -> {id(self.out_list)}[style=dotted, color=green]")   # noqa: E501
+            res.append(f"{id(self)} -> {id(self.out_list)}[style=dotted, color=green]")   # noqa: E501 pylint:disable=line-too-long
 
         for k, n in self.children.items():
             res.append(f'{id(self)} -> {id(n)}[label="{k}"]')
@@ -98,10 +98,10 @@ class Trie:
     def __contains__(self, x: str) -> bool:
         """Test if x is in the trie."""
         n = self.root
-        for i in range(len(x)):
-            if x[i] not in n:
+        for a in x:
+            if a not in n:
                 return False
-            n = n[x[i]]
+            n = n[a]
         return n.label is not None
 
     def to_dot(self) -> str:
@@ -112,9 +112,9 @@ class Trie:
 
     def __eq__(self, other: object) -> bool:
         """Test if self and other are equivalent."""
-        if not isinstance(other, Trie):  # pragma: no cover
+        if not isinstance(other, Trie):    # pragma: no cover
             raise NotImplementedError()
-        return type(other) == type(self) and self.root == other.root
+        return self.root == other.root
 
 
 def depth_first_trie(*strings: str) -> Trie:
@@ -183,9 +183,8 @@ def breadth_first_trie(*strings: str) -> Trie:
     return Trie(root)
 
 
-def group_strings(
-    strings: list[LS]
-) -> tuple[typing.Optional[int], dict[str, list[LS]]]:
+def group_strings(strings: list[LS]
+                  ) -> tuple[typing.Optional[int], dict[str, list[LS]]]:
     """
     Split input into groups according to first character.
 
@@ -193,10 +192,10 @@ def group_strings(
     Returns the label (or None) and the groups in a dict.
     """
     empty, non_empty = list[LS](), list[LS]()
-    for ls in strings:
-        (non_empty, empty)[len(ls.x) == 0].append(ls)
+    for lab_idx in strings:
+        (non_empty, empty)[len(lab_idx.x) == 0].append(lab_idx)
 
-    assert(len(empty) <= 1)
+    assert len(empty) <= 1
     label = empty[0].label if len(empty) == 1 else None
 
     out_groups = collections.defaultdict[str, list[LS]](list)

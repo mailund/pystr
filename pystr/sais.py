@@ -130,6 +130,7 @@ def equal_lms(x: SubSeq[int], is_s: BitVector, i: int, j: int) -> bool:
     # This assert is only hear to help the linter...
     # (checker doesn't understand infinite generators yet)
     assert False, "We only leave the loop with a return."  # pragma: no cover
+    return False  # just for the linter
 
 
 def compact_seq(x: MSubSeq[T],

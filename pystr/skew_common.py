@@ -25,8 +25,8 @@ def symbcount(x: typing.Sequence[int], asize: int) -> list[int]:
     # This is what collections.Counter does, but we need the
     # alphabet to be sorted integers, so we do it manually.
     counts = [0] * asize
-    for c in x:
-        counts[c] += 1
+    for a in x:
+        counts[a] += 1
     return counts
 
 

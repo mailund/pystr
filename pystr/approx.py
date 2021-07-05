@@ -44,8 +44,8 @@ def cigar_to_edits(cigar: str) -> list[Edit]:
     for group in groups:
         match = re.match(r"(\d+)(\D)", group)
         assert match is not None
-        n, e = match.groups()
-        res.extend([cigar_to_edit_map[e]] * int(n))
+        num, edit = match.groups()
+        res.extend([cigar_to_edit_map[edit]] * int(num))
     return res
 
 

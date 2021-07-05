@@ -38,8 +38,8 @@ def test_classify() -> None:
         # S   L      L      L      S
         True, False, False, False, True
     ]
-    for i in range(len(is_s)):
-        assert is_s[i] == expected[i]
+    for i, b in enumerate(is_s):
+        assert b == expected[i]
 
 
 def test_is_lms() -> None:

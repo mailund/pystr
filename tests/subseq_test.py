@@ -41,7 +41,7 @@ def test_int_subseq() -> None:
 
     y: list[int] = underlying[1:6]
     assert x == y
-    for i in range(len(x)):
+    for i, _ in enumerate(x):
         assert x[i] == y[i]
         assert x[i:] == y[i:]
 
@@ -71,18 +71,18 @@ def test_compare() -> None:
     x = subseq.SubSeq[int]([1, 2, 3])
     y = subseq.SubSeq[int]([1, 2, 3, 4])
     z = subseq.SubSeq[int]([1, 3])
-    assert x < y and y > x and not y < x
-    assert x < z and z > x and not z < x
-    assert y < z and z > y and not z < y
+    assert x < y and y > x and not y < x  # noqa: uneeded-not
+    assert x < z and z > x and not z < x  # noqa: uneeded-not
+    assert y < z and z > y and not z < y  # noqa: uneeded-not
 
 
 def test_assigments() -> None:
     """Test that we can assign to subseqs."""
     x = [1, 2, 3, 4]
-    ss: subseq.MSubSeq[int] = subseq.MSubSeq[int](x)
-    assert x == ss
-    ss[:] = -1
-    assert ss == [-1, -1, -1, -1]
+    sub: subseq.MSubSeq[int] = subseq.MSubSeq[int](x)
+    assert x == sub
+    sub[:] = -1
+    assert sub == [-1, -1, -1, -1]
     assert x == [-1, -1, -1, -1]
 
 

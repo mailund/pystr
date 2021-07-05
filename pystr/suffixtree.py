@@ -33,7 +33,7 @@ class Node:  # Should be abc ABC, but doesn't work with type checker
         """Iterate through all the leaves in the tree rooted in this node."""
         ...  # pragma no cover
 
-    def to_dot(self, alpha: Alphabet) -> typing.Iterator[str]:
+    def to_dot(self, _: Alphabet) -> typing.Iterator[str]:  # noqa: no-self-use, pylint: disable=no-self-use
         """Represent the tree rooted in this node as dot."""
         ...  # pragma no cover
 
@@ -62,9 +62,9 @@ class Inner(Node):
         if self.parent is None:  # Root node
             yield f'{id(self)}[label="", shape=circle, style=filled, fillcolor=grey]'  # noqa: E501
         else:
-            el = alpha.revmap(self.edge_label)
+            elab = alpha.revmap(self.edge_label)
             yield f'{id(self)}[label="", shape=point]'
-            yield f'{id(self.parent)} -> {id(self)}[label="{el}"]'
+            yield f'{id(self.parent)} -> {id(self)}[label="{elab}"]'
         if self.suffix_link:
             yield f"{id(self)} -> {id(self.suffix_link)}[style=dashed, color=red]"  # noqa
         for child in self.children.values():
@@ -338,8 +338,8 @@ def mccreight_st_construction(s: str) -> SuffixTree:
             # p can't be the root here, because the root has a
             # suffix link
             assert p.parent is not None, "p can't be the root."
-            pp = p.parent
-            assert pp.suffix_link, "Parent's parent must have a suffix link"
+            assert p.parent.suffix_link, \
+                "Parent's parent must have a suffix link"
 
             # Jumping to pp.suffix_link gets us past a, so now we get y and z
             # (with the special case if p is the root) and then we are
@@ -348,7 +348,7 @@ def mccreight_st_construction(s: str) -> SuffixTree:
             z = v.edge_label
 
             # Fast scan to new starting point
-            y_res, j, w = tree_fastsearch(pp.suffix_link, y)
+            y_res, j, w = tree_fastsearch(p.parent.suffix_link, y)
             assert j == len(w), "Fast scan should always find a match"
 
             if len(y_res.edge_label) != j:
@@ -357,12 +357,12 @@ def mccreight_st_construction(s: str) -> SuffixTree:
                 v = break_edge(i, y_res, j, z)
                 p.suffix_link = v.parent
                 continue  # Process next suffix...
-            else:
-                # The result was on a node, and we continue from there
-                # (using two variables make the type checker happier).
-                assert isinstance(y_res, Inner), \
-                    "A mismatch on a node means that it is an inner node."
-                y_node = y_res
+
+            # The result was on a node, and we continue from there
+            # (using two variables make the type checker happier).
+            assert isinstance(y_res, Inner), \
+                "A mismatch on a node means that it is an inner node."
+            y_node = y_res
 
             # If we landed on a node, then that is p's suffix link
             p.suffix_link = y_node

@@ -18,9 +18,8 @@ ApproxSearchFunc = typing.Callable[
 ]
 
 
-def burrows_wheeler_transform_bytes(
-    x: bytearray, alpha: Alphabet
-) -> tuple[bytearray, list[int]]:
+def burrows_wheeler_transform_bytes(x: bytearray, alpha: Alphabet
+                                    ) -> tuple[bytearray, list[int]]:
     """
     Construct the Burrows-Wheeler transform.
 
@@ -35,9 +34,7 @@ def burrows_wheeler_transform_bytes(
     return bwt, sa
 
 
-def burrows_wheeler_transform(
-    x: str
-) -> tuple[bytearray, Alphabet, list[int]]:
+def burrows_wheeler_transform(x: str) -> tuple[bytearray, Alphabet, list[int]]:
     """
     Construct the Burrows-Wheeler transform.
 
@@ -53,9 +50,7 @@ def burrows_wheeler_transform(
     return bwt, alpha, sa
 
 
-def reverse_burrows_wheeler_transform(
-    bwt: bytearray
-) -> bytearray:
+def reverse_burrows_wheeler_transform(bwt: bytearray) -> bytearray:
     """
     Reverse the Burrows-Wheeler transform.
 
@@ -175,9 +170,8 @@ def preprocess_rotab(x: str) -> OTable:
     return rotab
 
 
-def preprocess_approx(
-    x: str
-) -> tuple[Alphabet, list[int], CTable, OTable, OTable]:
+def preprocess_approx(x: str
+                      ) -> tuple[Alphabet, list[int], CTable, OTable, OTable]:
     """Preprocess tables for approximative bwa search."""
     exact = preprocess_exact(x)
     rotab = preprocess_rotab(x)

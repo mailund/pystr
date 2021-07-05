@@ -1,7 +1,10 @@
+"""Test of bitvectors."""
+
 from pystr.bv import BitVector
 
 
 def test_v() -> None:
+    """Basic test of bitvector."""
     bvec = BitVector(4)
     for i in range(4):
         assert not bvec[i]
@@ -12,6 +15,10 @@ def test_v() -> None:
         assert not bvec[i]
     for i in [1, 3]:
         assert bvec[i]
+
+    expected = [False, True, False, True]
+    for i, b in enumerate(bvec):
+        assert b == expected[i]
 
     bvec[1] = False
     bvec[3] = False

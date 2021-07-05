@@ -1,5 +1,7 @@
 """Bit vector implementation."""
 
+import typing
+
 
 class BitVector:
     """A bit vector."""
@@ -26,3 +28,8 @@ class BitVector:
     def __len__(self) -> int:
         """Return the length of the vector."""
         return self.size
+
+    def __iter__(self) -> typing.Iterator[bool]:
+        """Iterate through the bits in the vector."""
+        for i in range(self.size):
+            yield self[i]
