@@ -13,7 +13,8 @@ class Alphabet:
     _revmap: dict[int, str]
 
     def __init__(self, reference: str) -> None:
-        """Create an alphabet with the letters found in reference.
+        """
+        Create an alphabet with the letters found in reference.
 
         An alphabet always has a sentinel symbol, byte zero, regardless of
         whether it is found in reference.

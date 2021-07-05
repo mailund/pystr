@@ -1,0 +1,14 @@
+strictness: medium
+test-warnings: true
+doc-warnings: true
+
+
+pep257:
+  disable:
+    - D212
+    - D203
+
+pylint:
+  disable:
+    - too-few-public-methods
+    - locally-disabled

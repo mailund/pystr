@@ -17,6 +17,6 @@ def test_cigar_mapping() -> None:
 
 def test_extract_and_count() -> None:
     """Test that we count the right edits."""
-    assert 1 == count_edits(
+    assert count_edits(
         extract_alignment('aacgt', 'agt', 1, '1M1D1M')
-    )
+    ) == 1

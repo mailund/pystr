@@ -18,16 +18,15 @@ ApproxSearchFunc = typing.Callable[
 ]
 
 
-def burrows_wheeler_transform_bytes(x: bytearray, alpha: Alphabet
-                                    ) -> tuple[bytearray, list[int]]:
+def burrows_wheeler_transform_bytes(x: bytearray,
+                                    alpha: Alphabet) \
+        -> tuple[bytearray, list[int]]:
     """
     Construct the Burrows-Wheeler transform.
 
     Build the bwt string from a mapped string x and the
-    alphabet x was mapped to.
-
-    Returns the transformed string and the suffix array
-    over x.
+    alphabet x was mapped to. Returns the transformed string
+    and the suffix array over x.
     """
     sa = sais_alphabet(SubSeq[int](x), alpha)
     bwt = bytearray(x[j - 1] for j in sa)
@@ -71,7 +70,7 @@ def reverse_burrows_wheeler_transform(bwt: bytearray) -> bytearray:
 
 class CTable:
     """
-    C-table for othe bwt/fm-index search algorithms.
+    C-table for other bwt/fm-index search algorithms.
 
     for CTable ctab, ctab[⍺] is the number of occurrences
     of letters a < ⍺ in the bwt string (or the orignal string,
@@ -211,76 +210,99 @@ def exact_preprocess(x: str) -> ExactSearchFunc:
     return exact_searcher_from_tables(*preprocess_exact(x))
 
 
-# FIXME: simplify this code, somehow...
-def approx_searcher_from_tables(  # noqa the function is too complex,
-        alpha: Alphabet,          # but I don't know how to fix it
+BwtApproxTables = typing.NamedTuple(
+    "BwtApproxTables",
+    [("alpha", Alphabet), ("sa", list[int]),
+     ("ctab", CTable), ("otab", OTable),
+     ("rotab", OTable), ("dtab", list[int]),
+     ("edit_ops", list[Edit]), ("p", bytearray)]
+)
+
+
+def do_m(tbls: BwtApproxTables,
+         i: int, left: int, right: int,
+         edits: int) -> typing.Iterator[tuple[int, str]]:
+    """Perform a match/mismatch operation in the approx search."""
+    tbls.edit_ops.append(Edit.Match)
+    for a in range(1, len(tbls.alpha)):
+        next_left = tbls.ctab[a] + tbls.otab[a, left]
+        next_right = tbls.ctab[a] + tbls.otab[a, right]
+        if next_left >= next_right:
+            continue
+
+        next_edits = edits-(a != tbls.p[i])
+        yield from rec_search(tbls, i-1, next_left, next_right, next_edits)
+    tbls.edit_ops.pop()
+
+
+def do_i(tbls: BwtApproxTables,
+         i: int, left: int, right: int,
+         edits: int) -> typing.Iterator[tuple[int, str]]:
+    """Perform an insertion operation in the approx search."""
+    tbls.edit_ops.append(Edit.Insert)
+    yield from rec_search(tbls, i - 1, left, right, edits - 1)
+    tbls.edit_ops.pop()
+
+
+def do_d(tbls: BwtApproxTables,
+         i: int, left: int, right: int,
+         edits: int) -> typing.Iterator[tuple[int, str]]:
+    """Perform a deletion operation in the approx search."""
+    tbls.edit_ops.append(Edit.Delete)
+    for a in range(1, len(tbls.alpha)):
+        next_left = tbls.ctab[a] + tbls.otab[a, left]
+        next_right = tbls.ctab[a] + tbls.otab[a, right]
+        if next_left >= next_right:
+            continue
+        yield from rec_search(tbls, i, next_left, next_right, edits-1)
+    tbls.edit_ops.pop()
+
+
+def rec_search(tbls: BwtApproxTables,
+               i: int, left: int, right: int,
+               edits: int) -> typing.Iterator[tuple[int, str]]:
+    """Handle recursive operations in approx search."""
+    # Do we have a match here?
+    if i < 0 <= edits:
+        # Remember to reverse the operations, since
+        # we did the backwards in the bwt search
+        cigar = edits_to_cigar(tbls.edit_ops[::-1])
+        for j in range(left, right):
+            yield tbls.sa[j], cigar
+        return
+
+        # Can we get to a match with the edits we have left?
+    if edits < tbls.dtab[i]:
+        return
+
+    yield from do_m(tbls, i, left, right, edits)
+    yield from do_i(tbls, i, left, right, edits)
+    yield from do_d(tbls, i, left, right, edits)
+
+
+def build_dtab(p: bytearray, sa: list[int],
+               ctab: CTable, rotab: OTable) -> list[int]:
+    """Build the D table for the approximative search."""
+    dtab = [0] * len(p)
+    min_edits = 0
+    left, right, i = 0, len(sa), len(p) - 1
+    for i, a in enumerate(p):
+        left = ctab[a] + rotab[a, left]
+        right = ctab[a] + rotab[a, right]
+        if left == right:
+            min_edits += 1
+            left, right = 0, len(sa)
+        dtab[i] = min_edits
+    return dtab
+
+
+def approx_searcher_from_tables(
+        alpha: Alphabet,
         sa: list[int],
         ctab: CTable,
         otab: OTable,
         rotab: OTable) -> ApproxSearchFunc:
     """Build an exact search function from preprocessed tables."""
-    edit_operations: list[Edit] = []
-
-    def do_m(p: bytearray,  # pylint:disable=too-many-arguments
-             i: int, left: int, right: int,
-             edits: int, dtab: list[int]
-             ) -> typing.Iterator[tuple[int, str]]:
-        edit_operations.append(Edit.Match)
-        for a in range(1, len(alpha)):
-            next_left = ctab[a] + otab[a, left]
-            next_right = ctab[a] + otab[a, right]
-            if next_left >= next_right:
-                continue
-
-            next_edits = edits-(a != p[i])
-            yield from rec_search(p, i-1, next_left, next_right,
-                                  next_edits, dtab)
-
-        edit_operations.pop()
-
-    def do_i(p: bytearray,   # pylint:disable=too-many-arguments
-             i: int, left: int, right: int,
-             edits: int, dtab: list[int]
-             ) -> typing.Iterator[tuple[int, str]]:
-        edit_operations.append(Edit.Insert)
-        yield from rec_search(p, i - 1, left, right, edits - 1, dtab)
-        edit_operations.pop()
-
-    def do_d(p: bytearray,  # pylint:disable=too-many-arguments
-             i: int, left: int, right: int,
-             edits: int, dtab: list[int]
-             ) -> typing.Iterator[tuple[int, str]]:
-        edit_operations.append(Edit.Delete)
-        for a in range(1, len(alpha)):
-            next_left = ctab[a] + otab[a, left]
-            next_right = ctab[a] + otab[a, right]
-            if next_left >= next_right:
-                continue
-            yield from rec_search(p, i, next_left, next_right,
-                                  edits-1, dtab)
-        edit_operations.pop()
-
-    def rec_search(p: bytearray,  # pylint:disable=too-many-arguments
-                   i: int, left: int, right: int,
-                   edits: int, dtab: list[int]
-                   ) -> typing.Iterator[tuple[int, str]]:
-
-        # Do we have a match here?
-        if i < 0 <= edits:
-            # Remember to reverse the operations, since
-            # we did the backwards in the bwt search
-            cigar = edits_to_cigar(edit_operations[::-1])
-            for j in range(left, right):
-                yield sa[j], cigar
-            return
-
-        # Can we get to a match with the edits we have left?
-        if edits < dtab[i]:
-            return
-
-        yield from do_m(p, i, left, right, edits, dtab)
-        yield from do_i(p, i, left, right, edits, dtab)
-        yield from do_d(p, i, left, right, edits, dtab)
 
     def search(p_: str, edits: int) -> typing.Iterator[tuple[int, str]]:
         assert p_, "We can't do approx search with an empty pattern!"
@@ -301,11 +323,15 @@ def approx_searcher_from_tables(  # noqa the function is too complex,
                 left, right = 0, len(sa)
             dtab[i] = min_edits
 
+        tbls = BwtApproxTables(alpha, sa,
+                               ctab, otab, rotab, dtab,
+                               list[Edit](), p)
+
         # Do the first operation in this function to avoid
         # deletions in the beginning (end) of the search
         left, right, i = 0, len(sa), len(p) - 1
-        yield from do_m(p, i, left, right, edits, dtab)
-        yield from do_i(p, i, left, right, edits, dtab)
+        yield from do_m(tbls, i, left, right, edits)
+        yield from do_i(tbls, i, left, right, edits)
 
     return search
 

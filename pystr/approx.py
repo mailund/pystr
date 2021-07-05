@@ -12,12 +12,12 @@ class Edit(enum.Enum):
     Delete = enum.auto()
 
 
-edit_to_cigar_map = {
+EDIT_TO_CIGAR_MAP = {
     Edit.Match: "M",
     Edit.Insert: "I",
     Edit.Delete: "D"
 }
-cigar_to_edit_map = {
+CIGAR_TO_EDIT_MAP = {
     "M": Edit.Match,
     "I": Edit.Insert,
     "D": Edit.Delete
@@ -32,7 +32,7 @@ def edits_to_cigar(edits: list[Edit]) -> str:
         j = i + 1
         while j < len(edits) and edits[i] == edits[j]:
             j += 1
-        res.append(f"{j-i}{edit_to_cigar_map[edits[i]]}")
+        res.append(f"{j-i}{EDIT_TO_CIGAR_MAP[edits[i]]}")
         i = j
     return ''.join(res)
 
@@ -45,7 +45,7 @@ def cigar_to_edits(cigar: str) -> list[Edit]:
         match = re.match(r"(\d+)(\D)", group)
         assert match is not None
         num, edit = match.groups()
-        res.extend([cigar_to_edit_map[edit]] * int(num))
+        res.extend([CIGAR_TO_EDIT_MAP[edit]] * int(num))
     return res
 
 
