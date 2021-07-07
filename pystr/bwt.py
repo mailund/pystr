@@ -7,11 +7,11 @@ from .approx import Edit, edits_to_cigar
 from .sais import sais_alphabet
 from .subseq import SubSeq
 
-ExactSearchFunc = typing.Callable[  # typealias: pylint: disable=C0103
+ExactSearchFunc = typing.Callable[
     [str],
     typing.Iterator[int]
 ]
-ApproxSearchFunc = typing.Callable[  # typealias: pylint: disable=C0103
+ApproxSearchFunc = typing.Callable[
     [str,
      int],
     typing.Iterator[tuple[int, str]]
