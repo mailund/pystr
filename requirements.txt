@@ -2,6 +2,7 @@ pycodestyle
 pydocstyle
 pylama
 bandit
+pylint
 mypy
 pytest
 pytest-mock
