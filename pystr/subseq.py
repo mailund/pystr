@@ -1,6 +1,7 @@
 """Sequence wrappers for constant time slicing."""
 
 from __future__ import annotations
+
 import typing
 
 # Type specifications...

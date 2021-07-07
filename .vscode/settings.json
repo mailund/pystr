@@ -7,5 +7,18 @@
     "python.testing.pytestEnabled": true,
     "python.pythonPath": "/usr/local/bin/python3.10",
     "python.linting.pylintUseMinimalCheckers": false,
-    "python.linting.pylintPath": "python3 -m pylint"
+    "python.linting.pylintPath": "/Library/Frameworks/Python.framework/Versions/3.10/bin/pylint",
+    "python.linting.flake8Enabled": true,
+    "python.linting.mypyEnabled": true,
+    "python.linting.mypyPath": "/Users/mailund/Library/Python/3.10/bin/mypy",
+    "python.linting.banditEnabled": true,
+    "python.linting.pycodestyleEnabled": true,
+    "python.linting.prospectorEnabled": true,
+    "python.linting.pydocstyleEnabled": true,
+    "python.linting.pylamaEnabled": true,
+    "python.linting.enabled": true,
+    "python.linting.pylintEnabled": true,
+    "python.linting.mypyArgs": [
+        "--strict"
+    ]
 }

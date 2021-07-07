@@ -1,11 +1,11 @@
 """Implementation of the SAIS algorithm."""
 
-import typing
 import itertools
+import typing
 
-from .subseq import SubSeq, MSubSeq
-from .bv import BitVector
 from .alphabet import Alphabet
+from .bv import BitVector
+from .subseq import MSubSeq, SubSeq
 
 T = typing.TypeVar('T')
 UNDEFINED = -1  # Undefined val in SA
@@ -16,7 +16,7 @@ def classify_sl(is_s: BitVector, x: SubSeq[int]) -> None:
     last = len(x) - 1
     is_s[last] = True
     for i in reversed(range(last)):
-        is_s[i] = x[i] < x[i+1] or (x[i] == x[i+1] and is_s[i+1])
+        is_s[i] = x[i] < x[i + 1] or (x[i] == x[i + 1] and is_s[i + 1])
 
 
 def is_lms(is_s: BitVector, i: int) -> bool:
@@ -124,7 +124,7 @@ def equal_lms(x: SubSeq[int], is_s: BitVector, i: int, j: int) -> bool:
         j_lms = is_lms(is_s, j + k)
         if k > 0 and i_lms and j_lms:
             return True
-        if i_lms != j_lms or x[i+k] != x[j+k]:
+        if i_lms != j_lms or x[i + k] != x[j + k]:
             return False
 
     # This assert is only hear to help the linter...
@@ -165,7 +165,7 @@ def reduce_lms(x: SubSeq[int], sa: MSubSeq[int], is_s: BitVector) \
     for j in compact:
         if not equal_lms(x, is_s, prev, j):
             letter += 1
-        buffer[j//2] = letter
+        buffer[j // 2] = letter
         prev = j
 
     # Then compact the buffer into the reduced string

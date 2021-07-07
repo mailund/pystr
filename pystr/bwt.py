@@ -2,10 +2,10 @@
 
 import typing
 
-from .subseq import SubSeq
 from .alphabet import Alphabet
-from .sais import sais_alphabet
 from .approx import Edit, edits_to_cigar
+from .sais import sais_alphabet
+from .subseq import SubSeq
 
 ExactSearchFunc = typing.Callable[
     [str],
@@ -61,7 +61,7 @@ def reverse_burrows_wheeler_transform(bwt: bytearray) -> bytearray:
     otab = OTable(bwt, asize)
 
     i, x = 0, bytearray(len(bwt))
-    for j in reversed(range(len(x)-1)):
+    for j in reversed(range(len(x) - 1)):
         a = x[j] = bwt[i]
         i = ctab[a] + otab[a, i]
 
@@ -133,15 +133,15 @@ class OTable:
         # should hold a 1 in the row that has character
         # bwt[0]. The we b-1 because of the sentinel and
         # we use column 0 for the first real column.
-        self._tbl[bwt[0]-1][0] = 1
+        self._tbl[bwt[0] - 1][0] = 1
 
         # We already have cols 0 and 1. Now we need to
         # go up to (and including) len(bwt).
-        for i in range(2, len(bwt)+1):
-            b = bwt[i-1]
+        for i in range(2, len(bwt) + 1):
+            b = bwt[i - 1]
             # Characters, except for sentinel
             for a in range(1, asize):
-                self._tbl[a-1][i-1] = self._tbl[a-1][i-2] + (a == b)
+                self._tbl[a - 1][i - 1] = self._tbl[a - 1][i - 2] + (a == b)
 
     def __getitem__(self, idx: tuple[int, int]) -> int:
         """
@@ -151,7 +151,7 @@ class OTable:
         """
         a, i = idx
         assert a > 0, "Don't look up the sentinel"
-        return 0 if i == 0 else self._tbl[a-1][i-1]
+        return 0 if i == 0 else self._tbl[a - 1][i - 1]
 
 
 def preprocess_exact(x: str) -> tuple[Alphabet, list[int], CTable, OTable]:
@@ -230,8 +230,8 @@ def do_m(tbls: BwtApproxTables,
         if next_left >= next_right:
             continue
 
-        next_edits = edits-(a != tbls.p[i])
-        yield from rec_search(tbls, i-1, next_left, next_right, next_edits)
+        next_edits = edits - (a != tbls.p[i])
+        yield from rec_search(tbls, i - 1, next_left, next_right, next_edits)
     tbls.edit_ops.pop()
 
 
@@ -254,7 +254,7 @@ def do_d(tbls: BwtApproxTables,
         next_right = tbls.ctab[a] + tbls.otab[a, right]
         if next_left >= next_right:
             continue
-        yield from rec_search(tbls, i, next_left, next_right, edits-1)
+        yield from rec_search(tbls, i, next_left, next_right, edits - 1)
     tbls.edit_ops.pop()
 
 

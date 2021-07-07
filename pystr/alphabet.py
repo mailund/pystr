@@ -1,6 +1,7 @@
 """Implements code for mapping strings to smaller alphabets."""
 
 from __future__ import annotations
+
 import typing
 
 from .subseq import SubSeq
@@ -20,7 +21,7 @@ class Alphabet:
         whether it is found in reference.
         """
         self._map = {
-            a: i+1  # reserve space for sentinel
+            a: i + 1  # reserve space for sentinel
             for i, a in enumerate(sorted(set(reference)))
         }
         self._revmap = {

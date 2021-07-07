@@ -1,7 +1,8 @@
 """Testing the skew algorithm."""
 
 import typing as typ
-from helpers import random_string, fibonacci_string
+
+from helpers import fibonacci_string, random_string
 from pystr import skew_central, skew_terminal
 
 
@@ -9,7 +10,7 @@ def check(x: str, skew: typ.Callable[[str], list[int]]) -> None:
     """Do basic test of skew."""
     sa0 = skew(x)
     assert len(sa0) == len(x) + 1
-    assert list(sorted(sa0)) == list(range(len(x)+1))
+    assert list(sorted(sa0)) == list(range(len(x) + 1))
     assert sa0[0] == len(x)
 
 

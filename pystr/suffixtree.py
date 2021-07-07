@@ -1,12 +1,12 @@
 """Constructing and using suffix trees."""
 
 from __future__ import annotations
-import typing
+
 import dataclasses
+import typing
 
-from .subseq import SubSeq
 from .alphabet import Alphabet
-
+from .subseq import SubSeq
 
 # SECTION Suffix Tree representation
 
@@ -29,9 +29,8 @@ class Node:  # Should be abc ABC, but doesn't work with type checker
 
     # These methods are only here for the type checker.
     # They will never be used because we never have Node objects.
-    def __iter__(self) -> typing.Iterator[int]:
+    def __iter__(self) -> typing.Iterator[int]:  # noqa: pylint: disable=non-iterator-returned
         """Iterate through all the leaves in the tree rooted in this node."""
-        # pylint: disable=non-iterator-returned
         ...  # pragma no cover
 
     def to_dot(self, _: Alphabet) -> typing.Iterator[str]:  # noqa: no-self-use, pylint: disable=no-self-use
@@ -409,7 +408,7 @@ def lcp_st_construction(s: str, sa: list[int], lcp: list[int]) -> SuffixTree:
     root.add_children(v)
 
     for i in range(1, len(sa)):
-        n, depth = search_up(v, len(x) - sa[i-1] - lcp[i])
+        n, depth = search_up(v, len(x) - sa[i - 1] - lcp[i])
         if depth == 0:
             # It is, but the type checker doesn't know yet...
             assert isinstance(n, Inner)

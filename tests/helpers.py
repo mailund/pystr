@@ -2,7 +2,8 @@
 
 import random
 import string
-from collections.abc import Iterable, Iterator, Callable
+from collections.abc import Callable, Iterable, Iterator
+
 from pystr.subseq import SubSeq
 
 # I'm not sure about the prototype here. I think I want
@@ -19,7 +20,7 @@ def collect_tests(tests: Iterable[tuple[str, _Test]]) -> type:
         '__generated_class__',
         (object,),
         {
-            ('test_'+name): method
+            ('test_' + name): method
             for name, method in tests
         }
     )
@@ -34,7 +35,7 @@ def fibonacci_string(n: int) -> str:
     """Fibonacci string n; has length Fib(n+2)."""
     a, b = "a", "ab"
     for _ in range(n):
-        a, b = b, a+b
+        a, b = b, a + b
     return b
 
 
@@ -77,14 +78,14 @@ def check_sorted(x: str, sa: list[int]) -> None:
     y = SubSeq[str](x)  # For faster comparison (faster than slicing)
     start = 0 if len(sa) == len(x) else 1  # skip sentinel if included
     for i in range(start, len(sa) - 1):
-        j, k = sa[i], sa[i+1]
+        j, k = sa[i], sa[i + 1]
         assert y[j:] < y[k:], \
             f"String {x}, suffix x[{j}:] = {x[j:]} >= x[{k}:] = {x[k:]}"
 
 
 def check_substring(x: str, p: str, i: int) -> bool:
     """Check that the substring x[i:i+len(p)] equals q."""
-    return x[i:i+len(p)] == p
+    return x[i:i + len(p)] == p
 
 
 def check_matches(x: str, p: str, matches: Iterable[int]) -> None:

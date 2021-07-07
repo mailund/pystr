@@ -1,11 +1,7 @@
 """Test bwt."""
 
 from helpers import check_matches
-
-from pystr import bwt
-from pystr import alphabet
-from pystr import sais
-from pystr import approx
+from pystr import alphabet, approx, bwt, sais
 
 
 def test_bw_transform() -> None:

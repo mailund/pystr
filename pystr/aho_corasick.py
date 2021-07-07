@@ -1,6 +1,7 @@
 """Implementation of the Aho-Corasick algorithm."""
 
 import typing
+
 from .trie import TrieNode, depth_first_trie
 
 

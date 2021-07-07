@@ -2,20 +2,16 @@
 
 from typing import Callable, Iterator
 
+from helpers import (_Test, check_equal_matches, check_matches, check_sorted,
+                     collect_tests, fibonacci_string, pick_random_patterns,
+                     pick_random_patterns_len, pick_random_prefix,
+                     pick_random_suffix, random_string)
 from pystr.alphabet import Alphabet
-from pystr.suffixtree import SuffixTree, Inner, Leaf
 from pystr.exact import bmh
-from pystr.suffixtree import naive_st_construction
-from pystr.suffixtree import mccreight_st_construction
-from pystr.suffixtree import lcp_st_construction
-from pystr.sais import sais
 from pystr.lcp import lcp_from_sa
-
-from helpers import fibonacci_string, random_string
-from helpers import pick_random_patterns, pick_random_prefix,\
-    pick_random_suffix, pick_random_patterns_len
-from helpers import check_sorted, check_matches, check_equal_matches
-from helpers import _Test, collect_tests
+from pystr.sais import sais
+from pystr.suffixtree import (Inner, Leaf, SuffixTree, lcp_st_construction,
+                              mccreight_st_construction, naive_st_construction)
 
 STConstructor = Callable[[str], SuffixTree]
 

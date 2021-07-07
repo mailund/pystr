@@ -1,7 +1,7 @@
 """Simple exact matching algorithms."""
 
-import typing
 import collections
+import typing
 
 from .alphabet import Alphabet
 from .border_array import strict_border_array

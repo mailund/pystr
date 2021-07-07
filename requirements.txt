@@ -1,7 +1,6 @@
 pycodestyle
 pydocstyle
 pylama
-bandit
 pylint (>=2.9.3)
 mypy
 pytest

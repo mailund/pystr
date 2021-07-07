@@ -1,10 +1,10 @@
 """Test lcp code."""
 
-from helpers import random_string, fibonacci_string
-from pystr.suffixtree import mccreight_st_construction
+from helpers import fibonacci_string, random_string
+from pystr.lcp import (compare_lcp, inverse_sa, lcp_from_sa,
+                       sa_lcp_from_suffix_tree)
 from pystr.sais import sais
-from pystr.lcp import compare_lcp, sa_lcp_from_suffix_tree
-from pystr.lcp import inverse_sa, lcp_from_sa
+from pystr.suffixtree import mccreight_st_construction
 
 
 def check_lcp(x: str,
@@ -16,7 +16,7 @@ def check_lcp(x: str,
     assert len(sa) == len(lcp)
     assert lcp[0] == 0            # first lcp is always zero
     for i in range(1, len(lcp)):
-        assert lcp[i] == compare_lcp(x, sa[i], sa[i-1])
+        assert lcp[i] == compare_lcp(x, sa[i], sa[i - 1])
 
 
 def test_st_construction() -> None:

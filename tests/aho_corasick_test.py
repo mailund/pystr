@@ -1,9 +1,8 @@
 """Test Aho-Corasick."""
 
+from helpers import fibonacci_string, pick_random_patterns, random_string
 from pystr.aho_corasick import aho_corasick
 from pystr.exact import naive
-from helpers import random_string, fibonacci_string, \
-    pick_random_patterns
 
 
 def test_abc() -> None:

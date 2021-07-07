@@ -7,12 +7,10 @@ check:
 	python3 -m pycodestyle tests pystr
 	python3 -m pydocstyle tests pystr
 	python3 -m pylama tests pystr
-	python3 -m bandit -s B101,B311 -r tests
-	python3 -m bandit -s B101 -r pystr
 	python3 -m pylint pystr
 	python3 -m pylint tests/*.py
-	mypy --strict -p pystr
-	mypy --strict tests/*.py
+	python3 -m mypy --strict -p pystr
+	python3 -m mypy --strict tests/*.py
 
 test: check
 	pytest --cov-report term-missing --cov=pystr tests

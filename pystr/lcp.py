@@ -1,6 +1,6 @@
 """Longest common prefix arrays."""
 
-from .suffixtree import SuffixTree, Node, Leaf, Inner
+from .suffixtree import Inner, Leaf, Node, SuffixTree
 
 # SECTION Building lcp from suffix tree
 
@@ -51,7 +51,7 @@ def compare_lcp(x: str, i: int, j: int) -> int:
     """Check how long a prefix is shared between suffix i and j."""
     m = min(len(x) - i, len(x) - j)
     for k in range(m):
-        if x[i+k] != x[j+k]:
+        if x[i + k] != x[j + k]:
             return k
     return m
 
@@ -69,7 +69,7 @@ def lcp_from_sa(x: str, sa: list[int]) -> list[int]:
             lcp[ii] = 0
             continue
         j = sa[ii - 1]
-        offset += compare_lcp(x, i+offset, j+offset)
+        offset += compare_lcp(x, i + offset, j + offset)
         lcp[ii] = offset
 
     return lcp

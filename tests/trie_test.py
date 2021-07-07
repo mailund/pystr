@@ -2,10 +2,8 @@
 
 from typing import Callable
 
-from pystr.trie import Trie, TrieNode
-from pystr.trie import depth_first_trie
-from pystr.trie import breadth_first_trie
 from helpers import random_string
+from pystr.trie import Trie, TrieNode, breadth_first_trie, depth_first_trie
 
 # FIXME: make ... a variadic tuple of strings...
 TrieConstructor = Callable[..., Trie]

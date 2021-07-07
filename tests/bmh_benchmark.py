@@ -2,8 +2,9 @@
 
 import time
 from typing import Callable, Iterator
-from pystr.exact import bmh, bmh_b, bmh_alpha
+
 from helpers import random_string
+from pystr.exact import bmh, bmh_alpha, bmh_b
 
 Algo = Callable[[str, str], Iterator[int]]
 

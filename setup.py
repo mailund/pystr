@@ -1,4 +1,6 @@
-from setuptools import setup, find_packages
+"""Package implementing various string algorithms in python."""
+
+from setuptools import find_packages, setup
 
 setup(
     name='pystr',

@@ -40,13 +40,13 @@ def check_border(x: str, ba: list[int]) -> None:
     """Check that ba borders are borders."""
     for i, b in enumerate(ba):
         assert b <= i
-        assert x[:b] == x[i-b+1:i+1]
+        assert x[:b] == x[i - b + 1:i + 1]
 
 
 def check_strict(x: str, ba: list[int]) -> None:
     """Check that borders are strict."""
     for i, b in enumerate(ba):
-        assert b == 0 or i == len(x) - 1 or x[b] != x[i+1]
+        assert b == 0 or i == len(x) - 1 or x[b] != x[i + 1]
 
 # FIXME: Check if a border is the longest...
 

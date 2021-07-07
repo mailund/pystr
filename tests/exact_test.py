@@ -2,17 +2,15 @@
 
 from typing import Callable, Iterator
 
-from pystr.exact import naive, border, kmp, bmh
-from pystr.exact import bmh_b as _bmh_b
-from pystr.exact import bmh_alpha
+from helpers import (_Test, check_equal_matches, check_matches, collect_tests,
+                     fibonacci_string, pick_random_patterns,
+                     pick_random_patterns_len, pick_random_prefix,
+                     pick_random_suffix, random_string)
 from pystr.bwt import exact_preprocess
+from pystr.exact import bmh, bmh_alpha
+from pystr.exact import bmh_b as _bmh_b
+from pystr.exact import border, kmp, naive
 from pystr.suffixtree import mccreight_st_construction as mccreight
-
-from helpers import random_string, fibonacci_string
-from helpers import pick_random_patterns, pick_random_patterns_len, \
-    pick_random_prefix, pick_random_suffix
-from helpers import check_matches, check_equal_matches
-from helpers import collect_tests, _Test
 
 Algo = Callable[[str, str], Iterator[int]]
 

@@ -8,8 +8,7 @@ Straightforward implementation of the skew/DC3 algorithm.
 import typing
 
 from .alphabet import Alphabet
-from .skew_common import SkewTripletDict, \
-    triplet, radix3, bucket_sort, merge
+from .skew_common import SkewTripletDict, bucket_sort, merge, radix3, triplet
 
 
 def collect_alphabet(x: typing.Sequence[int],
@@ -58,7 +57,7 @@ def skew_rec(x: typing.Sequence[int], asize: int) -> list[int]:
         sa_u = skew_rec(u, len(new_alpha))
         # there's a plus one now for m, because we don't have the
         # central sentinel
-        m = (len(sa_u)+1) // 2
+        m = (len(sa_u) + 1) // 2
         sa12 = [u_idx(i, m) for i in sa_u]  # we don't exclude m now
 
     # Special case if the last index is class 0. Then the

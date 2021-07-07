@@ -6,9 +6,10 @@ Straightforward implementation of the skew/DC3 algorithm.
 """
 
 import typing
+
 from .alphabet import Alphabet
-from .skew_common import SENTINEL, SkewTripletDict, \
-    triplet, radix3, bucket_sort, merge
+from .skew_common import (SENTINEL, SkewTripletDict, bucket_sort, merge,
+                          radix3, triplet)
 
 
 def collect_alphabet(x: typing.Sequence[int],

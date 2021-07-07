@@ -61,6 +61,7 @@ confidence=
 # no Warning level messages displayed, use "--disable=all --enable=classes
 # --disable=W".
 disable=too-few-public-methods,
+        locally-disabled,
         unsubscriptable-object, # until it figures out typing...
 
 # Enable the message, report, category or checker with the given id(s). You can

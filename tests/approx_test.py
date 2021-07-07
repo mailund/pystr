@@ -1,10 +1,7 @@
 """Testing approximative matching support code."""
 
-from pystr.approx import (
-    Edit,
-    edits_to_cigar, cigar_to_edits,
-    extract_alignment, count_edits
-)
+from pystr.approx import (Edit, cigar_to_edits, count_edits, edits_to_cigar,
+                          extract_alignment)
 
 
 def test_cigar_mapping() -> None:

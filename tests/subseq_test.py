@@ -62,7 +62,7 @@ def test_mutable() -> None:
     y = x[2:]
     # assignment works. I don't know what pylint has been drinking,
     # but it doesn't understand the type system, that's for sure.
-    y[2] = 13  # pylint: disable=unsupported-assignment-operation
+    y[2] = 13  # noqa pylint: disable=unsupported-assignment-operation
     assert y[2] == x[4] == underlying[5]
     x[1:5] = 17
     assert x[1:5] == [17, 17, 17, 17]

@@ -1,12 +1,12 @@
 """Implementation of tries."""
 
 from __future__ import annotations
-import dataclasses
+
 import collections
+import dataclasses
 import typing
 
 from .subseq import SubSeq
-
 
 T = typing.TypeVar("T")
 S = typing.TypeVar("S")

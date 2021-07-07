@@ -1,10 +1,9 @@
 """Test of sais algorithm."""
 
-from pystr.sais import classify_sl, is_lms
-from pystr.sais import sais
-from pystr.bv import BitVector
+from helpers import check_sorted, fibonacci_string, random_string
 from pystr.alphabet import Alphabet
-from helpers import random_string, fibonacci_string, check_sorted
+from pystr.bv import BitVector
+from pystr.sais import classify_sl, is_lms, sais
 
 
 def test_remap() -> None:
