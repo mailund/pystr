@@ -55,8 +55,7 @@ def test_border() -> None:
     """Test ba on a set of strings."""
     for x in ["aaa", "aaba",
               "aaaba", "aaabaaabaaabaaa",
-              "aaabaaacaaabaaa"
-              ]:
+              "aaabaaacaaabaaa"]:
         check_border(x, border_array(x))
         check_border(x, strict_border_array(x))
         check_strict(x, strict_border_array(x))

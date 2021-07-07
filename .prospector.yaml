@@ -1,4 +1,4 @@
-strictness: medium
+strictness: hard
 test-warnings: true
 doc-warnings: true
 

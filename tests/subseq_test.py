@@ -71,9 +71,9 @@ def test_compare() -> None:
     x = subseq.SubSeq[int]([1, 2, 3])
     y = subseq.SubSeq[int]([1, 2, 3, 4])
     z = subseq.SubSeq[int]([1, 3])
-    assert x < y and y > x and not y < x  # noqa: uneeded-not
-    assert x < z and z > x and not z < x  # noqa: uneeded-not
-    assert y < z and z > y and not z < y  # noqa: uneeded-not
+    assert x < y and y > x and not y < x  # pylint: disable=unneeded-not
+    assert x < z and z > x and not z < x  # pylint: disable=unneeded-not
+    assert y < z and z > y and not z < y  # pylint: disable=unneeded-not
 
 
 def test_assigments() -> None:

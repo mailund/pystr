@@ -32,7 +32,9 @@ def test_simple_trie() -> None:
     trie.insert("bar", 1)
     trie.insert("foobar", 2)
 
-    assert trie == trie  # noqa we are testing the comparison impl.
+    # we are testing the comparison impl, so disable
+    # linting about it being unecessary
+    assert trie == trie  # noqa pylint: disable=comparison-with-itself
 
     assert "foo" in trie
     assert "foobar" in trie
@@ -84,8 +86,8 @@ def test_simple_to_dot(constr: TrieConstructor = depth_first_trie) -> None:
     check_to_dot(constr, "foo", "bar", "foobar", "baz", "barfoo")
 
 
-def test_mississippi_suffixes(constr: TrieConstructor = breadth_first_trie
-                              ) -> None:
+def test_mississippi_suffixes(
+        constr: TrieConstructor = breadth_first_trie) -> None:
     """Test that we can create a trie over all suffixes of mississippi."""
     x = "mississippi"
     strings = [x[i:] for i in range(len(x))]

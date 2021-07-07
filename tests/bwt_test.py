@@ -12,9 +12,9 @@ def test_bw_transform() -> None:
     """Test transformation."""
     x = "mississippi"
     b, alpha, _ = bwt.burrows_wheeler_transform(x)
-    r = bwt.reverse_burrows_wheeler_transform(b)
-    assert r[-1] == 0  # last symbol is sentinel
-    assert alpha.revmap(r[:-1]) == x
+    revb = bwt.reverse_burrows_wheeler_transform(b)
+    assert revb[-1] == 0  # last symbol is sentinel
+    assert alpha.revmap(revb[:-1]) == x
 
 
 def test_bw_transform_bytes() -> None:
@@ -22,9 +22,9 @@ def test_bw_transform_bytes() -> None:
     x_ = "mississippi"
     x, alpha = alphabet.Alphabet.mapped_string_with_sentinel(x_)
     b, _ = bwt.burrows_wheeler_transform_bytes(x, alpha)
-    r = bwt.reverse_burrows_wheeler_transform(b)
-    assert r[-1] == 0  # last symbol is sentinel
-    assert alpha.revmap(r[:-1]) == x_
+    revb = bwt.reverse_burrows_wheeler_transform(b)
+    assert revb[-1] == 0  # last symbol is sentinel
+    assert alpha.revmap(revb[:-1]) == x_
 
 
 def test_ctable() -> None:
@@ -43,6 +43,9 @@ def test_otable() -> None:
     transformed, alpha, _ = bwt.burrows_wheeler_transform(x)
     assert transformed == bytearray([1, 3, 0, 1, 1, 2])
 
+    # we shouldn't look at private members, of course, but
+    # we are only testing...
+    # pylint: disable=protected-access
     otab = bwt.OTable(transformed, len(alpha))
     assert len(otab._tbl) == len(alpha) - 1
     assert len(otab._tbl[0]) == len(transformed)

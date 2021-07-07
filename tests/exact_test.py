@@ -62,7 +62,8 @@ TestEmptyPatterns = collect_tests(
 )
 
 
-def check_exact_matching(algo: Algo) -> _Test:  # noqa C901
+def check_exact_matching(algo: Algo) -> _Test:   # noqa C901
+    """Check that the algorithm does exact matching correct."""
     def test(_: object) -> None:
         for _ in range(10):
             x = random_string(20, alpha="abcd")
