@@ -31,6 +31,7 @@ class Node:  # Should be abc ABC, but doesn't work with type checker
     # They will never be used because we never have Node objects.
     def __iter__(self) -> typing.Iterator[int]:
         """Iterate through all the leaves in the tree rooted in this node."""
+        # pylint: disable=non-iterator-returned
         ...  # pragma no cover
 
     def to_dot(self, _: Alphabet) -> typing.Iterator[str]:  # noqa: no-self-use, pylint: disable=no-self-use

@@ -7,20 +7,20 @@ import re
 class Edit(enum.Enum):
     """Edit operations."""
 
-    Match = enum.auto()
-    Insert = enum.auto()
-    Delete = enum.auto()
+    MATCH = enum.auto()
+    INSERT = enum.auto()
+    DELETE = enum.auto()
 
 
 EDIT_TO_CIGAR_MAP = {
-    Edit.Match: "M",
-    Edit.Insert: "I",
-    Edit.Delete: "D"
+    Edit.MATCH: "M",
+    Edit.INSERT: "I",
+    Edit.DELETE: "D"
 }
 CIGAR_TO_EDIT_MAP = {
-    "M": Edit.Match,
-    "I": Edit.Insert,
-    "D": Edit.Delete
+    "M": Edit.MATCH,
+    "I": Edit.INSERT,
+    "D": Edit.DELETE
 }
 
 
@@ -54,16 +54,16 @@ def extract_alignment(x: str, p: str, pos: int, cigar: str) -> tuple[str, str]:
     i, j = pos, 0
     x_, p_ = [], []
     for edit in cigar_to_edits(cigar):
-        if edit == Edit.Match:
+        if edit == Edit.MATCH:
             x_.append(x[i])
             i += 1
             p_.append(p[j])
             j += 1
-        if edit == Edit.Insert:
+        if edit == Edit.INSERT:
             x_.append('-')
             p_.append(p[j])
             j += 1
-        if edit == Edit.Delete:
+        if edit == Edit.DELETE:
             x_.append(x[i])
             i += 1
             p_.append('-')

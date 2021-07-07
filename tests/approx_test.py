@@ -9,7 +9,7 @@ from pystr.approx import (
 
 def test_cigar_mapping() -> None:
     """Test that we can make a list of edits into a cigar."""
-    edits = [Edit.Match, Edit.Match, Edit.Insert, Edit.Match, Edit.Delete]
+    edits = [Edit.MATCH, Edit.MATCH, Edit.INSERT, Edit.MATCH, Edit.DELETE]
     cigar = edits_to_cigar(edits)
     edits2 = cigar_to_edits(cigar)
     assert edits == edits2

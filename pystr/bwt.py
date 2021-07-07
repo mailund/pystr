@@ -223,7 +223,7 @@ def do_m(tbls: BwtApproxTables,
          i: int, left: int, right: int,
          edits: int) -> typing.Iterator[tuple[int, str]]:
     """Perform a match/mismatch operation in the approx search."""
-    tbls.edit_ops.append(Edit.Match)
+    tbls.edit_ops.append(Edit.MATCH)
     for a in range(1, len(tbls.alpha)):
         next_left = tbls.ctab[a] + tbls.otab[a, left]
         next_right = tbls.ctab[a] + tbls.otab[a, right]
@@ -239,7 +239,7 @@ def do_i(tbls: BwtApproxTables,
          i: int, left: int, right: int,
          edits: int) -> typing.Iterator[tuple[int, str]]:
     """Perform an insertion operation in the approx search."""
-    tbls.edit_ops.append(Edit.Insert)
+    tbls.edit_ops.append(Edit.INSERT)
     yield from rec_search(tbls, i - 1, left, right, edits - 1)
     tbls.edit_ops.pop()
 
@@ -248,7 +248,7 @@ def do_d(tbls: BwtApproxTables,
          i: int, left: int, right: int,
          edits: int) -> typing.Iterator[tuple[int, str]]:
     """Perform a deletion operation in the approx search."""
-    tbls.edit_ops.append(Edit.Delete)
+    tbls.edit_ops.append(Edit.DELETE)
     for a in range(1, len(tbls.alpha)):
         next_left = tbls.ctab[a] + tbls.otab[a, left]
         next_right = tbls.ctab[a] + tbls.otab[a, right]
