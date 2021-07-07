@@ -6,5 +6,6 @@
     "python.testing.nosetestsEnabled": false,
     "python.testing.pytestEnabled": true,
     "python.pythonPath": "/usr/local/bin/python3.10",
-    "python.linting.pylintEnabled": true
+    "python.linting.pylintUseMinimalCheckers": false,
+    "python.linting.pylintPath": "python3 -m pylint"
 }

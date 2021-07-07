@@ -31,7 +31,6 @@ def time_algo(algo: Algo, n: int, m: int, k: int) -> float:
     return total
 
 
-# pylint: disable=bad-whitespace
 print("BMH:      ", time_algo(bmh,        50000, 200, 10))
 print("BMH-B:    ", time_algo(bmh_b_wrap, 50000, 200, 10))
 print("BMH-Alpha:", time_algo(bmh_alpha,  50000, 200, 10))
