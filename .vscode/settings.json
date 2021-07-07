@@ -20,5 +20,8 @@
     "python.linting.pylintEnabled": true,
     "python.linting.mypyArgs": [
         "--strict"
+    ],
+    "python.formatting.autopep8Args": [
+        "--aggressive"
     ]
 }

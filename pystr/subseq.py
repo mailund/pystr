@@ -34,8 +34,7 @@ class SubSeq(typing.Generic[T], typing.Sequence[T]):
     @staticmethod
     def _fix_index(x: typing.Sequence[T],
                    start: typing.Optional[int],
-                   stop: typing.Optional[int]
-                   ) -> tuple[int, int]:
+                   stop: typing.Optional[int]) -> tuple[int, int]:
         start = start if start is not None else 0
         stop = stop if stop is not None else len(x)
         if start < 0:

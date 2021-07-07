@@ -73,7 +73,7 @@ def pick_random_suffix(x: str, n: int) -> Iterator[str]:
 
 def check_sorted(x: str, sa: list[int]) -> None:
     """Check that the suffixes in sa are sorted."""
-    assert len(x) > 0
+    assert x != ""
     assert len(x) == len(sa) or len(x) + 1 == len(sa)
     y = SubSeq[str](x)  # For faster comparison (faster than slicing)
     start = 0 if len(sa) == len(x) else 1  # skip sentinel if included
