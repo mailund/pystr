@@ -30,8 +30,8 @@ def find_out(n: TrieNode, a: str) -> TrieNode:
     return n[a] if a in n else n
 
 
-def aho_corasick(x: str, *p: str
-                 ) -> typing.Iterator[tuple[int, int]]:
+def aho_corasick(x: str, *p: str) \
+        -> typing.Iterator[tuple[int, int]]:
     """Exact pattern matching with the Aho-Corasick algorithm."""
     trie = depth_first_trie(*p)
     n = trie.root

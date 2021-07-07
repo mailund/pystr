@@ -8,13 +8,14 @@ Straightforward implementation of the skew/DC3 algorithm.
 import typing
 
 from .alphabet import Alphabet
-from .skew_common import (SENTINEL, SkewTripletDict, bucket_sort, merge,
+from .skew_common import (SENTINEL, SkewTripletDict,
+                          bucket_sort, merge,
                           radix3, triplet)
 
 
 def collect_alphabet(x: typing.Sequence[int],
-                     idx: list[int]
-                     ) -> SkewTripletDict:
+                     idx: list[int]) \
+        -> SkewTripletDict:
     """Map the triplets starting at idx to a new alphabet."""
     # I'm using a dictionary for the alphabet, but you can build
     # it more efficiently by looking at the previous triplet in the

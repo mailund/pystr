@@ -62,6 +62,7 @@ confidence=
 # --disable=W".
 disable=too-few-public-methods,
         locally-disabled,
+        bad-continuation, # it clashes with autopep8 formatting
         unsubscriptable-object, # until it figures out typing...
 
 # Enable the message, report, category or checker with the given id(s). You can

@@ -75,8 +75,8 @@ class Buckets:
 
 
 def bucket_lms(x: SubSeq[int], sa: MSubSeq[int],
-               buckets: Buckets, is_s: BitVector
-               ) -> None:
+               buckets: Buckets, is_s: BitVector) \
+        -> None:
     """Place LMS strings in their correct buckets."""
     next_end = buckets.calc_ends()
     sa[:] = UNDEFINED
@@ -86,8 +86,8 @@ def bucket_lms(x: SubSeq[int], sa: MSubSeq[int],
 
 
 def induce_l(x: SubSeq[int], sa: MSubSeq[int],
-             buckets: Buckets, is_s: BitVector
-             ) -> None:
+             buckets: Buckets, is_s: BitVector) \
+        -> None:
     """Induce L suffixes from the LMS strings."""
     next_front = buckets.calc_fronts()
     for i in range(len(x)):
@@ -100,8 +100,8 @@ def induce_l(x: SubSeq[int], sa: MSubSeq[int],
 
 
 def induce_s(x: SubSeq[int], sa: MSubSeq[int],
-             buckets: Buckets, is_s: BitVector
-             ) -> None:
+             buckets: Buckets, is_s: BitVector) \
+        -> None:
     """Induce S suffixes from the L suffixes."""
     next_end = buckets.calc_ends()
     for i in reversed(range(len(x))):
@@ -177,8 +177,7 @@ def reduce_lms(x: SubSeq[int], sa: MSubSeq[int], is_s: BitVector) \
 def reverse_reduction(x: SubSeq[int], sa: MSubSeq[int],
                       offsets: MSubSeq[int], red_sa: MSubSeq[int],
                       buckets: Buckets,
-                      is_s: BitVector
-                      ) -> None:
+                      is_s: BitVector) -> None:
     """Get the LMS string order back from the reduced suffix array."""
     # Work out where the LMS strings are in the
     # original string. Compact those indices
@@ -201,8 +200,7 @@ def reverse_reduction(x: SubSeq[int], sa: MSubSeq[int],
 def sais_rec(x: SubSeq[int],
              sa: MSubSeq[int],
              asize: int,
-             is_s: BitVector
-             ) -> None:
+             is_s: BitVector) -> None:
     """Recursive SAIS algorithm."""
     if len(x) == asize:
         # base case...

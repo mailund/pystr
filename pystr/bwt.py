@@ -7,11 +7,11 @@ from .approx import Edit, edits_to_cigar
 from .sais import sais_alphabet
 from .subseq import SubSeq
 
-ExactSearchFunc = typing.Callable[
+ExactSearchFunc = typing.Callable[  # noqa: C0103 (type alias)
     [str],
     typing.Iterator[int]
 ]
-ApproxSearchFunc = typing.Callable[
+ApproxSearchFunc = typing.Callable[  # noqa: C0103 (type alias)
     [str,
      int],
     typing.Iterator[tuple[int, str]]
@@ -210,7 +210,7 @@ def exact_preprocess(x: str) -> ExactSearchFunc:
     return exact_searcher_from_tables(*preprocess_exact(x))
 
 
-BwtApproxTables = typing.NamedTuple(
+BwtApproxTables = typing.NamedTuple(  # noqa: C0103 (type alias)
     "BwtApproxTables",
     [("alpha", Alphabet), ("sa", list[int]),
      ("ctab", CTable), ("otab", OTable),
@@ -260,7 +260,8 @@ def do_d(tbls: BwtApproxTables,
 
 def rec_search(tbls: BwtApproxTables,
                i: int, left: int, right: int,
-               edits: int) -> typing.Iterator[tuple[int, str]]:
+               edits: int) \
+        -> typing.Iterator[tuple[int, str]]:
     """Handle recursive operations in approx search."""
     # Do we have a match here?
     if i < 0 <= edits:
@@ -281,7 +282,8 @@ def rec_search(tbls: BwtApproxTables,
 
 
 def build_dtab(p: bytearray, sa: list[int],
-               ctab: CTable, rotab: OTable) -> list[int]:
+               ctab: CTable, rotab: OTable) \
+        -> list[int]:
     """Build the D table for the approximative search."""
     dtab = [0] * len(p)
     min_edits = 0

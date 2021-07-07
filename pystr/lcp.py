@@ -6,8 +6,8 @@ from .suffixtree import Inner, Leaf, Node, SuffixTree
 
 
 def suf_tree_traversal(lcp: int, depth: int, n: Node,
-                       sa: list[int], lcp_arr: list[int]
-                       ) -> tuple[list[int], list[int]]:
+                       sa: list[int], lcp_arr: list[int]) \
+        -> tuple[list[int], list[int]]:
     """Construct suffix array and lcp array from a suffix tree."""
     # A closure might be better for this function, but creating
     # closures come at a runtime cost...
