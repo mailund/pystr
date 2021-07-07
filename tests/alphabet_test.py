@@ -1,7 +1,10 @@
+"""Test alphabet code."""
+
 from pystr.alphabet import Alphabet
 
 
 def test_alphabet() -> None:
+    """Test the alphabet class."""
     for x in ["foo", "bar", "baz", "foobar", "bazfoo"]:
         y, alpha = Alphabet.mapped_string_with_sentinel(x)
         assert len(x) == len(y) - 1
@@ -11,9 +14,9 @@ def test_alphabet() -> None:
         assert ''.join(alpha.revmap(z) for z in y[:-1]) == x
 
     for x in ["foo", "bar", "baz", "foobar", "bazfoo"]:
-        ss, alpha = Alphabet.mapped_subseq(x)
-        assert len(ss) == len(x)
-        assert alpha.revmap(ss) == x
+        subs, alpha = Alphabet.mapped_subseq(x)
+        assert len(subs) == len(x)
+        assert alpha.revmap(subs) == x
 
 
 if __name__ == '__main__':

@@ -1,3 +1,5 @@
+"""Test lcp code."""
+
 from helpers import random_string, fibonacci_string
 from pystr.suffixtree import mccreight_st_construction
 from pystr.sais import sais
@@ -9,6 +11,7 @@ def check_lcp(x: str,
               sa: list[int],
               lcp: list[int]
               ) -> None:
+    """Check lcp consistency."""
     assert len(sa) == len(x) + 1
     assert len(sa) == len(lcp)
     assert lcp[0] == 0            # first lcp is always zero
@@ -17,6 +20,7 @@ def check_lcp(x: str,
 
 
 def test_st_construction() -> None:
+    """Test construction from suffix tree."""
     for _ in range(20):
         # smaller alpha for more branches...
         x = random_string(50, alpha="abc")
@@ -29,6 +33,7 @@ def test_st_construction() -> None:
 
 
 def test_inverse() -> None:
+    """Test inverse suffix array construction."""
     for _ in range(20):
         x = random_string(50, alpha="abc")
         sa = sais(x)
@@ -40,6 +45,7 @@ def test_inverse() -> None:
 
 
 def test_sa_construction() -> None:
+    """Test construction from suffix array."""
     for _ in range(20):
         # smaller alpha for more branches...
         x = random_string(50, alpha="abc")

@@ -271,7 +271,7 @@ def rec_search(tbls: BwtApproxTables,
             yield tbls.sa[j], cigar
         return
 
-        # Can we get to a match with the edits we have left?
+    # Can we get to a match with the edits we have left?
     if edits < tbls.dtab[i]:
         return
 
@@ -311,18 +311,7 @@ def approx_searcher_from_tables(
         except KeyError:
             return  # can't map, so no matches
 
-        # Build D table for the read...
-        dtab = [0] * len(p)
-        min_edits = 0
-        left, right, i = 0, len(sa), len(p) - 1
-        for i, a in enumerate(p):
-            left = ctab[a] + rotab[a, left]
-            right = ctab[a] + rotab[a, right]
-            if left == right:
-                min_edits += 1
-                left, right = 0, len(sa)
-            dtab[i] = min_edits
-
+        dtab = build_dtab(p, sa, ctab, rotab)
         tbls = BwtApproxTables(alpha, sa,
                                ctab, otab, rotab, dtab,
                                list[Edit](), p)

@@ -1,3 +1,5 @@
+"""Test suffix trees code."""
+
 from typing import Callable, Iterator
 
 from pystr.alphabet import Alphabet
@@ -19,6 +21,7 @@ STConstructor = Callable[[str], SuffixTree]
 
 
 def lcp_construction_wrapper(x: str) -> SuffixTree:
+    """Construct lcp from suffix tree."""
     sa = sais(x)
     lcp = lcp_from_sa(x, sa)
     return lcp_st_construction(x, sa, lcp)
@@ -32,10 +35,12 @@ ALGOS: list[STConstructor] = [
 
 
 def strip_algo_name(name: str) -> str:
+    """Get the algorithm name from the function name."""
     return name.split('_')[0]
 
 
 def check_to_dot(x: str, algo: STConstructor) -> _Test:
+    """Check that we can write to dot."""
     def test(_: object) -> None:
         algo(x).to_dot()
     return test
@@ -48,6 +53,7 @@ TestMississippiToDo = collect_tests(
 
 
 def test_contains() -> None:
+    """Check a suffix tree's contain method."""
     st = mccreight_st_construction("mississippi")
     assert "iss" in st
     assert "sss" not in st
@@ -56,13 +62,14 @@ def test_contains() -> None:
 
 
 def check_st_sorted(algo: STConstructor) -> _Test:
+    """Check that suffixes are sorted."""
     def test(_: object) -> None:
         for _ in range(10):
             x = random_string(20, alpha="abc")
             # using the leaf iterator
             check_sorted(x, list(algo(x).root))
-        for f in range(5, 10):
-            x = fibonacci_string(f)
+        for fib in range(5, 10):
+            x = fibonacci_string(fib)
             check_sorted(x, list(algo(x).root))
         for n in range(5, 50):
             x = 'a' * n
@@ -77,31 +84,33 @@ TestSorted = collect_tests(
 
 
 def test_node_comparison() -> None:
-    foo, _ = Alphabet.mapped_subseq("foo")
-    bar, _ = Alphabet.mapped_subseq("bar")
-    assert Leaf(0, foo) == Leaf(0, foo)
-    assert Leaf(0, foo) != Leaf(1, foo)
-    assert Leaf(0, foo) != Leaf(0, bar)
+    """Test that we can compare nodes."""
+    x, _ = Alphabet.mapped_subseq("foo")
+    y, _ = Alphabet.mapped_subseq("bar")
+    assert Leaf(0, x) == Leaf(0, x)
+    assert Leaf(0, x) != Leaf(1, x)
+    assert Leaf(0, x) != Leaf(0, y)
 
-    assert Inner(foo) == Inner(foo)
-    assert Inner(foo) != Inner(bar)
+    assert Inner(x) == Inner(x)
+    assert Inner(x) != Inner(y)
 
-    i1 = Inner(foo)
-    i2 = Inner(foo)
-    assert i1 == i2
-    i1.add_children(Leaf(0, bar))
-    assert i1 != i2
-    i2.add_children(Leaf(0, bar))
-    assert i1 == i2
+    inner1 = Inner(x)
+    inner2 = Inner(x)
+    assert inner1 == inner2
+    inner1.add_children(Leaf(0, y))
+    assert inner1 != inner2
+    inner2.add_children(Leaf(0, y))
+    assert inner1 == inner2
 
 
 def check_equal_mccreight(algo: STConstructor) -> _Test:
+    """Check that constructions are equal to McCreight's tree."""
     def test(_: object) -> None:
         for _ in range(10):
             x = random_string(20, alpha="abc")
             assert mccreight_st_construction(x) == algo(x)
-        for f in range(5, 10):
-            x = fibonacci_string(f)
+        for fib in range(5, 10):
+            x = fibonacci_string(fib)
             assert mccreight_st_construction(x) == algo(x)
         for n in range(5, 50):
             x = 'a' * n
@@ -116,6 +125,7 @@ TestEqualMcCreight = collect_tests(
 
 
 def check_occurrences(algo: STConstructor) -> _Test:
+    """Check searching with suffix trees."""
     def st_search(x: str, p: str) -> Iterator[int]:
         return algo(x).search(p)
 
@@ -140,6 +150,7 @@ TestMatches = collect_tests(
 
 
 def check_against_bmh(algo: STConstructor) -> _Test:
+    """Check that suffix trees find the same matches as BMH."""
     def st_search(x: str, p: str) -> Iterator[int]:
         print(algo(x).search(p))
         print(list(algo(x).search(p)))
