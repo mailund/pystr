@@ -4,7 +4,7 @@ import collections
 import typing
 
 from .alphabet import Alphabet
-from .border_array import strict_border_array
+from .border_array import border_array, strict_border_array
 
 
 def naive(x: str, p: str) -> typing.Iterator[int]:
@@ -26,7 +26,7 @@ def border(x: str, p: str) -> typing.Iterator[int]:
         return
 
     # Build the border array
-    ba = strict_border_array(p)
+    ba = border_array(p)
 
     # Now search...
     b = 0

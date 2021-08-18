@@ -313,12 +313,12 @@ def mccreight_st_construction(s: str) -> SuffixTree:
 
     # Insert suffixes one at a time...
     for i in range(1, len(x)):
-        # Idea: split x[i:] into a+y+z where we jump
-        # past a, then fast-scan through y, and then
-        # slow-scan through z.
-        # In the general case, a is the suffix of the path
-        # down to v.parent.parent, y is the label on
-        # v.parent and z is the label on v. There's
+        # Idea: split x[i:] into y+z+w where we jump
+        # past y, then fast-scan through z, and then
+        # slow-scan through w.
+        # In the general case, y is the suffix of the path
+        # down to v.parent.parent, z is the label on
+        # v.parent and w is the label on v. There's
         # just some special cases to deal with it...
 
         p = v.parent
@@ -327,59 +327,59 @@ def mccreight_st_construction(s: str) -> SuffixTree:
         # If we already have a suffix link, then that is
         # the node we should slow scan from.
         if p.suffix_link is not None:
-            # y_node is the node we would get from scanning
-            # through a + y, so from here we need to scan
+            # z_node is the node we would get from scanning
+            # through y + z, so from here we need to scan
             # for z (later in the function)
-            y_node = p.suffix_link
-            z = v.edge_label if p is not root else x[i:]
+            z_node = p.suffix_link
+            w = v.edge_label if p is not root else x[i:]
 
         else:
-            # Otherwise, we need to fast scan to find y_node.
+            # Otherwise, we need to fast scan to find z_node.
             # p can't be the root here, because the root has a
             # suffix link
             assert p.parent is not None, "p can't be the root."
             assert p.parent.suffix_link, \
                 "Parent's parent must have a suffix link"
 
-            # Jumping to pp.suffix_link gets us past a, so now we get y and z
+            # Jumping to pp.suffix_link gets us past a, so now we get z and w
             # (with the special case if p is the root) and then we are
-            # ready to scan for y_node
-            y = p.edge_label if p.parent is not root else p.edge_label[1:]
-            z = v.edge_label
+            # ready to scan for z_node
+            z = p.edge_label if p.parent is not root else p.edge_label[1:]
+            w = v.edge_label
 
             # Fast scan to new starting point
-            y_res, j, w = tree_fastsearch(p.parent.suffix_link, y)
-            assert j == len(w), "Fast scan should always find a match"
+            n, j, z_res = tree_fastsearch(p.parent.suffix_link, z)
+            assert j == len(z_res), "Fast scan should always find a match"
 
-            if len(y_res.edge_label) != j:
+            if len(n.edge_label) != j:
                 # We ended the search on an edge, so we can directly
                 # insert the new leaf
-                v = break_edge(i, y_res, j, z)
+                v = break_edge(i, n, j, w)
                 p.suffix_link = v.parent
                 continue  # Process next suffix...
 
             # The result was on a node, and we continue from there
             # (using two variables make the type checker happier).
-            assert isinstance(y_res, Inner), \
+            assert isinstance(n, Inner), \
                 "A mismatch on a node means that it is an inner node."
-            y_node = y_res
+            z_node = n
 
             # If we landed on a node, then that is p's suffix link
-            p.suffix_link = y_node
+            p.suffix_link = z_node
 
         # If we are here, we need to slow-scan, and we do that by
         # searching from y_node after the remainder of the suffix, z.
-        n, j, w = tree_search(y_node, z)
-        assert j != len(w), "We can't match completely here."
+        n, j, w_res = tree_search(z_node, w)
+        assert j != len(w_res), "We can't match completely here."
         if j == 0:
             # Mismatch on a node...
             assert isinstance(n, Inner), \
                 "Mismatch on a node must be on an inner node."
-            v = Leaf(i, w)
+            v = Leaf(i, w_res)
             n.add_children(v)
-        elif j < len(w):
+        elif j < len(w_res):
             # Mismatch on an edge
-            v = break_edge(i, n, j, w[j:])
+            v = break_edge(i, n, j, w_res[j:])
 
     return SuffixTree(alpha, root)
 

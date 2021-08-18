@@ -13,7 +13,7 @@ check:
 	python3 -m mypy --strict tests/*.py
 
 test: check
-	pytest --cov-report term-missing --cov=pystr tests
+	python3 -m pytest --cov-report term-missing --cov=pystr tests
 
 build:
 	python3 -m build
