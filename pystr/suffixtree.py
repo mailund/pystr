@@ -350,20 +350,19 @@ def mccreight_st_construction(s: str) -> SuffixTree:
             # Fast scan to new starting point
             n, j, z_res = tree_fastsearch(p.parent.suffix_link, z)
             assert j == len(z_res), "Fast scan should always find a match"
+            z_node = typing.cast(Inner, n)  # For type checker...
 
-            if len(n.edge_label) != j:
+            if len(z_node.edge_label) != j:
                 # We ended the search on an edge, so we can directly
                 # insert the new leaf
-                v = break_edge(i, n, j, w)
+                v = break_edge(i, z_node, j, w)
                 p.suffix_link = v.parent
                 continue  # Process next suffix...
 
             # The result was on a node, and we continue from there
             # (using two variables make the type checker happier).
-            assert isinstance(n, Inner), \
+            assert isinstance(z_node, Inner), \
                 "A mismatch on a node means that it is an inner node."
-            z_node = n
-
             # If we landed on a node, then that is p's suffix link
             p.suffix_link = z_node
 
