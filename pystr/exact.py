@@ -41,26 +41,23 @@ def border(x: str, p: str) -> typing.Iterator[int]:
 
 def kmp(x: str, p: str) -> typing.Iterator[int]:
     """Run the Knuth-Morris-Pratt algorithm."""
+    if not p:
+        yield from range(len(x) + 1)
+        return
+
+    j = 0
     ba = strict_border_array(p)
-    i, j = 0, 0
-    while i < len(x):
-        while j < len(p) and i < len(x):
-            if x[i] != p[j]:
-                break
-            i += 1
-            j += 1
-
-        if j == len(p):
-            yield i - len(p)
-
-        if j == 0:
-            i += 1
-        else:
+    for i, a in enumerate(x):
+        # shift down pattern...
+        while a != p[j] and j > 0:
             j = ba[j - 1]
 
-    # If p is the empty string we have one more position to report
-    if not p:
-        yield len(x)
+        # match one up, if we can...
+        if a == p[j]:
+            j += 1
+            if j == len(p):
+                yield i - len(p) + 1
+                j = ba[j - 1]
 
 
 def bmh(x: str, p: str) -> typing.Iterator[int]:
