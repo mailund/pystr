@@ -146,11 +146,15 @@ def set_suffix_link(node: TrieNode, in_edge: str) -> None:
         node.suffix_link = parent
     else:
         slink = typing.cast(TrieNode, parent.suffix_link)
-        while in_edge not in slink and not slink.is_root:
+        while in_edge not in slink:
+            if slink.is_root:
+                # it is the root and we can't extend.
+                node.suffix_link = slink
+                break
             slink = typing.cast(TrieNode, slink.suffix_link)
-        # If we can extend, we do. Otherwise, we will
-        # be in the root, and then that is what we want.
-        node.suffix_link = slink[in_edge] if in_edge in slink else slink
+        else:
+            # If we break to here, we can extend.
+            node.suffix_link = slink[in_edge]
 
     # The suffix link for non-roots should never be None
     assert node.suffix_link is not None

@@ -24,10 +24,13 @@ def find_out(n: TrieNode, a: str) -> TrieNode:
     We will end up in the node if we cannot make one,
     but that works fine with the out list reporting.
     """
-    while not n.is_root and a not in n:
+    while a not in n:
+        if n.is_root:
+            # The root, and in here we cannot extend.
+            return n
         assert n.suffix_link is not None
         n = n.suffix_link
-    return n[a] if a in n else n
+    return n[a]
 
 
 def aho_corasick(x: str, *p: str) \
